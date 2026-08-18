@@ -83,7 +83,7 @@ export async function createEvent(input: {
   const eventTypeLabel: Record<string, string> = {
     training: "Training",
     rcq: "RCQ",
-    regional: "RC",
+    regional: "Regional Championship",
     "pro-tour": "PT",
     other: eventTypeDetail ?? "Other",
   }

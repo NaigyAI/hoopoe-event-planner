@@ -26,7 +26,7 @@ export type EventSummary = {
 const EVENT_TYPE_LABELS: Record<string, string> = {
   training: "Training",
   rcq: "RCQ",
-  regional: "RC",
+  regional: "Regional Championship",
   "pro-tour": "PT",
   travel: "Travel",
   other: "Team event",

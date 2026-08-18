@@ -176,7 +176,7 @@ function GuestEventView({
             {event.eventType === "pro-tour"
               ? "PT"
               : event.eventType === "regional"
-                ? "RC"
+                ? "Regional Championship"
                 : event.eventType === "training"
                   ? "Training session"
                   : event.eventType === "travel"

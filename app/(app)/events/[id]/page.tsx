@@ -81,7 +81,7 @@ export default async function EventPage({
               {event.eventType === "pro-tour"
                 ? "PT"
                 : event.eventType === "regional"
-                  ? "RC"
+                  ? "Regional Championship"
                   : event.eventType === "training"
                     ? "Training session"
                     : event.eventType === "travel"
