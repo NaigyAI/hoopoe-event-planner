@@ -5,7 +5,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Brand panel */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground lg:flex">
+      <div className="relative hidden grid-rows-[auto_1fr_auto] overflow-hidden bg-primary p-10 text-primary-foreground lg:grid">
         <div className="flex items-center gap-2 font-semibold">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
             <CalendarCheck className="size-4" />
@@ -13,7 +13,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <span className="text-lg tracking-tight">Hoopoe Event Planner</span>
         </div>
 
-        <div className="max-w-md text-center">
+        <div className="flex w-full max-w-md flex-col justify-center text-center">
           <div className="mx-auto mb-8 w-full max-w-[260px]">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
