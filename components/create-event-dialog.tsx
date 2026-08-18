@@ -79,8 +79,8 @@ export function CreateEventDialog() {
               <SelectContent>
                 <SelectItem value="training">Training session</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>
-                <SelectItem value="regional">Regional Championship</SelectItem>
-                <SelectItem value="pro-tour">Pro Tour</SelectItem>
+                <SelectItem value="regional">RC</SelectItem>
+                <SelectItem value="pro-tour">PT</SelectItem>
                 <SelectItem value="travel">Travel / logistics</SelectItem>
                 <SelectItem value="other">Other team event</SelectItem>
               </SelectContent>

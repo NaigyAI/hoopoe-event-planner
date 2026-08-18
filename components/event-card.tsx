@@ -24,7 +24,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   training: "Training",
   rcq: "RCQ",
   regional: "Regional",
-  "pro-tour": "Pro Tour",
+  "pro-tour": "PT",
   travel: "Travel",
   other: "Team event",
 }

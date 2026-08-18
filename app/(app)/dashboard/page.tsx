@@ -88,7 +88,7 @@ export default async function DashboardPage() {
             [Swords, "Training", "Schedule reps and testing"],
             [Trophy, "RCQs", "Lock the best date"],
             [Plane, "Travel", "Coordinate the trip"],
-            [Dumbbell, "Pro Tour", "Stay ready for the call"],
+            [Dumbbell, "PT", "Stay ready for the call"],
           ].map(([Icon, title, copy]) => {
             const QuickIcon = Icon as typeof Swords
             return (

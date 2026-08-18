@@ -79,9 +79,9 @@ export default async function EventPage({
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="border-primary/30 text-primary">
               {event.eventType === "pro-tour"
-                ? "Pro Tour"
+                ? "PT"
                 : event.eventType === "regional"
-                  ? "Regional Championship"
+                  ? "RC"
                   : event.eventType === "training"
                     ? "Training session"
                     : event.eventType === "travel"
