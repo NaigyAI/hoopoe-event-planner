@@ -72,9 +72,12 @@ export function CreateEventDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="eventType">Event type</Label>
-            <Select name="eventType" defaultValue="rcq">
-              <SelectTrigger id="eventType" className="w-full">
-                <SelectValue placeholder="Choose a type" />
+            <Select name="eventType" required>
+              <SelectTrigger id="eventType" className="h-10 w-full">
+                <SelectValue
+                  placeholder="Select event"
+                  className="text-muted-foreground"
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="training">Training session</SelectItem>
