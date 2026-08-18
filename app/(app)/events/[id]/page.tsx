@@ -1,13 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Trophy, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSuggestedDates } from "@/app/actions/personal-availability"
 import { SuggestedDatePicker } from "@/components/suggested-date-picker"
 import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
-import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/dates"
+import { dateRange, formatDateRange, formatTime } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
@@ -69,8 +69,6 @@ export default async function EventPage({
     )
     if (ranked[0] && ranked[0].score > 0) bestDate = ranked[0].date
   }
-
-  const highlightDate = event.lockedDate ?? bestDate
 
   return (
     <div className="space-y-6">
@@ -165,32 +163,6 @@ export default async function EventPage({
           ) : null}
         </div>
       </div>
-
-      {/* Highlight banner */}
-      {highlightDate ? (
-        <div
-          className={
-            isLocked
-              ? "flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3"
-              : "flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3"
-          }
-        >
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
-            {isLocked ? <Lock className="size-4" /> : <Trophy className="size-4" />}
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              {isLocked ? "Confirmed date" : "Best date so far"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {formatFullDate(highlightDate)}
-              {!isLocked && isAdmin
-                ? " — lock it in once everyone has responded."
-                : ""}
-            </p>
-          </div>
-        </div>
-      ) : null}
 
       {!isLocked && isAdmin ? <SuggestedDatePicker eventId={event.id} suggestions={suggestions} /> : null}
       {isLocked && event.lockedDate ? (
