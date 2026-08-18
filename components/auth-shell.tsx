@@ -28,7 +28,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <p className="text-center text-sm text-primary-foreground/70">
-          Create an event, gather votes, pick the winning date.
+          Create an event, see who&apos;s available, pick the winning date.
         </p>
       </div>
 
