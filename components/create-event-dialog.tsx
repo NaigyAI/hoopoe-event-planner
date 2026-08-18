@@ -70,23 +70,31 @@ export function CreateEventDialog() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="format">Format</Label>
-            <select
-              id="format"
-              name="format"
-              multiple
-              required
-              defaultValue={[]}
-              className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-describedby="format-hint"
-            >
-              <option value="Standard">Standard</option>
-              <option value="Pioneer">Pioneer</option>
-              <option value="Modern">Modern</option>
-              <option value="Legacy">Legacy</option>
-              <option value="Limited">Limited</option>
-            </select>
+            <fieldset className="grid gap-2 sm:grid-cols-2" aria-describedby="format-hint">
+              <legend className="sr-only">Select one or more formats</legend>
+              {[
+                "Standard",
+                "Pioneer",
+                "Modern",
+                "Legacy",
+                "Limited",
+              ].map((format) => (
+                <label
+                  key={format}
+                  className="flex min-h-11 items-center gap-3 rounded-md border border-input px-3 text-sm text-foreground transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/10"
+                >
+                  <input
+                    type="checkbox"
+                    name="format"
+                    value={format}
+                    className="size-4 accent-primary"
+                  />
+                  {format}
+                </label>
+              ))}
+            </fieldset>
             <p id="format-hint" className="text-xs text-muted-foreground">
-              Hold Cmd/Ctrl to select more than one. Multiple formats are joined with a slash.
+              Select one or more formats. Multiple formats are joined with a slash.
             </p>
           </div>
           <div className="space-y-2">
