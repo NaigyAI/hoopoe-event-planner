@@ -50,8 +50,21 @@ export function PersonalAvailabilityCalendar({
 
   function toggleDate(date: Date) {
     const key = isoDate(date)
-    const nextStatus = statuses[key] === "available" ? "unavailable" : "available"
-    setStatuses((current) => ({ ...current, [key]: nextStatus }))
+    const currentStatus = statuses[key]
+    const nextStatus: PersonalAvailabilityStatus | null =
+      currentStatus === undefined
+        ? "available"
+        : currentStatus === "available"
+          ? "unavailable"
+          : currentStatus === "unavailable"
+            ? "maybe"
+            : null
+    setStatuses((current) => {
+      const next = { ...current }
+      if (nextStatus) next[key] = nextStatus
+      else delete next[key]
+      return next
+    })
     startTransition(() => setPersonalAvailability(key, nextStatus))
   }
 
@@ -60,7 +73,7 @@ export function PersonalAvailabilityCalendar({
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-medium tracking-normal">Your availability</h2>
-          <p className="text-sm text-muted-foreground">Tap a date to mark yourself available or unavailable.</p>
+          <p className="text-sm text-muted-foreground">Tap a date to cycle through available, unavailable, maybe, and neutral.</p>
         </div>
         <div className="flex items-center gap-1">
           <Button type="button" variant="ghost" size="icon" aria-label="Previous month" onClick={() => changeMonth(-1)} disabled={isPending}>
@@ -80,7 +93,7 @@ export function PersonalAvailabilityCalendar({
             type="button"
             onClick={() => toggleDate(date)}
             aria-label={`${date.toLocaleDateString(undefined, { month: "long", day: "numeric" })}: ${statuses[isoDate(date)] ?? "unmarked"}`}
-            className={`min-h-11 rounded-lg border text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${statuses[isoDate(date)] === "available" ? "border-primary bg-primary/15 text-primary" : statuses[isoDate(date)] === "unavailable" ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-transparent bg-muted/40 text-foreground hover:bg-muted"}`}
+            className={`min-h-11 rounded-lg border text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${statuses[isoDate(date)] === "available" ? "border-primary bg-primary/15 text-primary" : statuses[isoDate(date)] === "unavailable" ? "border-destructive/40 bg-destructive/10 text-destructive" : statuses[isoDate(date)] === "maybe" ? "border-yellow-500/50 bg-yellow-400/20 text-yellow-700 dark:text-yellow-300" : "border-transparent bg-muted/40 text-foreground hover:bg-muted"}`}
           >
             {date.getDate()}
           </button>
@@ -89,6 +102,7 @@ export function PersonalAvailabilityCalendar({
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary" />Available</span>
         <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-destructive" />Unavailable</span>
+        <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-yellow-400" />Maybe</span>
       </div>
     </div>
   )

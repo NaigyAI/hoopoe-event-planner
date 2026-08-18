@@ -7,7 +7,7 @@ import { and, eq, gte, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 
-export type PersonalAvailabilityStatus = "available" | "unavailable"
+export type PersonalAvailabilityStatus = "available" | "unavailable" | "maybe"
 
 function nextMonth(month: string) {
   const [year, monthNumber] = month.split("-").map(Number)
@@ -31,7 +31,7 @@ export async function listPersonalAvailability(month: string) {
 
 export async function setPersonalAvailability(
   date: string,
-  status: PersonalAvailabilityStatus,
+  status: PersonalAvailabilityStatus | null,
 ) {
   const currentUser = await requireUser()
   const existing = await db
@@ -45,12 +45,14 @@ export async function setPersonalAvailability(
     )
     .limit(1)
 
-  if (existing[0]) {
+  if (existing[0] && status === null) {
+    await db.delete(personalAvailability).where(eq(personalAvailability.id, existing[0].id))
+  } else if (existing[0]) {
     await db
       .update(personalAvailability)
       .set({ status })
       .where(eq(personalAvailability.id, existing[0].id))
-  } else {
+  } else if (status) {
     await db.insert(personalAvailability).values({
       id: randomUUID(),
       userId: currentUser.id,
