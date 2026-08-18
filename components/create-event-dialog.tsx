@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { createEvent } from "@/app/actions/events"
 
@@ -29,8 +30,11 @@ export function CreateEventDialog() {
     const form = new FormData(e.currentTarget)
     const payload = {
       title: String(form.get("title") ?? ""),
+      eventType: String(form.get("eventType") ?? "rcq"),
       description: String(form.get("description") ?? ""),
       location: String(form.get("location") ?? ""),
+      eventUrl: String(form.get("eventUrl") ?? ""),
+      travelDetails: String(form.get("travelDetails") ?? ""),
       startDate: String(form.get("startDate") ?? ""),
       endDate: String(form.get("endDate") ?? ""),
     }
@@ -67,8 +71,24 @@ export function CreateEventDialog() {
             <Input id="title" name="title" placeholder="Q3 Planning Offsite" required />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="eventType">Event type</Label>
+            <Select name="eventType" defaultValue="rcq">
+              <SelectTrigger id="eventType" className="w-full">
+                <SelectValue placeholder="Choose a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="training">Training session</SelectItem>
+                <SelectItem value="rcq">RCQ</SelectItem>
+                <SelectItem value="regional">Regional Championship</SelectItem>
+                <SelectItem value="pro-tour">Pro Tour</SelectItem>
+                <SelectItem value="travel">Travel / logistics</SelectItem>
+                <SelectItem value="other">Other team event</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="location">Location (optional)</Label>
-            <Input id="location" name="location" placeholder="Austin, TX" />
+            <Input id="location" name="location" placeholder="Miami, FL" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -81,12 +101,30 @@ export function CreateEventDialog() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="eventUrl">Official event link (optional)</Label>
+            <Input
+              id="eventUrl"
+              name="eventUrl"
+              type="url"
+              placeholder="https://…"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">Event details (optional)</Label>
             <Textarea
               id="description"
               name="description"
-              placeholder="What is this event about?"
+              placeholder="Format, entry, decklists, qualification, or training goals…"
               rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="travelDetails">Travel notes (optional)</Label>
+            <Textarea
+              id="travelDetails"
+              name="travelDetails"
+              placeholder="Flights, hotel, carpool, meetup point…"
+              rows={2}
             />
           </div>
           <DialogFooter>

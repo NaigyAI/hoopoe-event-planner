@@ -56,8 +56,11 @@ export async function listEvents() {
 
 export async function createEvent(input: {
   title: string
+  eventType?: string
   description?: string
   location?: string
+  eventUrl?: string
+  travelDetails?: string
   startDate: string
   endDate: string
 }) {
@@ -79,6 +82,9 @@ export async function createEvent(input: {
     title,
     description: input.description?.trim() || null,
     location: input.location?.trim() || null,
+    eventType: input.eventType?.trim() || "rcq",
+    eventUrl: input.eventUrl?.trim() || null,
+    travelDetails: input.travelDetails?.trim() || null,
     createdBy: admin.id,
     createdByName: admin.name,
     shareToken,

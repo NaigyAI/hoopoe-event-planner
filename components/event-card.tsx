@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CalendarDays, MapPin, Users, Lock } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Users, Lock } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatDateRange, formatFullDate } from "@/lib/dates"
@@ -7,6 +7,9 @@ import { formatDateRange, formatFullDate } from "@/lib/dates"
 export type EventSummary = {
   id: string
   title: string
+  eventType: string
+  eventUrl: string | null
+  travelDetails: string | null
   location: string | null
   startDate: string
   endDate: string
@@ -15,6 +18,15 @@ export type EventSummary = {
   createdByName: string
   respondentCount: number
   goingCount: number
+}
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  training: "Training",
+  rcq: "RCQ",
+  regional: "Regional",
+  "pro-tour": "Pro Tour",
+  travel: "Travel",
+  other: "Team event",
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -45,9 +57,14 @@ export function EventCard({ event }: { event: EventSummary }) {
     <Link href={`/events/${event.id}`} className="group block">
       <Card className="h-full p-5 transition-colors group-hover:border-primary/40">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-pretty font-semibold leading-tight text-foreground">
-            {event.title}
-          </h3>
+          <div className="min-w-0 space-y-2">
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              {EVENT_TYPE_LABELS[event.eventType] ?? "Team event"}
+            </Badge>
+            <h3 className="text-pretty font-semibold leading-tight text-foreground">
+              {event.title}
+            </h3>
+          </div>
           <StatusBadge status={event.status} />
         </div>
 
@@ -60,6 +77,12 @@ export function EventCard({ event }: { event: EventSummary }) {
             <div className="flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />
               <span className="truncate">{event.location}</span>
+            </div>
+          ) : null}
+          {event.eventUrl ? (
+            <div className="flex items-center gap-2 text-primary">
+              <ExternalLink className="size-4 shrink-0" />
+              <span>Official event details</span>
             </div>
           ) : null}
           <div className="flex items-center gap-2">

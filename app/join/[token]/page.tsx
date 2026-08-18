@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import {
   CalendarCheck,
   CalendarDays,
+  ExternalLink,
   Lock,
   MapPin,
   Trophy,
@@ -124,6 +125,19 @@ function GuestEventView({
       {/* Header */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline" className="border-primary/30 text-primary">
+            {event.eventType === "pro-tour"
+              ? "Pro Tour"
+              : event.eventType === "regional"
+                ? "Regional Championship"
+                : event.eventType === "training"
+                  ? "Training session"
+                  : event.eventType === "travel"
+                    ? "Travel / logistics"
+                    : event.eventType === "rcq"
+                      ? "RCQ"
+                      : "Team event"}
+          </Badge>
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
             {event.title}
           </h1>
@@ -153,9 +167,26 @@ function GuestEventView({
           </span>
         </div>
         {event.description ? (
-          <p className="max-w-2xl text-pretty text-sm text-muted-foreground">
+          <p className="max-w-2xl whitespace-pre-line text-pretty text-sm leading-6 text-muted-foreground">
             {event.description}
           </p>
+        ) : null}
+        {event.eventUrl ? (
+          <a
+            href={event.eventUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary/30 px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ExternalLink className="size-4" />
+            Official event details
+          </a>
+        ) : null}
+        {event.travelDetails ? (
+          <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm leading-6">
+            <p className="font-bold text-foreground">Travel notes</p>
+            <p className="mt-1 whitespace-pre-line text-muted-foreground">{event.travelDetails}</p>
+          </div>
         ) : null}
       </div>
 
