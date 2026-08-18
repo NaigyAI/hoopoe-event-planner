@@ -64,6 +64,14 @@ export const verification = pgTable("verification", {
 
 // ---- App tables ----
 
+export const personalAvailability = pgTable("personalAvailability", {
+  id: text("id").primaryKey(),
+  userId: text("userId").notNull(),
+  date: date("date").notNull(),
+  status: text("status").notNull(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
 export const event = pgTable("event", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),

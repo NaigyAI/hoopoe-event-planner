@@ -3,11 +3,22 @@ import { listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { EventCard, type EventSummary } from "@/components/event-card"
 import { CreateEventDialog } from "@/components/create-event-dialog"
+import { PersonalAvailabilityDialog } from "@/components/personal-availability-dialog"
+import { listPersonalAvailability } from "@/app/actions/personal-availability"
+import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
-  const [events, user] = await Promise.all([listEvents(), getSessionUser()])
+  const month = new Date().toISOString().slice(0, 7)
+  const [events, user, personalDates] = await Promise.all([
+    listEvents(),
+    getSessionUser(),
+    listPersonalAvailability(month),
+  ])
+  const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
+    personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
+  )
   const isAdmin = user?.role === "admin"
 
   const summaries: EventSummary[] = events.map((e) => ({
@@ -75,7 +86,10 @@ export default async function DashboardPage() {
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
-        {isAdmin ? <CreateEventDialog /> : null}
+        <div className="flex items-center gap-2">
+          <PersonalAvailabilityDialog initialStatuses={initialStatuses} />
+          {isAdmin ? <CreateEventDialog /> : null}
+        </div>
       </div>
 
       {active.length > 0 ? (
