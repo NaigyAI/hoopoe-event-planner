@@ -56,7 +56,7 @@ export default async function DashboardPage() {
             Keep the reps, trips, and tournaments organized.
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-secondary-foreground/80 sm:text-base">
-            Plan training sessions, find the best RCQ date, coordinate travel,
+            Plan practice sessions, find the best RCQ date, coordinate travel,
             and keep the roster aligned when it is time to register.
           </p>
           </div>

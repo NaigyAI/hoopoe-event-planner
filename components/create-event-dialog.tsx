@@ -181,7 +181,7 @@ export function CreateEventDialog() {
             <Textarea
               id="description"
               name="description"
-              placeholder="Format, entry, decklists, qualification, or training goals…"
+              placeholder="Format, entry, decklists, qualification, or practice goals…"
               rows={3}
             />
           </div>
