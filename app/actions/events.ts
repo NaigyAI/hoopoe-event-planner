@@ -82,9 +82,11 @@ export async function createEvent(input: {
 
   const eventTypeLabel: Record<string, string> = {
     training: "Practice",
-    rcq: "Regional Championship Qualifier",
-    regional: "Regional Championship",
-    "pro-tour": "Pro Tour",
+    weekly: "Weekly",
+    "store-championship": "Store Championship",
+    rcq: "RCQ",
+    regional: "RC",
+    "pro-tour": "PT",
     other: eventTypeDetail ?? "Other",
   }
   const formatLabel = formats.join("/")

@@ -89,17 +89,21 @@ export default async function EventPage({
               <Badge variant="secondary">Planning</Badge>
             )}
             <Badge variant="outline" className="border-primary/30 text-primary">
-              {event.eventType === "pro-tour"
-                ? "Pro Tour"
-                : event.eventType === "regional"
-                  ? "Regional Championship"
-                  : event.eventType === "training"
-                    ? "Practice"
-                    : event.eventType === "travel"
-                      ? "Travel / logistics"
-                      : event.eventType === "rcq"
-                        ? "Regional Championship Qualifier"
-                        : "Team event"}
+              {event.eventType === "training"
+                ? "Practice"
+                : event.eventType === "weekly"
+                  ? "Weekly"
+                  : event.eventType === "store-championship"
+                    ? "Store Championship"
+                    : event.eventType === "rcq"
+                      ? "RCQ"
+                      : event.eventType === "regional"
+                        ? "RC"
+                        : event.eventType === "pro-tour"
+                          ? "PT"
+                          : event.eventType === "travel"
+                            ? "Travel / logistics"
+                            : "Team event"}
             </Badge>
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">

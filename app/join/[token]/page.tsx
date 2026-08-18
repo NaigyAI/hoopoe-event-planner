@@ -173,17 +173,21 @@ function GuestEventView({
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-primary/30 text-primary">
-            {event.eventType === "pro-tour"
-              ? "Pro Tour"
-              : event.eventType === "regional"
-                ? "Regional Championship"
-                : event.eventType === "training"
-                  ? "Practice"
-                  : event.eventType === "travel"
-                    ? "Travel / logistics"
-                    : event.eventType === "rcq"
-                      ? "Regional Championship Qualifier"
-                      : "Team event"}
+            {event.eventType === "training"
+              ? "Practice"
+              : event.eventType === "weekly"
+                ? "Weekly"
+                : event.eventType === "store-championship"
+                  ? "Store Championship"
+                  : event.eventType === "rcq"
+                    ? "RCQ"
+                    : event.eventType === "regional"
+                      ? "RC"
+                      : event.eventType === "pro-tour"
+                        ? "PT"
+                        : event.eventType === "travel"
+                          ? "Travel / logistics"
+                          : "Team event"}
           </Badge>
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
             {event.title}

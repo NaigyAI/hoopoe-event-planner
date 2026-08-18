@@ -116,9 +116,11 @@ export function CreateEventDialog() {
               </SelectTrigger>
               <SelectContent side="bottom" align="start" sideOffset={4}>
                 <SelectItem value="training">Practice</SelectItem>
-                <SelectItem value="rcq">Regional Championship Qualifier</SelectItem>
-                <SelectItem value="regional">Regional Championship</SelectItem>
-                <SelectItem value="pro-tour">Pro Tour</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="store-championship">Store Championship</SelectItem>
+                <SelectItem value="rcq">RCQ</SelectItem>
+                <SelectItem value="regional">RC</SelectItem>
+                <SelectItem value="pro-tour">PT</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
