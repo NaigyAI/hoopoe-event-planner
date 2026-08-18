@@ -2,10 +2,11 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, MapPin, Lock, Trophy, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getEvent, getEventAvailability } from "@/app/actions/events"
+import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { dateRange, formatDateRange, formatFullDate } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
+import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
 import { ShareEventButton } from "@/components/share-event-button"
 
@@ -17,9 +18,10 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, user] = await Promise.all([
+  const [event, votes, rsvps, user] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
+    getEventRsvps(id),
     getSessionUser(),
   ])
 
@@ -144,11 +146,22 @@ export default async function EventPage({
         </div>
       ) : null}
 
+      {/* Attendance / RSVP phase — only once a date is locked */}
+      {isLocked && event.lockedDate ? (
+        <AttendancePanel
+          eventId={event.id}
+          variant="member"
+          lockedDate={event.lockedDate}
+          rsvps={rsvps}
+          myUserId={user?.id ?? null}
+        />
+      ) : null}
+
       {/* Grid */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">
-            {isLocked ? "Final availability" : "Mark your availability"}
+            {isLocked ? "How the date was chosen" : "Mark your availability"}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">

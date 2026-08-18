@@ -96,3 +96,19 @@ export const availability = pgTable(
     uniqueVote: unique().on(t.eventId, t.userId, t.date),
   }),
 )
+
+export const rsvp = pgTable(
+  "rsvp",
+  {
+    id: text("id").primaryKey(),
+    eventId: text("eventId").notNull(),
+    userId: text("userId").notNull(),
+    userName: text("userName").notNull(),
+    status: text("status").notNull().default("going"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (t) => ({
+    uniqueRsvp: unique().on(t.eventId, t.userId),
+  }),
+)

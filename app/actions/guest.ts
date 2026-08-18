@@ -1,12 +1,12 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { event, availability } from "@/lib/db/schema"
+import { event, availability, rsvp } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { randomUUID } from "crypto"
-import type { AvailabilityStatus } from "@/app/actions/events"
+import type { AvailabilityStatus, RsvpStatus } from "@/app/actions/events"
 
 const GUEST_ID_COOKIE = "rcq_guest_id"
 const GUEST_NAME_COOKIE = "rcq_guest_name"
@@ -53,13 +53,20 @@ export async function getEventByToken(token: string) {
 /** Everything the guest join page needs: event, all votes, and guest identity. */
 export async function getGuestContext(token: string) {
   const ev = await getEventByToken(token)
-  if (!ev) return { event: null as null, votes: [], guest: null as GuestSession | null }
+  if (!ev)
+    return {
+      event: null as null,
+      votes: [],
+      rsvps: [] as (typeof rsvp.$inferSelect)[],
+      guest: null as GuestSession | null,
+    }
   const votes = await db
     .select()
     .from(availability)
     .where(eq(availability.eventId, ev.id))
+  const rsvps = await db.select().from(rsvp).where(eq(rsvp.eventId, ev.id))
   const guest = await getGuestSession()
-  return { event: ev, votes, guest }
+  return { event: ev, votes, rsvps, guest }
 }
 
 /** Guest enters (or updates) their display name. */
@@ -90,6 +97,52 @@ export async function joinAsGuest(input: { token: string; name: string }) {
         eq(availability.userId, `guest:${guestId}`),
       ),
     )
+  await db
+    .update(rsvp)
+    .set({ userName: name, updatedAt: new Date() })
+    .where(
+      and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, `guest:${guestId}`)),
+    )
+
+  revalidatePath(`/join/${input.token}`)
+  return { ok: true }
+}
+
+/** Guest upserts their attendance RSVP for a locked event. */
+export async function setGuestRsvp(input: {
+  token: string
+  status: RsvpStatus
+}) {
+  const ev = await getEventByToken(input.token)
+  if (!ev) throw new Error("This event link is invalid or has expired")
+  if (ev.status !== "locked")
+    throw new Error("A date must be locked before you can register attendance")
+
+  const session = await getGuestSession()
+  if (!session?.name) throw new Error("Please enter your name first")
+
+  const scopedId = `guest:${session.id}`
+
+  const existing = await db
+    .select({ id: rsvp.id })
+    .from(rsvp)
+    .where(and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, scopedId)))
+    .limit(1)
+
+  if (existing[0]) {
+    await db
+      .update(rsvp)
+      .set({ status: input.status, updatedAt: new Date() })
+      .where(eq(rsvp.id, existing[0].id))
+  } else {
+    await db.insert(rsvp).values({
+      id: randomUUID(),
+      eventId: ev.id,
+      userId: scopedId,
+      userName: session.name,
+      status: input.status,
+    })
+  }
 
   revalidatePath(`/join/${input.token}`)
   return { ok: true }

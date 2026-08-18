@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { event, availability, user } from "@/lib/db/schema"
+import { event, availability, rsvp, user } from "@/lib/db/schema"
 import { and, desc, eq, sql } from "drizzle-orm"
 import { requireUser, requireAdmin } from "@/lib/session"
 import { notifyEventCreated, notifyDateLocked } from "@/lib/email"
@@ -10,6 +10,7 @@ import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 
 export type AvailabilityStatus = "available" | "maybe" | "unavailable"
+export type RsvpStatus = "going" | "maybe" | "not_going"
 
 async function allRecipients() {
   return db
@@ -34,10 +35,22 @@ export async function listEvents() {
     .from(availability)
     .groupBy(availability.eventId)
 
+  const goingCounts = await db
+    .select({
+      eventId: rsvp.eventId,
+      going: sql<number>`count(*) filter (where ${rsvp.status} = 'going')`,
+    })
+    .from(rsvp)
+    .groupBy(rsvp.eventId)
+
   const countMap = new Map(counts.map((c) => [c.eventId, Number(c.responders)]))
+  const goingMap = new Map(
+    goingCounts.map((c) => [c.eventId, Number(c.going)]),
+  )
   return events.map((e) => ({
     ...e,
     responderCount: countMap.get(e.id) ?? 0,
+    goingCount: goingMap.get(e.id) ?? 0,
   }))
 }
 
@@ -101,6 +114,52 @@ export async function getEventAvailability(eventId: string) {
     .select()
     .from(availability)
     .where(eq(availability.eventId, eventId))
+}
+
+/** All attendance RSVPs for an event (used once a date is locked). */
+export async function getEventRsvps(eventId: string) {
+  await requireUser()
+  return db.select().from(rsvp).where(eq(rsvp.eventId, eventId))
+}
+
+/**
+ * Upsert the current user's attendance RSVP for a locked event.
+ * Scoped by userId — a user can only ever write their own row.
+ */
+export async function setRsvp(input: {
+  eventId: string
+  status: RsvpStatus
+}) {
+  const current = await requireUser()
+
+  const ev = await getEvent(input.eventId)
+  if (!ev) throw new Error("Event not found")
+  if (ev.status !== "locked")
+    throw new Error("A date must be locked before you can register attendance")
+
+  const existing = await db
+    .select({ id: rsvp.id })
+    .from(rsvp)
+    .where(and(eq(rsvp.eventId, input.eventId), eq(rsvp.userId, current.id)))
+    .limit(1)
+
+  if (existing[0]) {
+    await db
+      .update(rsvp)
+      .set({ status: input.status, updatedAt: new Date() })
+      .where(eq(rsvp.id, existing[0].id))
+  } else {
+    await db.insert(rsvp).values({
+      id: randomUUID(),
+      eventId: input.eventId,
+      userId: current.id,
+      userName: current.name,
+      status: input.status,
+    })
+  }
+
+  revalidatePath(`/events/${input.eventId}`)
+  return { ok: true }
 }
 
 /**
@@ -196,6 +255,7 @@ export async function unlockEvent(eventId: string) {
 export async function deleteEvent(eventId: string) {
   await requireAdmin()
   await db.delete(availability).where(eq(availability.eventId, eventId))
+  await db.delete(rsvp).where(eq(rsvp.eventId, eventId))
   await db.delete(event).where(eq(event.id, eventId))
   revalidatePath("/dashboard")
   return { ok: true }

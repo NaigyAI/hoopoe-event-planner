@@ -14,6 +14,7 @@ export type EventSummary = {
   status: string
   createdByName: string
   respondentCount: number
+  goingCount: number
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -71,9 +72,18 @@ export function EventCard({ event }: { event: EventSummary }) {
         </dl>
 
         {event.lockedDate ? (
-          <div className="mt-4 flex items-center gap-2 rounded-md bg-accent/10 px-3 py-2 text-sm font-medium text-accent-foreground">
-            <Lock className="size-3.5" />
-            <span>Confirmed for {formatFullDate(event.lockedDate)}</span>
+          <div className="mt-4 space-y-2 rounded-md bg-accent/10 px-3 py-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-accent-foreground">
+              <Lock className="size-3.5" />
+              <span>Confirmed for {formatFullDate(event.lockedDate)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-3.5" />
+              <span>
+                {event.goingCount} {event.goingCount === 1 ? "person" : "people"}{" "}
+                going
+              </span>
+            </div>
           </div>
         ) : null}
       </Card>

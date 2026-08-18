@@ -20,6 +20,7 @@ export default async function DashboardPage() {
     status: e.status,
     createdByName: e.createdByName,
     respondentCount: e.responderCount,
+    goingCount: e.goingCount,
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")

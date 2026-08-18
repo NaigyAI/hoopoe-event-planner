@@ -13,6 +13,7 @@ import { Card } from "@/components/ui/card"
 import { getGuestContext } from "@/app/actions/guest"
 import { dateRange, formatDateRange, formatFullDate } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
+import { AttendancePanel } from "@/components/attendance-panel"
 import { GuestJoinForm } from "@/components/guest-join-form"
 
 export const dynamic = "force-dynamic"
@@ -26,7 +27,7 @@ export default async function JoinPage({
 }) {
   const { token } = await params
   const { edit } = await searchParams
-  const { event, votes, guest } = await getGuestContext(token)
+  const { event, votes, rsvps, guest } = await getGuestContext(token)
 
   if (!event) notFound()
 
@@ -56,7 +57,14 @@ export default async function JoinPage({
             />
           </Card>
         ) : (
-          <GuestEventView token={token} event={event} votes={votes} guestId={guest!.id} guestName={guest!.name!} />
+          <GuestEventView
+            token={token}
+            event={event}
+            votes={votes}
+            rsvps={rsvps}
+            guestId={guest!.id}
+            guestName={guest!.name!}
+          />
         )}
       </div>
     </main>
@@ -67,12 +75,14 @@ function GuestEventView({
   token,
   event,
   votes,
+  rsvps,
   guestId,
   guestName,
 }: {
   token: string
   event: Awaited<ReturnType<typeof getGuestContext>>["event"]
   votes: Awaited<ReturnType<typeof getGuestContext>>["votes"]
+  rsvps: Awaited<ReturnType<typeof getGuestContext>>["rsvps"]
   guestId: string
   guestName: string
 }) {
@@ -186,11 +196,23 @@ function GuestEventView({
         </div>
       ) : null}
 
+      {/* Attendance / RSVP phase — only once a date is locked */}
+      {isLocked && event.lockedDate ? (
+        <AttendancePanel
+          eventId={event.id}
+          token={token}
+          variant="guest"
+          lockedDate={event.lockedDate}
+          rsvps={rsvps}
+          myUserId={scopedId}
+        />
+      ) : null}
+
       {/* Grid */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">
-            {isLocked ? "Final availability" : "Mark your availability"}
+            {isLocked ? "How the date was chosen" : "Mark your availability"}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
