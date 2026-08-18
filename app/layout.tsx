@@ -1,8 +1,15 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
+import { Bebas_Neue, Inter, Geist_Mono } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
+
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: '400',
+  display: 'swap',
+})
 
 const inter = Inter({
   subsets: ['latin'],
@@ -17,17 +24,17 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'RCQ Planner — Find the day that works for everyone',
+  title: 'Hoopoe Event Planner — Lock in the win',
   description:
-    'RCQ Planner helps teams pick the best day to meet. Create an event, gather everyone’s availability, and lock in the winning date.',
+    'Hoopoe Event Planner helps the team find the best event date, lock it in, and rally the roster.',
   generator: 'v0.app',
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f8fb' },
-    { media: '(prefers-color-scheme: dark)', color: '#191d26' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
 }
 
@@ -39,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`bg-background ${inter.variable} ${geistMono.variable}`}
+      className={`bg-background ${bebasNeue.variable} ${inter.variable} ${geistMono.variable}`}
     >
       <body className="font-sans antialiased">
         {children}
