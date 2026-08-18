@@ -6,7 +6,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
     <div className="grid min-h-svh lg:grid-cols-2">
       {/* Brand panel */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground lg:flex">
-        <div className="flex items-center gap-2 font-medium">
+        <div className="flex items-center gap-2 font-semibold">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
             <CalendarCheck className="size-4" />
           </div>
