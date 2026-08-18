@@ -87,7 +87,7 @@ export default async function EventPage({
                     : event.eventType === "travel"
                       ? "Travel / logistics"
                       : event.eventType === "rcq"
-                        ? "RCQ"
+                        ? "Regional Championship Qualifier"
                         : "Team event"}
             </Badge>
             <h1 className="text-2xl font-medium tracking-normal text-balance">

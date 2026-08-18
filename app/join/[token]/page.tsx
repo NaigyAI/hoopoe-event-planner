@@ -182,7 +182,7 @@ function GuestEventView({
                   : event.eventType === "travel"
                     ? "Travel / logistics"
                     : event.eventType === "rcq"
-                      ? "RCQ"
+                      ? "Regional Championship Qualifier"
                       : "Team event"}
           </Badge>
           <h1 className="text-2xl font-semibold tracking-tight text-balance">
