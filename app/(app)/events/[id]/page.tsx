@@ -152,7 +152,7 @@ export default async function EventPage({
         <div className="flex items-center gap-2">
           <ShareEventButton token={event.shareToken} />
           {isAdmin ? (
-            <EventAdminActions eventId={event.id} isLocked={isLocked} />
+            <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
           ) : null}
         </div>
       </div>

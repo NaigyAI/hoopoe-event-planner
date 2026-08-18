@@ -18,14 +18,40 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { createEvent } from "@/app/actions/events"
+import { createEvent, updateEvent } from "@/app/actions/events"
 
-export function CreateEventDialog() {
+export type EventEditData = {
+  id: string
+  format: string
+  eventType: string
+  title: string
+  description: string | null
+  location: string | null
+  eventUrl: string | null
+  travelDetails: string | null
+  startDate: string
+  endDate: string | null
+  startTime: string | null
+}
+
+export function CreateEventDialog({
+  event,
+  open: controlledOpen,
+  onOpenChange,
+  showTrigger = true,
+}: {
+  event?: EventEditData
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  showTrigger?: boolean
+}) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = onOpenChange ?? setInternalOpen
   const [pending, setPending] = useState(false)
-  const [multiDay, setMultiDay] = useState(false)
-  const [eventType, setEventType] = useState("")
+  const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
+  const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -44,10 +70,12 @@ export function CreateEventDialog() {
     }
     setPending(true)
     try {
-      const { id } = await createEvent(payload)
-      toast.success("Event created")
+      const id = event?.id
+      if (id) await updateEvent(id, payload)
+      else await createEvent(payload)
+      toast.success(event ? "Event updated" : "Event created")
       setOpen(false)
-      router.push(`/events/${id}`)
+      if (!event) router.push(`/events/${id}`)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not create event")
@@ -58,13 +86,15 @@ export function CreateEventDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="gap-2" />}>
-        <Plus className="size-4" />
-        New event
-      </DialogTrigger>
+      {showTrigger ? (
+        <DialogTrigger render={<Button className="gap-2" />}>
+          <Plus className="size-4" />
+          {event ? "Edit event" : "New event"}
+        </DialogTrigger>
+      ) : null}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Create an event</DialogTitle>
+          <DialogTitle className="text-2xl">{event ? "Edit event" : "Create an event"}</DialogTitle>
           <DialogDescription>
             Set a date range for the team to mark their availability.
           </DialogDescription>
@@ -90,6 +120,7 @@ export function CreateEventDialog() {
                     type="checkbox"
                     name="format"
                     value={format}
+                    defaultChecked={event?.format.split("/").includes(format)}
                     className="size-4 accent-primary"
                   />
                   {format}
@@ -152,16 +183,16 @@ export function CreateEventDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <Input id="location" name="location" placeholder="Miami, FL" required />
+            <Input id="location" name="location" placeholder="Miami, FL" defaultValue={event?.location ?? ""} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start date</Label>
-              <Input id="startDate" name="startDate" type="date" required />
+              <Input id="startDate" name="startDate" type="date" defaultValue={event?.startDate ?? ""} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time</Label>
-              <Input id="startTime" name="startTime" type="time" defaultValue="00:00" />
+              <Input id="startTime" name="startTime" type="time" defaultValue={event?.startTime ?? "00:00"} />
             </div>
           </div>
           <div className="space-y-2">
@@ -177,7 +208,7 @@ export function CreateEventDialog() {
             {multiDay && (
               <div className="space-y-2">
                 <Label htmlFor="endDate">End date</Label>
-                <Input id="endDate" name="endDate" type="date" />
+                <Input id="endDate" name="endDate" type="date" defaultValue={event?.endDate ?? ""} />
               </div>
             )}
           </div>
@@ -188,6 +219,7 @@ export function CreateEventDialog() {
               name="eventUrl"
               type="url"
               placeholder="https://…"
+              defaultValue={event?.eventUrl ?? ""}
             />
           </div>
           <div className="space-y-2">
@@ -197,6 +229,7 @@ export function CreateEventDialog() {
               name="description"
               placeholder="Format, entry, decklists, qualification, or practice goals…"
               rows={3}
+              defaultValue={event?.description ?? ""}
             />
           </div>
           <div className="space-y-2">
@@ -206,12 +239,13 @@ export function CreateEventDialog() {
               name="travelDetails"
               placeholder="Flights, hotel, carpool, meetup point…"
               rows={2}
+              defaultValue={event?.travelDetails ?? ""}
             />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending} className="gap-2">
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-              Create event
+              {event ? "Save changes" : "Create event"}
             </Button>
           </DialogFooter>
         </form>

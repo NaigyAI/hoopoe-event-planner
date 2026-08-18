@@ -132,6 +132,48 @@ export async function createEvent(input: {
   return { id }
 }
 
+export async function updateEvent(eventId: string, input: {
+  formats: string[]
+  eventType: string
+  eventTypeDetail?: string
+  description?: string
+  location: string
+  eventUrl?: string
+  travelDetails?: string
+  startDate: string
+  endDate?: string
+  startTime?: string
+}) {
+  await requireAdmin()
+  const formats = input.formats.map((format) => format.trim()).filter(Boolean)
+  const eventType = input.eventType.trim()
+  const location = input.location.trim()
+  const eventTypeDetail = input.eventTypeDetail?.trim()
+  if (!formats.length || !eventType || !location || !input.startDate)
+    throw new Error("Format, event type, location, and start date are required")
+  if (eventType === "other" && !eventTypeDetail)
+    throw new Error("Enter a name for the event type")
+  const endDate = input.endDate?.trim() || input.startDate
+  if (endDate < input.startDate) throw new Error("End date must be on or after the start date")
+  const normalizedEventType = eventType === "training" ? "practice" : eventType
+  const labels: Record<string, string> = {
+    practice: "Practice", training: "Practice", weekly: "Weekly",
+    "store-championship": "Store Championship", rcq: "RCQ", regional: "RC", "pro-tour": "PT",
+    other: eventTypeDetail ?? "Other",
+  }
+  const title = `${formats.join("/")} ${labels[normalizedEventType] ?? normalizedEventType}`
+  await db.update(event).set({
+    title, format: formats.join("/"), eventType: normalizedEventType,
+    description: input.description?.trim() || null, location,
+    eventUrl: input.eventUrl?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
+    startDate: input.startDate, endDate, startTime: input.startTime?.trim() || null,
+    endTime: null, updatedAt: new Date(),
+  }).where(eq(event.id, eventId))
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
 export async function getEvent(eventId: string) {
   await requireUser()
   const rows = await db.select().from(event).where(eq(event.id, eventId)).limit(1)

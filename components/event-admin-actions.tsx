@@ -1,8 +1,8 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Unlock, Trash2, MoreVertical, Loader2 } from "lucide-react"
+import { Unlock, Trash2, MoreVertical, Loader2, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -12,16 +12,20 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { unlockEvent, deleteEvent } from "@/app/actions/events"
+import { CreateEventDialog, type EventEditData } from "@/components/create-event-dialog"
 
 export function EventAdminActions({
   eventId,
   isLocked,
+  event,
 }: {
   eventId: string
   isLocked: boolean
+  event: EventEditData
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [editOpen, setEditOpen] = useState(false)
 
   function handleUnlock() {
     startTransition(async () => {
@@ -50,7 +54,8 @@ export function EventAdminActions({
   }
 
   return (
-    <DropdownMenu>
+    <>
+      <DropdownMenu>
       <DropdownMenuTrigger
         render={<Button variant="outline" size="icon" disabled={isPending} />}
       >
@@ -62,6 +67,10 @@ export function EventAdminActions({
         <span className="sr-only">Event actions</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuItem onClick={() => setEditOpen(true)}>
+          <Pencil className="size-4" />
+          Edit event
+        </DropdownMenuItem>
         {isLocked ? (
           <DropdownMenuItem onClick={handleUnlock}>
             <Unlock className="size-4" />
@@ -73,6 +82,13 @@ export function EventAdminActions({
           Delete event
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+      <CreateEventDialog
+        event={event}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        showTrigger={false}
+      />
+    </>
   )
 }

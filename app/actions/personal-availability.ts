@@ -50,7 +50,7 @@ export async function setPersonalAvailability(
   } else if (existing[0]) {
     await db
       .update(personalAvailability)
-      .set({ status })
+      .set({ status: status as PersonalAvailabilityStatus })
       .where(eq(personalAvailability.id, existing[0].id))
   } else if (status) {
     await db.insert(personalAvailability).values({
