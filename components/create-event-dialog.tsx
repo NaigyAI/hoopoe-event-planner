@@ -62,7 +62,7 @@ export function CreateEventDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create an event</DialogTitle>
+          <DialogTitle className="text-2xl">Create an event</DialogTitle>
           <DialogDescription>
             Set a date range for the team to mark their availability.
           </DialogDescription>
