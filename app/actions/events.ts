@@ -57,6 +57,7 @@ export async function listEvents() {
 export async function createEvent(input: {
   formats: string[]
   eventType: string
+  eventTypeDetail?: string
   description?: string
   location: string
   eventUrl?: string
@@ -69,8 +70,11 @@ export async function createEvent(input: {
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
+  const eventTypeDetail = input.eventTypeDetail?.trim()
   if (!formats.length || !eventType || !location)
     throw new Error("Format, event type, and location are required")
+  if (eventType === "other" && !eventTypeDetail)
+    throw new Error("Enter a name for the event type")
   if (!input.startDate) throw new Error("Start date is required")
   const endDate = input.endDate?.trim() || input.startDate
   if (endDate < input.startDate)
@@ -81,7 +85,7 @@ export async function createEvent(input: {
     rcq: "RCQ",
     regional: "RC",
     "pro-tour": "PT",
-    other: "Team event",
+    other: eventTypeDetail ?? "Other",
   }
   const formatLabel = formats.join("/")
   const title = `${formatLabel} ${eventTypeLabel[eventType] ?? eventType} - ${location}`

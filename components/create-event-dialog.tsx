@@ -25,6 +25,7 @@ export function CreateEventDialog() {
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   const [multiDay, setMultiDay] = useState(false)
+  const [eventType, setEventType] = useState("")
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -32,6 +33,7 @@ export function CreateEventDialog() {
     const payload = {
       formats: form.getAll("format").map(String),
       eventType: String(form.get("eventType") ?? ""),
+      eventTypeDetail: String(form.get("eventTypeDetail") ?? ""),
       description: String(form.get("description") ?? ""),
       location: String(form.get("location") ?? ""),
       eventUrl: String(form.get("eventUrl") ?? ""),
@@ -100,21 +102,37 @@ export function CreateEventDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="eventType">Event type</Label>
-            <Select name="eventType" required>
+            <Select
+              name="eventType"
+              required
+              value={eventType}
+              onValueChange={(value) => setEventType(value ?? "")}
+            >
               <SelectTrigger id="eventType" className="h-10 w-full">
                 <SelectValue
                   placeholder="Select event"
                   className="text-muted-foreground"
                 />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="training">Training session</SelectItem>
+              <SelectContent side="bottom" align="start" sideOffset={4}>
+                <SelectItem value="training">Training</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>
                 <SelectItem value="regional">RC</SelectItem>
                 <SelectItem value="pro-tour">PT</SelectItem>
-                <SelectItem value="other">Other team event</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
+            {eventType === "other" && (
+              <div className="space-y-2">
+                <Label htmlFor="eventTypeDetail">Event type name</Label>
+                <Input
+                  id="eventTypeDetail"
+                  name="eventTypeDetail"
+                  placeholder="Qualifier, meetup, league night…"
+                  required
+                />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
