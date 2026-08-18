@@ -7,7 +7,6 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { setRsvp, type RsvpStatus } from "@/app/actions/events"
 import { setGuestRsvp } from "@/app/actions/guest"
-import { formatFullDate } from "@/lib/dates"
 
 type Rsvp = { userId: string; userName: string; status: string }
 
@@ -106,11 +105,7 @@ export function AttendancePanel({
           Are you attending?
         </h2>
         <p className="text-sm text-muted-foreground">
-          The date is locked for{" "}
-          <span className="font-medium text-foreground">
-            {formatFullDate(lockedDate)}
-          </span>
-          . Let the team know if you&apos;ll be there.
+          Let the team know if you&apos;ll be there.
         </p>
       </div>
 
