@@ -115,7 +115,7 @@ export function CreateEventDialog() {
                 />
               </SelectTrigger>
               <SelectContent side="bottom" align="start" sideOffset={4}>
-                <SelectItem value="training">Practice</SelectItem>
+                <SelectItem value="practice">Practice</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="store-championship">Store Championship</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>

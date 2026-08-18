@@ -173,7 +173,7 @@ function GuestEventView({
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="border-primary/30 text-primary">
-            {event.eventType === "training"
+            {(event.eventType === "practice" || event.eventType === "training")
               ? "Practice"
               : event.eventType === "weekly"
                 ? "Weekly"

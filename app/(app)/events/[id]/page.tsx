@@ -89,7 +89,7 @@ export default async function EventPage({
               <Badge variant="secondary">Planning</Badge>
             )}
             <Badge variant="outline" className="border-primary/30 text-primary">
-              {event.eventType === "training"
+              {(event.eventType === "practice" || event.eventType === "training")
                 ? "Practice"
                 : event.eventType === "weekly"
                   ? "Weekly"

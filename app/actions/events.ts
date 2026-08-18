@@ -80,7 +80,9 @@ export async function createEvent(input: {
   if (endDate < input.startDate)
     throw new Error("End date must be on or after the start date")
 
+  const normalizedEventType = eventType === "training" ? "practice" : eventType
   const eventTypeLabel: Record<string, string> = {
+    practice: "Practice",
     training: "Practice",
     weekly: "Weekly",
     "store-championship": "Store Championship",
@@ -90,7 +92,7 @@ export async function createEvent(input: {
     other: eventTypeDetail ?? "Other",
   }
   const formatLabel = formats.join("/")
-  const title = `${formatLabel} ${eventTypeLabel[eventType] ?? eventType}`
+  const title = `${formatLabel} ${eventTypeLabel[normalizedEventType] ?? normalizedEventType}`
   const days = dateRange(input.startDate, endDate)
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
