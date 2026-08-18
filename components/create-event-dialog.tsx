@@ -78,6 +78,7 @@ export function CreateEventDialog() {
                 "Modern",
                 "Legacy",
                 "Limited",
+                "Commander",
               ].map((format) => (
                 <label
                   key={format}
