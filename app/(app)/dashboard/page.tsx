@@ -49,13 +49,6 @@ export default async function DashboardPage() {
             and keep the roster aligned when it is time to register.
           </p>
           </div>
-          <div className="w-full max-w-[220px] self-center sm:max-w-[250px] sm:self-auto">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
-              alt="Hoopoe Boys Miami team logo"
-              className="h-auto w-full"
-            />
-          </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-md sm:gap-3">
           <div className="rounded-xl bg-primary/70 p-3">
