@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CalendarDays, ExternalLink, MapPin, Users } from "lucide-react"
+import { CalendarDays, ExternalLink, Lock, MapPin, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { formatDateRange, formatTime } from "@/lib/dates"
