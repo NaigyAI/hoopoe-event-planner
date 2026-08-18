@@ -58,7 +58,7 @@ function StatusBadge({ status }: { status: string }) {
 export function EventCard({ event }: { event: EventSummary }) {
   return (
     <Link href={`/events/${event.id}`} className="group block">
-      <Card className="h-full p-5 transition-colors group-hover:border-primary/40">
+      <Card className="h-full gap-0 p-5 leading-[1.3] transition-colors group-hover:border-primary/40">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
             <Badge variant="outline" className="border-primary/30 text-primary">
