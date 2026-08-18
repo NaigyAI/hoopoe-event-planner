@@ -53,7 +53,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <CalendarCheck className="size-6" />
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-balance">
+        <h1 className="text-2xl font-semibold tracking-normal text-balance">
           {isSignUp ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
