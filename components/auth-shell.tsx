@@ -14,6 +14,13 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="max-w-md">
+          <div className="mb-8 w-full max-w-[260px] overflow-hidden rounded-xl bg-white p-2 shadow-md">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
+              alt="Hoopoe Boys Miami team logo"
+              className="h-auto w-full"
+            />
+          </div>
           <p className="text-2xl font-semibold leading-snug tracking-tight text-balance">
             Stop the back-and-forth. See everyone’s availability on one grid and
             lock in the day that works.
