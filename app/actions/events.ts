@@ -88,7 +88,7 @@ export async function createEvent(input: {
     other: eventTypeDetail ?? "Other",
   }
   const formatLabel = formats.join("/")
-  const title = `${formatLabel} ${eventTypeLabel[eventType] ?? eventType} - ${location}`
+  const title = `${formatLabel} ${eventTypeLabel[eventType] ?? eventType}`
   const days = dateRange(input.startDate, endDate)
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
