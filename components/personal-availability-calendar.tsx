@@ -55,9 +55,9 @@ export function PersonalAvailabilityCalendar({
       currentStatus === undefined
         ? "available"
         : currentStatus === "available"
-          ? "unavailable"
-          : currentStatus === "unavailable"
-            ? "maybe"
+          ? "maybe"
+          : currentStatus === "maybe"
+            ? "unavailable"
             : null
     setStatuses((current) => {
       const next = { ...current }
