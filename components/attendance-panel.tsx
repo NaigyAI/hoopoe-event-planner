@@ -102,7 +102,7 @@ export function AttendancePanel({
   return (
     <div className="space-y-5 rounded-xl border border-border bg-card p-5">
       <div className="space-y-1">
-        <h2 className="text-sm font-medium text-foreground">
+        <h2 className="text-lg font-medium text-foreground">
           Are you attending?
         </h2>
         <p className="text-sm text-muted-foreground">
