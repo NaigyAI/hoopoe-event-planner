@@ -64,7 +64,6 @@ export async function createEvent(input: {
   startDate: string
   endDate?: string
   startTime?: string
-  endTime?: string
 }) {
   const admin = await requireAdmin()
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
@@ -107,7 +106,7 @@ export async function createEvent(input: {
     startDate: input.startDate,
     endDate,
     startTime: input.startTime?.trim() || null,
-    endTime: input.endTime?.trim() || null,
+    endTime: null,
     status: "planning",
   })
 
