@@ -13,18 +13,18 @@ export function ShareEventButton({ token }: { token: string }) {
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
-      toast.success("Guest link copied to clipboard")
+      toast.success("Share link copied to clipboard")
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Fallback for browsers/iframes that block the async clipboard API
-      window.prompt("Copy this guest link:", url)
+      window.prompt("Copy this share link:", url)
     }
   }
 
   return (
     <Button variant="outline" className="gap-2" onClick={copy}>
       {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
-      {copied ? "Copied" : "Share guest link"}
+      {copied ? "Copied" : "Share link"}
     </Button>
   )
 }

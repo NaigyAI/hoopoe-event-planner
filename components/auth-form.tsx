@@ -12,7 +12,13 @@ import { CalendarCheck, Loader2 } from "lucide-react"
 
 type Mode = "sign-in" | "sign-up"
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({
+  mode,
+  returnTo,
+}: {
+  mode: Mode
+  returnTo?: string
+}) {
   const router = useRouter()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -34,7 +40,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
         const { error } = await authClient.signIn.email({ email, password })
         if (error) throw new Error(error.message ?? "Could not sign in")
       }
-      router.push("/dashboard")
+      const destination = returnTo?.startsWith("/") ? returnTo : "/dashboard"
+      router.push(destination)
       router.refresh()
     } catch (err) {
       setError(
@@ -136,7 +143,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isSignUp ? "Already have an account? " : "New to Hoopoe Event Planner? "}
         <Link
-          href={isSignUp ? "/sign-in" : "/sign-up"}
+          href={`${isSignUp ? "/sign-in" : "/sign-up"}${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
           className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           {isSignUp ? "Sign in" : "Create an account"}

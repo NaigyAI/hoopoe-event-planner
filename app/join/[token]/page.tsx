@@ -5,6 +5,8 @@ import {
   CalendarDays,
   ExternalLink,
   Lock,
+  LogIn,
+  UserRound,
   MapPin,
   Trophy,
   Users,
@@ -24,10 +26,10 @@ export default async function JoinPage({
   searchParams,
 }: {
   params: Promise<{ token: string }>
-  searchParams: Promise<{ edit?: string }>
+  searchParams: Promise<{ edit?: string; continue?: string }>
 }) {
   const { token } = await params
-  const { edit } = await searchParams
+  const { edit, continue: continueMode } = await searchParams
   const { event, votes, rsvps, guest } = await getGuestContext(token)
 
   if (!event) notFound()
@@ -49,7 +51,9 @@ export default async function JoinPage({
       </header>
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        {needsName ? (
+        {needsName && continueMode !== "guest" && edit !== "1" ? (
+          <JoinChoiceCard token={token} eventTitle={event.title} />
+        ) : needsName ? (
           <Card className="mx-auto max-w-md p-6 sm:p-8">
             <GuestJoinForm
               token={token}
@@ -69,6 +73,49 @@ export default async function JoinPage({
         )}
       </div>
     </main>
+  )
+}
+
+function JoinChoiceCard({
+  token,
+  eventTitle,
+}: {
+  token: string
+  eventTitle: string
+}) {
+  const returnTo = `/join/${token}`
+  const signInHref = `/sign-in?returnTo=${encodeURIComponent(returnTo)}`
+  const signUpHref = `/sign-up?returnTo=${encodeURIComponent(returnTo)}`
+
+  return (
+    <Card className="mx-auto max-w-md p-6 sm:p-8">
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Hoopoe team event</p>
+        <h1 className="text-2xl font-semibold tracking-normal text-balance">Choose how to respond</h1>
+        <p className="text-sm leading-6 text-muted-foreground">
+          You&apos;re viewing <span className="font-medium text-foreground">{eventTitle}</span>. Sign in to use your team account, or continue as a guest to share availability without an account.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-3">
+        <Link
+          href={signInHref}
+          className="flex min-h-12 items-center gap-3 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <LogIn className="size-4" />
+          Sign in to respond
+        </Link>
+        <Link
+          href={`/join/${token}?continue=guest`}
+          className="flex min-h-12 items-center gap-3 rounded-xl border border-border bg-card px-4 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <UserRound className="size-4 text-primary" />
+          Continue as a guest
+        </Link>
+      </div>
+      <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+        New to Hoopoe? <Link href={signUpHref} className="font-medium text-foreground underline-offset-4 hover:underline">Create an account</Link>
+      </p>
+    </Card>
   )
 }
 
