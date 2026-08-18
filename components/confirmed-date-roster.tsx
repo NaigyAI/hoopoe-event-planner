@@ -1,13 +1,10 @@
 import { Check, HelpCircle, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { formatFullDate } from "@/lib/dates"
-
-export function ConfirmedDateRoster({ date, people }: { date: string; people: { name: string; status: string }[] }) {
+export function ConfirmedDateRoster({ people }: { people: { name: string; status: string }[] }) {
   return (
     <section className="space-y-5 rounded-xl border border-border bg-card p-5">
       <div className="space-y-1">
-        <h2 className="text-lg font-medium text-foreground">Team availability</h2>
-        <p className="text-sm text-muted-foreground">Availability for {formatFullDate(date)}.</p>
+        <h2 className="text-lg font-medium text-foreground">Team members who shared their availability</h2>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {people.map((person) => {

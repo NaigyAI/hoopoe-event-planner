@@ -166,7 +166,7 @@ export default async function EventPage({
 
       {!isLocked && isAdmin ? <SuggestedDatePicker eventId={event.id} suggestions={suggestions} /> : null}
       {isLocked && event.lockedDate ? (
-        <ConfirmedDateRoster date={event.lockedDate} people={confirmedPeople} />
+        <ConfirmedDateRoster people={confirmedPeople} />
       ) : null}
 
       {/* Attendance / RSVP phase — only once a date is locked */}
