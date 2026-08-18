@@ -4,7 +4,7 @@ export function ConfirmedDateRoster({ people }: { people: { name: string; status
   return (
     <section className="space-y-5 rounded-xl border border-border bg-card p-5">
       <div className="space-y-1">
-        <h2 className="text-lg font-medium text-foreground">Team members who shared their availability</h2>
+        <h2 className="text-lg font-medium text-foreground">Team member available</h2>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         {people.map((person) => {
