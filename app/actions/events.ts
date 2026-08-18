@@ -55,7 +55,7 @@ export async function listEvents() {
 }
 
 export async function createEvent(input: {
-  format: string
+  formats: string[]
   eventType: string
   description?: string
   location: string
@@ -67,10 +67,10 @@ export async function createEvent(input: {
   endTime?: string
 }) {
   const admin = await requireAdmin()
-  const format = input.format.trim()
+  const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
-  if (!format || !eventType || !location)
+  if (!formats.length || !eventType || !location)
     throw new Error("Format, event type, and location are required")
   if (!input.startDate) throw new Error("Start date is required")
   const endDate = input.endDate?.trim() || input.startDate
@@ -84,7 +84,8 @@ export async function createEvent(input: {
     "pro-tour": "PT",
     other: "Team event",
   }
-  const title = `${format} ${eventTypeLabel[eventType] ?? eventType} - ${location}`
+  const formatLabel = formats.join("/")
+  const title = `${formatLabel} ${eventTypeLabel[eventType] ?? eventType} - ${location}`
   const days = dateRange(input.startDate, endDate)
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
@@ -93,7 +94,7 @@ export async function createEvent(input: {
   await db.insert(event).values({
     id,
     title,
-    format,
+    format: formatLabel,
     description: input.description?.trim() || null,
     location,
     eventType,

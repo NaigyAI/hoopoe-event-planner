@@ -29,7 +29,7 @@ export function CreateEventDialog() {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
     const payload = {
-      format: String(form.get("format") ?? ""),
+      formats: form.getAll("format").map(String),
       eventType: String(form.get("eventType") ?? ""),
       description: String(form.get("description") ?? ""),
       location: String(form.get("location") ?? ""),
@@ -71,18 +71,22 @@ export function CreateEventDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="format">Format</Label>
-              <Select name="format" required>
-                <SelectTrigger id="format" className="h-10 w-full">
-                  <SelectValue placeholder="Select format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Standard">Standard</SelectItem>
-                  <SelectItem value="Pioneer">Pioneer</SelectItem>
-                  <SelectItem value="Modern">Modern</SelectItem>
-                  <SelectItem value="Legacy">Legacy</SelectItem>
-                  <SelectItem value="Limited">Limited</SelectItem>
-                </SelectContent>
-              </Select>
+              <select
+                id="format"
+                name="format"
+                multiple
+                required
+                defaultValue={[]}
+                className="min-h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-describedby="format-hint"
+              >
+                <option value="Standard">Standard</option>
+                <option value="Pioneer">Pioneer</option>
+                <option value="Modern">Modern</option>
+                <option value="Legacy">Legacy</option>
+                <option value="Limited">Limited</option>
+              </select>
+              <p id="format-hint" className="text-xs text-muted-foreground">Select one or more formats.</p>
             </div>
             <div className="space-y-2">
             <Label htmlFor="eventType">Event type</Label>
