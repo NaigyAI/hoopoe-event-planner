@@ -2,6 +2,15 @@ import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
 import { Pool } from "pg"
 
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+
+// The very first person to sign up becomes the admin so the workspace
+// is usable out of the box. Everyone after them is a regular member.
+async function isFirstUser() {
+  const res = await pool.query('SELECT COUNT(*)::int AS count FROM "user"')
+  return (res.rows[0]?.count ?? 0) === 0
+}
+
 function getBaseURL() {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
@@ -33,9 +42,19 @@ function getTrustedOrigins() {
 export const auth = betterAuth({
   baseURL: getBaseURL(),
   trustedOrigins: getTrustedOrigins(),
-  database: new Pool({ connectionString: process.env.DATABASE_URL }),
+  database: pool,
   emailAndPassword: {
     enabled: true,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const first = await isFirstUser()
+          return { data: { ...user, role: first ? "admin" : "member" } }
+        },
+      },
+    },
   },
   user: {
     additionalFields: {

@@ -46,13 +46,13 @@ export function AppNav({ user }: { user: NavUser }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-15 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href="/dashboard"
           className="flex items-center gap-2 font-medium tracking-tight"
         >
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <CalendarCheck className="size-4.5" />
+            <CalendarCheck className="size-4" />
           </div>
           <span className="text-lg">RCQ Planner</span>
         </Link>

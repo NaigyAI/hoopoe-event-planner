@@ -8,7 +8,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="relative hidden flex-col justify-between overflow-hidden bg-primary p-10 text-primary-foreground lg:flex">
         <div className="flex items-center gap-2 font-medium">
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
-            <CalendarCheck className="size-4.5" />
+            <CalendarCheck className="size-4" />
           </div>
           <span className="text-lg tracking-tight">RCQ Planner</span>
         </div>
@@ -42,8 +42,14 @@ function MiniHeatmap() {
     [1, 3, 4, 5, 3],
   ]
   const shade = (v: number) => {
-    const opacities = ["/10", "/25", "/40", "/60", "/85"]
-    return `bg-primary-foreground${opacities[v - 1] ?? "/10"}`
+    const classes = [
+      "bg-primary-foreground/10",
+      "bg-primary-foreground/25",
+      "bg-primary-foreground/40",
+      "bg-primary-foreground/60",
+      "bg-primary-foreground/85",
+    ]
+    return classes[v - 1] ?? classes[0]
   }
   return (
     <div className="mt-8 inline-grid grid-cols-5 gap-1.5 rounded-xl bg-primary-foreground/5 p-3">

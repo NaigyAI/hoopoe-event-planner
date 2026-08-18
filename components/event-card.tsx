@@ -1,0 +1,82 @@
+import Link from "next/link"
+import { CalendarDays, MapPin, Users, Lock } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { formatDateRange, formatFullDate } from "@/lib/dates"
+
+export type EventSummary = {
+  id: string
+  title: string
+  location: string | null
+  startDate: string
+  endDate: string
+  lockedDate: string | null
+  status: string
+  createdByName: string
+  respondentCount: number
+}
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "locked") {
+    return (
+      <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
+        <Lock className="size-3" />
+        Locked
+      </Badge>
+    )
+  }
+  if (status === "cancelled") {
+    return (
+      <Badge variant="outline" className="text-muted-foreground">
+        Cancelled
+      </Badge>
+    )
+  }
+  return (
+    <Badge variant="secondary" className="gap-1">
+      Planning
+    </Badge>
+  )
+}
+
+export function EventCard({ event }: { event: EventSummary }) {
+  return (
+    <Link href={`/events/${event.id}`} className="group block">
+      <Card className="h-full p-5 transition-colors group-hover:border-primary/40">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-pretty font-semibold leading-tight text-foreground">
+            {event.title}
+          </h3>
+          <StatusBadge status={event.status} />
+        </div>
+
+        <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="size-4 shrink-0" />
+            <span>{formatDateRange(event.startDate, event.endDate)}</span>
+          </div>
+          {event.location ? (
+            <div className="flex items-center gap-2">
+              <MapPin className="size-4 shrink-0" />
+              <span className="truncate">{event.location}</span>
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <Users className="size-4 shrink-0" />
+            <span>
+              {event.respondentCount}{" "}
+              {event.respondentCount === 1 ? "response" : "responses"}
+            </span>
+          </div>
+        </dl>
+
+        {event.lockedDate ? (
+          <div className="mt-4 flex items-center gap-2 rounded-md bg-accent/10 px-3 py-2 text-sm font-medium text-accent-foreground">
+            <Lock className="size-3.5" />
+            <span>Confirmed for {formatFullDate(event.lockedDate)}</span>
+          </div>
+        ) : null}
+      </Card>
+    </Link>
+  )
+}

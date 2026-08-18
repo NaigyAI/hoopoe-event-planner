@@ -48,6 +48,21 @@ export function formatFullDate(iso: string): string {
   return `${WEEKDAY[d.getDay()]}, ${MONTH[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 }
 
+export function formatDateRange(startISO: string, endISO: string): string {
+  const s = parseISODate(startISO)
+  const e = parseISODate(endISO)
+  if (startISO === endISO) return formatFullDate(startISO)
+  const sameYear = s.getFullYear() === e.getFullYear()
+  const sameMonth = sameYear && s.getMonth() === e.getMonth()
+  if (sameMonth) {
+    return `${MONTH[s.getMonth()]} ${s.getDate()}–${e.getDate()}, ${e.getFullYear()}`
+  }
+  if (sameYear) {
+    return `${MONTH[s.getMonth()]} ${s.getDate()} – ${MONTH[e.getMonth()]} ${e.getDate()}, ${e.getFullYear()}`
+  }
+  return `${formatDayMonth(startISO)}, ${s.getFullYear()} – ${formatDayMonth(endISO)}, ${e.getFullYear()}`
+}
+
 export function isWeekend(iso: string): boolean {
   const day = parseISODate(iso).getDay()
   return day === 0 || day === 6
