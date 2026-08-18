@@ -13,7 +13,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -76,8 +75,8 @@ export function AppNav({ user }: { user: NavUser }) {
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="flex flex-col gap-1">
-              <span className="flex items-center gap-2">
+            <div className="flex flex-col gap-1 px-1.5 py-1">
+              <span className="flex items-center gap-2 text-sm font-medium">
                 {user.name}
                 {user.role === "admin" && (
                   <Badge variant="secondary" className="text-[10px]">
@@ -88,7 +87,7 @@ export function AppNav({ user }: { user: NavUser }) {
               <span className="text-xs font-normal text-muted-foreground">
                 {user.email}
               </span>
-            </DropdownMenuLabel>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem render={<Link href="/profile" />}>
               <User className="size-4" />
