@@ -23,21 +23,12 @@ export type EventSummary = {
   goingCount: number
 }
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
-  training: "Training",
-  rcq: "Regional Championship Qualifier",
-  regional: "Regional Championship",
-  "pro-tour": "Pro Tour",
-  travel: "Travel",
-  other: "Team event",
-}
-
 function StatusBadge({ status }: { status: string }) {
   if (status === "locked") {
     return (
       <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
         <Lock className="size-3" />
-        Locked
+        Finalized
       </Badge>
     )
   }
@@ -61,9 +52,6 @@ export function EventCard({ event }: { event: EventSummary }) {
       <Card className="h-full gap-0 p-5 leading-[1.3] transition-colors group-hover:border-primary/40">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
-            <Badge variant="outline" className="border-primary/30 text-primary">
-              {EVENT_TYPE_LABELS[event.eventType] ?? "Team event"}
-            </Badge>
             <h3 className="text-pretty text-[22px] font-medium leading-tight text-foreground">
               {event.title}
             </h3>

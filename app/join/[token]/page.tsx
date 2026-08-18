@@ -191,7 +191,7 @@ function GuestEventView({
           {isLocked ? (
             <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
               <Lock className="size-3" />
-              Locked
+              Finalized
             </Badge>
           ) : (
             <Badge variant="secondary">Planning</Badge>

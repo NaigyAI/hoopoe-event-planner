@@ -72,7 +72,7 @@ export default async function DashboardPage() {
           </div>
           <div className="rounded-xl bg-accent p-3 text-accent-foreground">
             <p className="text-2xl font-bold">{lockedCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide">Locked</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide">Finalized</p>
           </div>
         </div>
       </section>
