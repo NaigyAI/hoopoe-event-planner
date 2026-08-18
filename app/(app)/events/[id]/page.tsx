@@ -3,6 +3,9 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Trophy, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
+import { getSuggestedDates } from "@/app/actions/personal-availability"
+import { SuggestedDatePicker } from "@/components/suggested-date-picker"
+import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
 import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
@@ -29,6 +32,12 @@ export default async function EventPage({
 
   const isAdmin = user?.role === "admin"
   const isLocked = event.status === "locked"
+  const suggestions = !isLocked ? await getSuggestedDates(event.startDate, event.endDate ?? event.startDate) : []
+  const confirmedPeople = event.lockedDate
+    ? votes
+        .filter((vote) => vote.date === event.lockedDate)
+        .map((vote) => ({ name: vote.userName, status: vote.status }))
+    : []
   const days = dateRange(event.startDate, event.endDate ?? event.startDate)
 
   // Distinct respondents across the whole event
@@ -183,6 +192,11 @@ export default async function EventPage({
         </div>
       ) : null}
 
+      {!isLocked && isAdmin ? <SuggestedDatePicker eventId={event.id} suggestions={suggestions} /> : null}
+      {isLocked && event.lockedDate ? (
+        <ConfirmedDateRoster date={event.lockedDate} people={confirmedPeople} />
+      ) : null}
+
       {/* Attendance / RSVP phase — only once a date is locked */}
       {isLocked && event.lockedDate ? (
         <AttendancePanel
@@ -194,8 +208,7 @@ export default async function EventPage({
         />
       ) : null}
 
-      {/* Grid */}
-      <section className="space-y-3">
+      {!isLocked ? <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">
             {isLocked ? "How the date was chosen" : "Mark your availability"}
@@ -222,7 +235,7 @@ export default async function EventPage({
           isAdmin={isAdmin}
           isLocked={isLocked}
         />
-      </section>
+      </section> : null}
     </div>
   )
 }

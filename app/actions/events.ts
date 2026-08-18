@@ -132,6 +132,16 @@ export async function createEvent(input: {
   return { id }
 }
 
+export async function confirmEventDate(eventId: string, date: string) {
+  await requireAdmin()
+  const ev = await getEvent(eventId)
+  if (!ev) throw new Error("Event not found")
+  await db.update(event).set({ startDate: date, endDate: date, lockedDate: null, status: "planning", updatedAt: new Date() }).where(eq(event.id, eventId))
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
 export async function updateEvent(eventId: string, input: {
   formats: string[]
   eventType: string

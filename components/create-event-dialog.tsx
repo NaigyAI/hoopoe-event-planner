@@ -96,7 +96,7 @@ export function CreateEventDialog({
         <DialogHeader>
           <DialogTitle className="text-2xl">{event ? "Edit event" : "Create an event"}</DialogTitle>
           <DialogDescription>
-            Set a date range for the team to mark their availability.
+            Choose a confirmed date for the event.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
