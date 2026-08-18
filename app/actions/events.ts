@@ -55,24 +55,37 @@ export async function listEvents() {
 }
 
 export async function createEvent(input: {
-  title: string
-  eventType?: string
+  format: string
+  eventType: string
   description?: string
-  location?: string
+  location: string
   eventUrl?: string
   travelDetails?: string
   startDate: string
-  endDate: string
+  endDate?: string
+  startTime?: string
+  endTime?: string
 }) {
   const admin = await requireAdmin()
-  const title = input.title.trim()
-  if (!title) throw new Error("Title is required")
-  if (!input.startDate || !input.endDate)
-    throw new Error("Start and end dates are required")
-  if (input.endDate < input.startDate)
+  const format = input.format.trim()
+  const eventType = input.eventType.trim()
+  const location = input.location.trim()
+  if (!format || !eventType || !location)
+    throw new Error("Format, event type, and location are required")
+  if (!input.startDate) throw new Error("Start date is required")
+  const endDate = input.endDate?.trim() || input.startDate
+  if (endDate < input.startDate)
     throw new Error("End date must be on or after the start date")
 
-  const days = dateRange(input.startDate, input.endDate)
+  const eventTypeLabel: Record<string, string> = {
+    training: "Training",
+    rcq: "RCQ",
+    regional: "RC",
+    "pro-tour": "PT",
+    other: "Team event",
+  }
+  const title = `${format} ${eventTypeLabel[eventType] ?? eventType} - ${location}`
+  const days = dateRange(input.startDate, endDate)
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
   const id = randomUUID()
@@ -80,16 +93,20 @@ export async function createEvent(input: {
   await db.insert(event).values({
     id,
     title,
+    format,
     description: input.description?.trim() || null,
-    location: input.location?.trim() || null,
-    eventType: input.eventType?.trim() || "rcq",
+    location,
+    eventType,
+
     eventUrl: input.eventUrl?.trim() || null,
     travelDetails: input.travelDetails?.trim() || null,
     createdBy: admin.id,
     createdByName: admin.name,
     shareToken,
     startDate: input.startDate,
-    endDate: input.endDate,
+    endDate,
+    startTime: input.startTime?.trim() || null,
+    endTime: input.endTime?.trim() || null,
     status: "planning",
   })
 

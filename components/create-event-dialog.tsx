@@ -29,14 +29,16 @@ export function CreateEventDialog() {
     e.preventDefault()
     const form = new FormData(e.currentTarget)
     const payload = {
-      title: String(form.get("title") ?? ""),
-      eventType: String(form.get("eventType") ?? "rcq"),
+      format: String(form.get("format") ?? ""),
+      eventType: String(form.get("eventType") ?? ""),
       description: String(form.get("description") ?? ""),
       location: String(form.get("location") ?? ""),
       eventUrl: String(form.get("eventUrl") ?? ""),
       travelDetails: String(form.get("travelDetails") ?? ""),
       startDate: String(form.get("startDate") ?? ""),
       endDate: String(form.get("endDate") ?? ""),
+      startTime: String(form.get("startTime") ?? ""),
+      endTime: String(form.get("endTime") ?? ""),
     }
     setPending(true)
     try {
@@ -66,11 +68,23 @@ export function CreateEventDialog() {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" name="title" placeholder="Q3 Planning Offsite" required />
-          </div>
-          <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="format">Format</Label>
+              <Select name="format" required>
+                <SelectTrigger id="format" className="h-10 w-full">
+                  <SelectValue placeholder="Select format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Standard">Standard</SelectItem>
+                  <SelectItem value="Pioneer">Pioneer</SelectItem>
+                  <SelectItem value="Modern">Modern</SelectItem>
+                  <SelectItem value="Legacy">Legacy</SelectItem>
+                  <SelectItem value="Limited">Limited</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
             <Label htmlFor="eventType">Event type</Label>
             <Select name="eventType" required>
               <SelectTrigger id="eventType" className="h-10 w-full">
@@ -84,14 +98,14 @@ export function CreateEventDialog() {
                 <SelectItem value="rcq">RCQ</SelectItem>
                 <SelectItem value="regional">RC</SelectItem>
                 <SelectItem value="pro-tour">PT</SelectItem>
-                <SelectItem value="travel">Travel / logistics</SelectItem>
                 <SelectItem value="other">Other team event</SelectItem>
               </SelectContent>
             </Select>
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="location">Location (optional)</Label>
-            <Input id="location" name="location" placeholder="Miami, FL" />
+            <Label htmlFor="location">Location</Label>
+            <Input id="location" name="location" placeholder="Miami, FL" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -99,8 +113,18 @@ export function CreateEventDialog() {
               <Input id="startDate" name="startDate" type="date" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">End date</Label>
-              <Input id="endDate" name="endDate" type="date" required />
+              <Label htmlFor="endDate">End date (optional)</Label>
+              <Input id="endDate" name="endDate" type="date" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startTime">Start time (optional)</Label>
+              <Input id="startTime" name="startTime" type="time" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endTime">End time (optional)</Label>
+              <Input id="endTime" name="endTime" type="time" />
             </div>
           </div>
           <div className="space-y-2">

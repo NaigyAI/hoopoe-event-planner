@@ -136,7 +136,7 @@ function GuestEventView({
 }) {
   if (!event) return null
   const isLocked = event.status === "locked"
-  const days = dateRange(event.startDate, event.endDate)
+  const days = dateRange(event.startDate, event.endDate ?? event.startDate)
   const scopedId = `guest:${guestId}`
 
   const totalRespondents = new Set(votes.map((v) => v.userId)).size
@@ -200,7 +200,8 @@ function GuestEventView({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <CalendarDays className="size-4" />
-            {formatDateRange(event.startDate, event.endDate)}
+            {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
+            {event.startTime ? ` · ${event.startTime}${event.endTime ? `–${event.endTime}` : ""}` : ""}
           </span>
           {event.location ? (
             <span className="flex items-center gap-1.5">

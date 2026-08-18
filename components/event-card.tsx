@@ -7,12 +7,15 @@ import { formatDateRange, formatFullDate } from "@/lib/dates"
 export type EventSummary = {
   id: string
   title: string
+  format: string
   eventType: string
   eventUrl: string | null
   travelDetails: string | null
   location: string | null
   startDate: string
-  endDate: string
+  endDate: string | null
+  startTime: string | null
+  endTime: string | null
   lockedDate: string | null
   status: string
   createdByName: string
@@ -71,7 +74,10 @@ export function EventCard({ event }: { event: EventSummary }) {
         <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <CalendarDays className="size-4 shrink-0" />
-            <span>{formatDateRange(event.startDate, event.endDate)}</span>
+            <span>
+              {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
+              {event.startTime ? ` · ${event.startTime}${event.endTime ? `–${event.endTime}` : ""}` : ""}
+            </span>
           </div>
           {event.location ? (
             <div className="flex items-center gap-2">
