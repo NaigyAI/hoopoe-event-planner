@@ -90,7 +90,7 @@ export default async function EventPage({
                         ? "RCQ"
                         : "Team event"}
             </Badge>
-            <h1 className="text-2xl font-semibold tracking-tight text-balance">
+            <h1 className="text-2xl font-medium tracking-normal text-balance">
               {event.title}
             </h1>
             {isLocked ? (
