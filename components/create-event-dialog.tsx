@@ -109,10 +109,24 @@ export function CreateEventDialog() {
               onValueChange={(value) => setEventType(value ?? "")}
             >
               <SelectTrigger id="eventType" className="h-10 w-full">
-                <SelectValue
-                  placeholder="select event"
-                  className="text-muted-foreground"
-                />
+                {eventType ? (
+                  <span className="flex flex-1 text-left">
+                    {{
+                      practice: "Practice",
+                      weekly: "Weekly",
+                      "store-championship": "Store Championship",
+                      rcq: "RCQ",
+                      regional: "RC",
+                      "pro-tour": "PT",
+                      other: "Other",
+                    }[eventType] ?? "select event"}
+                  </span>
+                ) : (
+                  <SelectValue
+                    placeholder="select event"
+                    className="text-muted-foreground"
+                  />
+                )}
               </SelectTrigger>
               <SelectContent side="bottom" align="start" sideOffset={4}>
                 <SelectItem value="practice">Practice</SelectItem>
