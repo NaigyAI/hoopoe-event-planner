@@ -59,7 +59,7 @@ export function PersonalAvailabilityCalendar({
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Your availability</h2>
+          <h2 className="text-xl font-medium tracking-normal">Your availability</h2>
           <p className="text-sm text-muted-foreground">Tap a date to mark yourself available or unavailable.</p>
         </div>
         <div className="flex items-center gap-1">
