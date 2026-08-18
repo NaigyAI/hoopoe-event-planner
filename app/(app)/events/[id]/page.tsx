@@ -7,6 +7,7 @@ import { getSessionUser } from "@/lib/session"
 import { dateRange, formatDateRange, formatFullDate } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { EventAdminActions } from "@/components/event-admin-actions"
+import { ShareEventButton } from "@/components/share-event-button"
 
 export const dynamic = "force-dynamic"
 
@@ -109,9 +110,12 @@ export default async function EventPage({
           ) : null}
         </div>
 
-        {isAdmin ? (
-          <EventAdminActions eventId={event.id} isLocked={isLocked} />
-        ) : null}
+        <div className="flex items-center gap-2">
+          <ShareEventButton token={event.shareToken} />
+          {isAdmin ? (
+            <EventAdminActions eventId={event.id} isLocked={isLocked} />
+          ) : null}
+        </div>
       </div>
 
       {/* Highlight banner */}

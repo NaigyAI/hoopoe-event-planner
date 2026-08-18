@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { setAvailability, lockDate, type AvailabilityStatus } from "@/app/actions/events"
+import { setGuestAvailability } from "@/app/actions/guest"
 import { formatWeekday, formatDayMonth, isWeekend } from "@/lib/dates"
 
 export type DateTally = {
@@ -49,6 +50,8 @@ export function AvailabilityGrid({
   lockedDate,
   isAdmin,
   isLocked,
+  variant = "member",
+  token,
 }: {
   eventId: string
   tallies: DateTally[]
@@ -57,6 +60,8 @@ export function AvailabilityGrid({
   lockedDate: string | null
   isAdmin: boolean
   isLocked: boolean
+  variant?: "member" | "guest"
+  token?: string
 }) {
   const router = useRouter()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
@@ -68,7 +73,11 @@ export function AvailabilityGrid({
     setPendingDate(date)
     startTransition(async () => {
       try {
-        await setAvailability({ eventId, date, status })
+        if (variant === "guest" && token) {
+          await setGuestAvailability({ token, date, status })
+        } else {
+          await setAvailability({ eventId, date, status })
+        }
         router.refresh()
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Could not save your vote")

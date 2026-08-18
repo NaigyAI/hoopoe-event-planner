@@ -60,6 +60,7 @@ export async function createEvent(input: {
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
   const id = randomUUID()
+  const shareToken = randomUUID().replace(/-/g, "")
   await db.insert(event).values({
     id,
     title,
@@ -67,6 +68,7 @@ export async function createEvent(input: {
     location: input.location?.trim() || null,
     createdBy: admin.id,
     createdByName: admin.name,
+    shareToken,
     startDate: input.startDate,
     endDate: input.endDate,
     status: "planning",

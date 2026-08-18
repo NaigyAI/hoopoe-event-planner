@@ -71,6 +71,7 @@ export const event = pgTable("event", {
   location: text("location"),
   createdBy: text("createdBy").notNull(),
   createdByName: text("createdByName").notNull(),
+  shareToken: text("shareToken").notNull(),
   startDate: date("startDate").notNull(),
   endDate: date("endDate").notNull(),
   lockedDate: date("lockedDate"),
