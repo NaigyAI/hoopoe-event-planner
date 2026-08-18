@@ -134,7 +134,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {isSignUp ? "Already have an account? " : "New to Hoopoe Event Planner? "}
+        {isSignUp ? "Already have an account? " : "New to RCQ Planner? "}
         <Link
           href={isSignUp ? "/sign-in" : "/sign-up"}
           className="font-medium text-foreground underline-offset-4 hover:underline"

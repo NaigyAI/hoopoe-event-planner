@@ -10,7 +10,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
             <CalendarCheck className="size-4" />
           </div>
-          <span className="text-lg tracking-tight">Hoopoe Event Planner</span>
+          <span className="text-lg tracking-tight">RCQ Planner</span>
         </div>
 
         <div className="max-w-md">

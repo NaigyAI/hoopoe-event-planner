@@ -30,7 +30,7 @@ export async function notifyEventCreated(opts: {
       sendEmail({
         to: r.email,
         subject: `New event to plan: ${opts.eventTitle}`,
-        body: `${opts.creatorName} created "${opts.eventTitle}". Add your availability in Hoopoe Event Planner.`,
+        body: `${opts.creatorName} created "${opts.eventTitle}". Add your availability in RCQ Planner.`,
       }),
     ),
   )

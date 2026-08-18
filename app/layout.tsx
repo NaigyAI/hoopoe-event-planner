@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Hoopoe Event Planner — Find the day that works for everyone',
+  title: 'RCQ Planner — Find the day that works for everyone',
   description:
-    'Hoopoe Event Planner helps teams pick the best day to meet. Create an event, gather everyone’s availability, and lock in the winning date.',
+    'RCQ Planner helps teams pick the best day to meet. Create an event, gather everyone’s availability, and lock in the winning date.',
   generator: 'v0.app',
 }
 

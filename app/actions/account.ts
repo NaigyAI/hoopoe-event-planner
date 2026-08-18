@@ -45,7 +45,7 @@ export async function requestPasswordReset(email: string) {
   if (rows[0]) {
     await sendEmail({
       to: rows[0].email,
-      subject: "Reset your Hoopoe Event Planner password",
+      subject: "Reset your RCQ Planner password",
       body: `Hi ${rows[0].name}, use this link to reset your password: [reset link stub].`,
     })
   }
