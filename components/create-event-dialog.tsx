@@ -50,11 +50,9 @@ export function CreateEventDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="size-4" />
-          New event
-        </Button>
+      <DialogTrigger render={<Button className="gap-2" />}>
+        <Plus className="size-4" />
+        New event
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

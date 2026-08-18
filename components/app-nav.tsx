@@ -58,20 +58,22 @@ export function AppNav({ user }: { user: NavUser }) {
         </Link>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-auto gap-2 py-1.5 pl-1.5 pr-2.5"
-            >
-              <Avatar className="size-7">
-                <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
-                  {initials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden text-sm font-medium sm:inline">
-                {user.name}
-              </span>
-            </Button>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                className="h-auto gap-2 py-1.5 pl-1.5 pr-2.5"
+              />
+            }
+          >
+            <Avatar className="size-7">
+              <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+                {initials(user.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="hidden text-sm font-medium sm:inline">
+              {user.name}
+            </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="flex flex-col gap-1">
@@ -88,11 +90,9 @@ export function AppNav({ user }: { user: NavUser }) {
               </span>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/profile">
-                <User className="size-4" />
-                Profile & settings
-              </Link>
+            <DropdownMenuItem render={<Link href="/profile" />}>
+              <User className="size-4" />
+              Profile &amp; settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} variant="destructive">

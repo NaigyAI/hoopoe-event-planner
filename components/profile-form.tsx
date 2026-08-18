@@ -79,7 +79,7 @@ export function ProfileForm({
         </form>
       </Card>
 
-      <Card className="flex items-center justify-between gap-4 p-6">
+      <Card className="flex flex-row items-center justify-between gap-4 p-6">
         <div className="space-y-1">
           <Label htmlFor="notify" className="text-base">
             Email notifications

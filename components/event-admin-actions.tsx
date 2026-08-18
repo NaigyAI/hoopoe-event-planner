@@ -51,15 +51,15 @@ export function EventAdminActions({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" disabled={isPending}>
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <MoreVertical className="size-4" />
-          )}
-          <span className="sr-only">Event actions</span>
-        </Button>
+      <DropdownMenuTrigger
+        render={<Button variant="outline" size="icon" disabled={isPending} />}
+      >
+        {isPending ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <MoreVertical className="size-4" />
+        )}
+        <span className="sr-only">Event actions</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
         {isLocked ? (
