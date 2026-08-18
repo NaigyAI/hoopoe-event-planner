@@ -2,7 +2,7 @@ import Link from "next/link"
 import { CalendarDays, ExternalLink, MapPin, Users, Lock } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { formatDateRange, formatFullDate } from "@/lib/dates"
+import { formatDateRange, formatFullDate, formatTime } from "@/lib/dates"
 
 export type EventSummary = {
   id: string
@@ -76,7 +76,7 @@ export function EventCard({ event }: { event: EventSummary }) {
             <CalendarDays className="size-4 shrink-0" />
             <span>
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
-              {event.startTime ? ` · ${event.startTime}${event.endTime ? `–${event.endTime}` : ""}` : ""}
+              {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
           </div>
           {event.location ? (

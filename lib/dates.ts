@@ -63,6 +63,17 @@ export function formatDateRange(startISO: string, endISO: string): string {
   return `${formatDayMonth(startISO)}, ${s.getFullYear()} – ${formatDayMonth(endISO)}, ${e.getFullYear()}`
 }
 
+/** Format a 24-hour "HH:MM" time string as a 12-hour AM/PM label. */
+export function formatTime(time: string): string {
+  const [hStr, mStr] = time.split(":")
+  const h = Number(hStr)
+  const m = Number(mStr)
+  if (Number.isNaN(h) || Number.isNaN(m)) return time
+  const period = h >= 12 ? "PM" : "AM"
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  return `${hour12}:${String(m).padStart(2, "0")} ${period}`
+}
+
 export function isWeekend(iso: string): boolean {
   const day = parseISODate(iso).getDay()
   return day === 0 || day === 6

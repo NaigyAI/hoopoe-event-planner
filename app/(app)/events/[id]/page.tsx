@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Trophy, Users } fr
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
-import { dateRange, formatDateRange, formatFullDate } from "@/lib/dates"
+import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
@@ -106,7 +106,7 @@ export default async function EventPage({
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" />
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
-              {event.startTime ? ` · ${event.startTime}${event.endTime ? `–${event.endTime}` : ""}` : ""}
+              {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
             {event.location ? (
               <span className="flex items-center gap-1.5">
