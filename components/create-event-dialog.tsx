@@ -110,7 +110,7 @@ export function CreateEventDialog() {
             >
               <SelectTrigger id="eventType" className="h-10 w-full">
                 <SelectValue
-                  placeholder="Select event"
+                  placeholder="select event"
                   className="text-muted-foreground"
                 />
               </SelectTrigger>
