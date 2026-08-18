@@ -70,9 +70,9 @@ export default async function DashboardPage() {
             <p className="text-2xl font-bold">{planningCount}</p>
             <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Planning</p>
           </div>
-          <div className="rounded-xl bg-accent p-3 text-accent-foreground">
-            <p className="text-2xl font-bold">{lockedCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide">Finalized</p>
+          <div className="rounded-xl bg-accent p-3 text-white">
+            <p className="text-2xl font-bold text-white">{lockedCount}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white">Finalized</p>
           </div>
         </div>
       </section>
