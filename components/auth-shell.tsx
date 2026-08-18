@@ -22,8 +22,8 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             />
           </div>
           <p className="text-2xl font-semibold leading-snug tracking-tight text-balance">
-            Stop the back-and-forth. See everyone’s availability on one grid and
-            lock in the day that works.
+            Stop holding priority on your plans. Pull up the grid, see who&apos;s
+            untapped, and lock in the day.
           </p>
         </div>
 
