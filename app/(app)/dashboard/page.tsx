@@ -75,7 +75,7 @@ export default async function DashboardPage() {
           <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">
             {isAdmin
-              ? "Build the next practice, qualifier, regional, or travel plan."
+              ? "Build the next practice, qualifier, RC, PT, or travel plan."
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
             [Swords, "Training", "Schedule reps and testing"],
             [Trophy, "RCQs", "Lock the best date"],
             [Plane, "Travel", "Coordinate the trip"],
-            [Dumbbell, "PT", "Stay ready for the call"],
+            [Dumbbell, "RC + PT", "Stay ready for the call"],
           ].map(([Icon, title, copy]) => {
             const QuickIcon = Icon as typeof Swords
             return (
