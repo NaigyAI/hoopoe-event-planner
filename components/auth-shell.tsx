@@ -14,7 +14,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="max-w-md">
-          <div className="mb-8 w-full max-w-[260px] overflow-hidden rounded-xl bg-white p-2 shadow-md">
+          <div className="mb-8 w-full max-w-[260px]">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
               alt="Hoopoe Boys Miami team logo"
@@ -25,7 +25,6 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             Stop the back-and-forth. See everyone’s availability on one grid and
             lock in the day that works.
           </p>
-          <MiniHeatmap />
         </div>
 
         <p className="text-sm text-primary-foreground/70">
@@ -37,38 +36,6 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       <div className="flex items-center justify-center p-6 sm:p-10">
         {children}
       </div>
-    </div>
-  )
-}
-
-function MiniHeatmap() {
-  // Static decorative preview of the availability heatmap concept.
-  const rows = [
-    [3, 4, 5, 2, 1],
-    [2, 5, 5, 4, 2],
-    [1, 3, 4, 5, 3],
-  ]
-  const shade = (v: number) => {
-    const classes = [
-      "bg-primary-foreground/10",
-      "bg-primary-foreground/25",
-      "bg-primary-foreground/40",
-      "bg-primary-foreground/60",
-      "bg-primary-foreground/85",
-    ]
-    return classes[v - 1] ?? classes[0]
-  }
-  return (
-    <div className="mt-8 inline-grid grid-cols-5 gap-1.5 rounded-xl bg-primary-foreground/5 p-3">
-      {rows.flatMap((row, ri) =>
-        row.map((v, ci) => (
-          <div
-            key={`${ri}-${ci}`}
-            className={`size-8 rounded-md ${shade(v)}`}
-            aria-hidden="true"
-          />
-        )),
-      )}
     </div>
   )
 }
