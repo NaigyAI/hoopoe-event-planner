@@ -33,7 +33,8 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6 sm:space-y-8">
       <section className="overflow-hidden rounded-2xl bg-secondary px-5 py-6 text-secondary-foreground shadow-sm sm:px-8 sm:py-8">
-        <div className="max-w-2xl">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <div className="max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
             Hoopoe Boys team command center
           </p>
@@ -44,6 +45,14 @@ export default async function DashboardPage() {
             Plan training sessions, find the best RCQ date, coordinate travel,
             and keep the roster aligned when it is time to register.
           </p>
+          </div>
+          <div className="w-full max-w-[220px] self-center overflow-hidden rounded-xl bg-white p-2 shadow-md sm:max-w-[250px] sm:self-auto">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
+              alt="Hoopoe Boys Miami team logo"
+              className="h-auto w-full"
+            />
+          </div>
         </div>
         <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-md sm:gap-3">
           <div className="rounded-xl bg-primary/70 p-3">
