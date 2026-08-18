@@ -61,7 +61,7 @@ export function EventCard({ event }: { event: EventSummary }) {
             <Badge variant="outline" className="border-primary/30 text-primary">
               {EVENT_TYPE_LABELS[event.eventType] ?? "Team event"}
             </Badge>
-            <h3 className="text-pretty font-semibold leading-tight text-foreground">
+            <h3 className="text-pretty text-[22px] font-medium leading-tight text-foreground">
               {event.title}
             </h3>
           </div>
