@@ -178,7 +178,7 @@ function GuestEventView({
               : event.eventType === "regional"
                 ? "Regional Championship"
                 : event.eventType === "training"
-                  ? "Training session"
+                  ? "Practice"
                   : event.eventType === "travel"
                     ? "Travel / logistics"
                     : event.eventType === "rcq"

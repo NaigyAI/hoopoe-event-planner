@@ -81,7 +81,7 @@ export async function createEvent(input: {
     throw new Error("End date must be on or after the start date")
 
   const eventTypeLabel: Record<string, string> = {
-    training: "Training",
+    training: "Practice",
     rcq: "Regional Championship Qualifier",
     regional: "Regional Championship",
     "pro-tour": "Pro Tour",

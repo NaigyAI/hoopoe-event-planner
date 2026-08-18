@@ -95,7 +95,7 @@ export default async function DashboardPage() {
       {active.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            [Swords, "Training", "Schedule reps and testing"],
+            [Swords, "Practice", "Schedule reps and testing"],
             [Trophy, "RCQs", "Lock the best date"],
             [Plane, "Travel", "Coordinate the trip"],
             [Dumbbell, "RC + PT", "Stay ready for the call"],
