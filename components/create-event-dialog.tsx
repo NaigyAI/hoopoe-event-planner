@@ -118,7 +118,7 @@ export function CreateEventDialog() {
                 <SelectItem value="training">Practice</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>
                 <SelectItem value="regional">Regional Championship</SelectItem>
-                <SelectItem value="pro-tour">PT</SelectItem>
+                <SelectItem value="pro-tour">Pro Tour</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>

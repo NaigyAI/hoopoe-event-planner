@@ -84,7 +84,7 @@ export async function createEvent(input: {
     training: "Training",
     rcq: "RCQ",
     regional: "Regional Championship",
-    "pro-tour": "PT",
+    "pro-tour": "Pro Tour",
     other: eventTypeDetail ?? "Other",
   }
   const formatLabel = formats.join("/")
