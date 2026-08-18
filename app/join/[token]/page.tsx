@@ -40,7 +40,7 @@ export default async function JoinPage({
           <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <CalendarCheck className="size-4" />
           </span>
-          <span className="font-semibold tracking-tight">RCQ Planner</span>
+          <span className="font-semibold tracking-tight">Hoopoe Event Planner</span>
           <Badge variant="secondary" className="ml-1 text-[10px]">
             Guest
           </Badge>

@@ -53,7 +53,7 @@ export function AppNav({ user }: { user: NavUser }) {
           <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <CalendarCheck className="size-4" />
           </div>
-          <span className="text-lg">RCQ Planner</span>
+          <span className="text-lg">Hoopoe Event Planner</span>
         </Link>
 
         <DropdownMenu>
