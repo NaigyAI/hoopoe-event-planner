@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { createEvent, updateEvent } from "@/app/actions/events"
 
@@ -56,6 +57,7 @@ export function CreateEventDialog({
   const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
   const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
+  const [recurrenceWeekday, setRecurrenceWeekday] = useState(String(event?.recurrenceWeekday ?? new Date().getDay()))
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -220,22 +222,31 @@ export function CreateEventDialog({
             )}
           </div>
           <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
-            <Label htmlFor="recurrenceType">Repeat event</Label>
-            <Select name="recurrenceType" value={recurrenceType} onValueChange={(value) => setRecurrenceType(value ?? "none")}>
-              <SelectTrigger id="recurrenceType" className="h-10 w-full">
-                <SelectValue placeholder="Does not repeat" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Does not repeat</SelectItem>
-                <SelectItem value="weekly">Every week</SelectItem>
-                <SelectItem value="monthly">Every month</SelectItem>
-              </SelectContent>
-            </Select>
+            <input type="hidden" name="recurrenceType" value={recurrenceType} />
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="recurrenceToggle">This is a repeated event</Label>
+              <Switch
+                id="recurrenceToggle"
+                checked={recurrenceType !== "none"}
+                onCheckedChange={(checked) => setRecurrenceType(checked ? "weekly" : "none")}
+              />
+            </div>
+            {recurrenceType !== "none" ? (
+              <Select value={recurrenceType} onValueChange={(value) => setRecurrenceType(value ?? "weekly")}>
+                <SelectTrigger className="h-10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Every week</SelectItem>
+                  <SelectItem value="monthly">Every month</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : null}
             {recurrenceType !== "none" ? (
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="recurrenceWeekday">On</Label>
-                  <Select name="recurrenceWeekday" defaultValue={String(event?.recurrenceWeekday ?? 0)}>
+                  <Select name="recurrenceWeekday" value={recurrenceWeekday} onValueChange={(value) => setRecurrenceWeekday(value ?? "0")}>
                     <SelectTrigger id="recurrenceWeekday" className="h-10 w-full"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => (
