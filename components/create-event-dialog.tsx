@@ -92,14 +92,14 @@ export function CreateEventDialog({
           {event ? "Edit event" : "New event"}
         </DialogTrigger>
       ) : null}
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-2xl">{event ? "Edit event" : "Create an event"}</DialogTitle>
           <DialogDescription>
             Choose a confirmed date for the event.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="min-h-0 space-y-4 overflow-y-auto pr-1">
           <div className="space-y-2">
             <Label htmlFor="format">Format</Label>
             <fieldset className="grid gap-2 sm:grid-cols-2" aria-describedby="format-hint">
@@ -229,6 +229,7 @@ export function CreateEventDialog({
               name="description"
               placeholder="Format, entry, decklists, qualification, or practice goals…"
               rows={3}
+              className="h-24 resize-none overflow-y-auto"
               defaultValue={event?.description ?? ""}
             />
           </div>
@@ -239,6 +240,7 @@ export function CreateEventDialog({
               name="travelDetails"
               placeholder="Flights, hotel, carpool, meetup point…"
               rows={2}
+              className="h-24 resize-none overflow-y-auto"
               defaultValue={event?.travelDetails ?? ""}
             />
           </div>
