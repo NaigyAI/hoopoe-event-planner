@@ -38,17 +38,33 @@ export async function sendEmail({ to, subject, body }: EmailPayload) {
 export async function notifyEventCreated(opts: {
   recipients: { email: string; name: string; notifyEnabled: boolean }[]
   eventTitle: string
+  eventLocation: string
+  eventLink: string
   creatorName: string
 }) {
   const targets = opts.recipients.filter((r) => r.notifyEnabled)
   await Promise.all(
-    targets.map((r) =>
-      sendEmail({
+    targets.map((r) => {
+      const firstName = r.name.trim().split(/\s+/)[0] || "there"
+      return sendEmail({
         to: r.email,
-        subject: `New event to plan: ${opts.eventTitle}`,
-        body: `${opts.creatorName} created "${opts.eventTitle}". Add your availability in Hoopoe Event Planner.`,
-      }),
-    ),
+        subject: `New event planned ${opts.eventTitle} @ ${opts.eventLocation}`,
+        body: `Hello ${firstName},
+
+We are pleased to let you know that ${opts.creatorName} has planned a new event for the team:
+
+${opts.eventTitle}
+Location: ${opts.eventLocation}
+
+You can review the event details and let us know whether you will be joining us here:
+${opts.eventLink}
+
+We would appreciate your response so we can coordinate the event with everyone.
+
+With kind regards,
+Hoopoe Event Planner`,
+      })
+    }),
   )
 }
 
