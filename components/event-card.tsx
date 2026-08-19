@@ -26,9 +26,9 @@ export type EventSummary = {
 }
 
 export function EventCard({ event }: { event: EventSummary }) {
-  const displayTitle = event.eventType === "regional"
-    ? event.title.replace(/\bRC\b/g, "Regional Championship")
-    : event.title
+  const displayTitle = event.title
+    .replace(/\bRCQ\b/g, "RC Qualifier")
+    .replace(/\bRC\b/g, "Regional Championship")
 
   return (
     <div className="group block">
