@@ -55,6 +55,7 @@ export function CreateEventDialog({
   const setOpen = onOpenChange ?? setInternalOpen
   const [pending, setPending] = useState(false)
   const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
+  const [startTime, setStartTime] = useState(event?.startTime ?? "00:00")
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
   const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
   const [recurrenceWeekday, setRecurrenceWeekday] = useState(String(event?.recurrenceWeekday ?? new Date().getDay()))
@@ -200,7 +201,15 @@ export function CreateEventDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time</Label>
-              <Input id="startTime" name="startTime" type="time" defaultValue={event?.startTime ?? "00:00"} />
+              <Input
+                id="startTime"
+                name="startTime"
+                type="time"
+                value={multiDay ? "" : startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={multiDay}
+                aria-describedby={multiDay ? "start-time-hint" : undefined}
+              />
             </div>
           </div>
           <div className="space-y-2">
@@ -208,11 +217,16 @@ export function CreateEventDialog({
               <input
                 type="checkbox"
                 checked={multiDay}
-                onChange={(e) => setMultiDay(e.target.checked)}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setMultiDay(checked)
+                  if (checked) setStartTime("")
+                }}
                 className="size-4 rounded border-input accent-primary"
               />
               This event spans multiple days
             </label>
+            {multiDay ? <p id="start-time-hint" className="text-xs text-muted-foreground">Start time is disabled for multi-day events.</p> : null}
             {multiDay && (
               <div className="space-y-2">
                 <Label htmlFor="endDate">End date</Label>
