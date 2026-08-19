@@ -112,7 +112,7 @@ export default async function DashboardPage() {
           <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">
             {isAdmin
-              ? "Build the next practice, qualifier, RC, PT, or travel plan."
+              ? "Find your next practice, weekly or qualifier here."
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
