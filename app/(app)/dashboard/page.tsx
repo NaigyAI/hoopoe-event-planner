@@ -52,7 +52,12 @@ export default async function DashboardPage() {
     recurrenceOrdinal: e.recurrenceOrdinal,
   }))
 
-  const active = summaries.filter((e) => e.status !== "cancelled")
+  const active = summaries
+    .filter((e) => e.status !== "cancelled")
+    .sort((a, b) => {
+      const dateComparison = a.startDate.localeCompare(b.startDate)
+      return dateComparison !== 0 ? dateComparison : a.title.localeCompare(b.title)
+    })
   const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
   const promptMatches = active
     .filter((event) => !event.lockedDate)
