@@ -2,6 +2,8 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/session"
 import { listMembers, listPendingMembers } from "@/app/actions/members"
 import { MembersManager } from "@/components/members-manager"
+import { MemberInviteManager } from "@/components/member-invite-manager"
+import { getActiveMemberInvite } from "@/app/actions/member-invites"
 
 export const dynamic = "force-dynamic"
 
@@ -10,9 +12,10 @@ export default async function MembersPage() {
   if (!user) redirect("/sign-in")
   if (user.role !== "admin") redirect("/dashboard")
 
-  const [members, pending] = await Promise.all([
+  const [members, pending, activeInvite] = await Promise.all([
     listMembers(),
     listPendingMembers(),
+    getActiveMemberInvite(),
   ])
 
   return (
@@ -23,6 +26,7 @@ export default async function MembersPage() {
           Approve prospects who want to join the Hoopoe Boys and manage the roster.
         </p>
       </div>
+      <MemberInviteManager active={activeInvite} />
       <MembersManager members={members} pending={pending} />
     </div>
   )

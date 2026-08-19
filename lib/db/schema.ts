@@ -116,6 +116,16 @@ export const availability = pgTable(
   }),
 )
 
+export const memberInvite = pgTable("memberInvite", {
+  id: text("id").primaryKey(),
+  tokenHash: text("tokenHash").notNull().unique(),
+  createdBy: text("createdBy").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  revokedAt: timestamp("revokedAt"),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
 export const rsvp = pgTable(
   "rsvp",
   {

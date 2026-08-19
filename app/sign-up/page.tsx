@@ -6,14 +6,14 @@ import { AuthShell } from "@/components/auth-shell"
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ returnTo?: string }>
+  searchParams: Promise<{ returnTo?: string; invite?: string }>
 }) {
   const user = await getSessionUser()
-  const { returnTo } = await searchParams
+  const { returnTo, invite } = await searchParams
   if (user) redirect("/dashboard")
   return (
     <AuthShell>
-      <AuthForm mode="sign-up" returnTo={returnTo} />
+      <AuthForm mode="sign-up" returnTo={returnTo} inviteToken={invite} />
     </AuthShell>
   )
 }

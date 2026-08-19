@@ -9,15 +9,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { CalendarCheck, Loader2 } from "lucide-react"
+import { approveCurrentUserWithInvite } from "@/app/actions/member-invites"
 
 type Mode = "sign-in" | "sign-up"
 
 export function AuthForm({
   mode,
   returnTo,
+  inviteToken,
 }: {
   mode: Mode
   returnTo?: string
+  inviteToken?: string
 }) {
   const router = useRouter()
   const [name, setName] = useState("")
@@ -36,6 +39,10 @@ export function AuthForm({
       if (isSignUp) {
         const { error } = await authClient.signUp.email({ email, password, name })
         if (error) throw new Error(error.message ?? "Could not create account")
+        if (inviteToken) {
+          const approved = await approveCurrentUserWithInvite(inviteToken)
+          if (!approved) throw new Error("This invite link is invalid or expired")
+        }
       } else {
         const { error } = await authClient.signIn.email({ email, password })
         if (error) throw new Error(error.message ?? "Could not sign in")
