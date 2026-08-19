@@ -2,10 +2,10 @@
 
 import { useTransition } from "react"
 import { toast } from "sonner"
-import { Check, X, UserPlus, Users } from "lucide-react"
+import { Check, X, UserPlus, Users, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { approveMember, rejectMember, type MemberRow } from "@/app/actions/members"
+import { approveMember, deleteMember, rejectMember, type MemberRow } from "@/app/actions/members"
 
 function initials(name: string) {
   return name
@@ -83,12 +83,49 @@ export function MembersManager({
                 <Badge variant="secondary" className="text-[10px]">
                   Admin
                 </Badge>
-              ) : null}
+              ) : (
+                <DeleteMemberButton member={m} />
+              )}
             </li>
           ))}
         </ul>
       </section>
     </div>
+  )
+}
+
+function DeleteMemberButton({ member }: { member: MemberRow }) {
+  const [isPending, startTransition] = useTransition()
+
+  function handleDelete() {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${member.name}'s profile? This will permanently remove all of their data.`,
+    )
+    if (!confirmed) return
+
+    startTransition(async () => {
+      try {
+        await deleteMember(member.id)
+        toast.success(`${firstName(member.name)} deleted`)
+      } catch {
+        toast.error("Could not delete this member")
+      }
+    })
+  }
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      onClick={handleDelete}
+      disabled={isPending}
+      aria-label={`Delete ${member.name}`}
+      className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+    >
+      <Trash2 className="size-4" />
+      <span className="hidden sm:inline">Delete</span>
+    </Button>
   )
 }
 

@@ -13,7 +13,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           <span className="text-lg tracking-tight">Hoopoe Event Planner</span>
         </div>
 
-        <div className="flex w-full max-w-md flex-col justify-center text-center">
+        <div className="mx-auto flex w-full max-w-md flex-col justify-center text-center">
           <div className="mx-auto mb-8 w-full max-w-[260px]">
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"

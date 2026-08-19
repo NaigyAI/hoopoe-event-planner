@@ -139,8 +139,8 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
-          {isAdmin ? <BestDatesDialog /> : null}
-          {isAdmin ? <CreateEventDialog /> : null}
+          <BestDatesDialog />
+          <CreateEventDialog />
         </div>
       </div>
 
