@@ -61,7 +61,7 @@ export function MembersManager({
       </section>
 
       {(["team", "external"] as const).map((role) => {
-        const sectionMembers = members.filter((m) => role === "team" ? m.role === "member" || m.role === "team-member" : m.role === "external-member")
+        const sectionMembers = members.filter((m) => role === "team" ? m.role === "member" || m.role === "team-member" || m.role === "admin" || m.role === "superuser" : m.role === "external-member")
         const title = role === "team" ? "Team members" : "External members"
         return (
           <section key={role} className="space-y-4">
