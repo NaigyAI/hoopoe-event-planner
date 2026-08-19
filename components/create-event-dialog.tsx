@@ -156,7 +156,7 @@ export function CreateEventDialog({
                       weekly: "Weekly",
                       "store-championship": "Store Championship",
                       rcq: "RCQ",
-                      regional: "RC",
+                      regional: "Regional Championship",
                       "pro-tour": "PT",
                       other: "Other",
                     }[eventType] ?? "select event"}
@@ -173,7 +173,7 @@ export function CreateEventDialog({
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="store-championship">Store Championship</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>
-                <SelectItem value="regional">RC</SelectItem>
+                <SelectItem value="regional">Regional Championship</SelectItem>
                 <SelectItem value="pro-tour">PT</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
