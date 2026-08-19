@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { CalendarPlus, UserPlus } from "lucide-react"
-import { listEvents } from "@/app/actions/events"
+import { getMyEventAvailability, listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { getTeamStats } from "@/app/actions/members"
 import { EventTypeFilter } from "@/components/event-type-filter"
@@ -10,7 +10,8 @@ import { PersonalAvailabilityDialog } from "@/components/personal-availability-d
 import { listPersonalAvailability, listPersonalAvailabilityFrom } from "@/app/actions/personal-availability"
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
 import { AvailabilityEventPrompt } from "@/components/availability-event-prompt"
-import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
+import { addDaysISO, dateRange, getRecurringDates, todayISO } from "@/lib/dates"
+import { BestDatesDialog } from "@/components/best-dates-dialog"
 
 export const dynamic = "force-dynamic"
 
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
     listPersonalAvailabilityFrom(todayISO()),
     getTeamStats(),
   ])
+  const answeredAvailability = await getMyEventAvailability(events.map((event) => event.id))
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
   )
@@ -52,15 +54,21 @@ export default async function DashboardPage() {
 
   const active = summaries.filter((e) => e.status !== "cancelled")
   const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
-  const promptMatch = active
+  const promptMatches = active
     .filter((event) => !event.lockedDate)
-    .map((event) => {
+    .flatMap((event) => {
       const openDates = event.recurrenceType !== "none"
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
+            .filter((date) => date <= addDaysISO(todayISO(), 21))
         : dateRange(event.startDate, event.endDate ?? event.startDate)
-      return { event, matchingDate: openDates.find((date) => availableDates.includes(date)) }
+      const answeredDates = new Set(
+        answeredAvailability
+          .filter((answer) => answer.eventId === event.id)
+          .map((answer) => answer.date),
+      )
+      const matchingDates = openDates.filter((date) => availableDates.includes(date) && !answeredDates.has(date))
+      return matchingDates.length > 0 ? [{ event, matchingDates }] : []
     })
-    .find((match) => match.matchingDate)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -74,7 +82,7 @@ export default async function DashboardPage() {
             Keep the reps, trips, and tournaments organized.
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-secondary-foreground/80 sm:text-base">
-            Plan practice sessions, find the best RCQ date, coordinate travel,
+            Plan practice sessions, find the best RC Qualifier date, coordinate travel,
             and keep the roster aligned when it is time to register.
           </p>
           </div>
@@ -89,13 +97,13 @@ export default async function DashboardPage() {
           <div className="rounded-xl bg-primary/70 p-3">
             <p className="text-2xl font-bold">{teamStats.activeMembers}</p>
             <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
-              Active {teamStats.activeMembers === 1 ? "member" : "members"}
+              Team {teamStats.activeMembers === 1 ? "member" : "members"}
             </p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
             <p className="text-2xl font-bold text-white">{teamStats.guests}</p>
             <p className="text-[11px] font-medium uppercase tracking-wide text-white">
-              {teamStats.guests === 1 ? "Guest" : "Guests"} joining
+              {teamStats.guests === 1 ? "Guest" : "Guests"}
             </p>
           </div>
         </div>
@@ -131,11 +139,12 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
+          {isAdmin ? <BestDatesDialog /> : null}
           {isAdmin ? <CreateEventDialog /> : null}
         </div>
       </div>
 
-      {promptMatch ? <AvailabilityEventPrompt event={promptMatch.event} matchingDate={promptMatch.matchingDate!} /> : null}
+      {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDates.join(",")}`).join("|")} suggestions={promptMatches} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">

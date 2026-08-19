@@ -16,7 +16,7 @@ type FilterOption = {
 
 const FILTERS: FilterOption[] = [
   { key: "practice", title: "Practice", copy: "Schedule reps and testing", icon: Swords, eventTypes: ["practice"] },
-  { key: "rcq", title: "RCQs", copy: "Lock the best date", icon: Trophy, eventTypes: ["rcq"] },
+  { key: "rcq", title: "RC Qualifier", copy: "Lock the best date", icon: Trophy, eventTypes: ["rcq"] },
   { key: "weekly", title: "Weekly", copy: "Keep a regular rhythm", icon: CalendarDays, eventTypes: ["weekly"] },
   { key: "store-championship", title: "Store Championship", copy: "Prepare for the big event", icon: Trophy, eventTypes: ["store-championship"] },
   { key: "rc-pt", title: "RC + PT", copy: "Stay ready for the call", icon: Dumbbell, eventTypes: ["regional", "pro-tour", "rc", "pt", "rc-pt"] },

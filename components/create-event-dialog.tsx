@@ -43,18 +43,22 @@ export function CreateEventDialog({
   open: controlledOpen,
   onOpenChange,
   showTrigger = true,
+  initialStartDate,
+  initialEndDate,
 }: {
   event?: EventEditData
   open?: boolean
   onOpenChange?: (open: boolean) => void
   showTrigger?: boolean
+  initialStartDate?: string
+  initialEndDate?: string
 }) {
   const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen ?? internalOpen
   const setOpen = onOpenChange ?? setInternalOpen
   const [pending, setPending] = useState(false)
-  const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
+  const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate) || Boolean(initialEndDate && initialEndDate !== initialStartDate))
   const [startTime, setStartTime] = useState(event?.startTime ?? "00:00")
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
   const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
@@ -155,8 +159,8 @@ export function CreateEventDialog({
                       practice: "Practice",
                       weekly: "Weekly",
                       "store-championship": "Store Championship",
-                      rcq: "RCQ",
-                      regional: "Regional Championship",
+                      rcq: "RC Qualifier",
+                      regional: "Regional Championships",
                       "pro-tour": "PT",
                       other: "Other",
                     }[eventType] ?? "select event"}
@@ -172,7 +176,7 @@ export function CreateEventDialog({
                 <SelectItem value="practice">Practice</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="store-championship">Store Championship</SelectItem>
-                <SelectItem value="rcq">RCQ</SelectItem>
+                <SelectItem value="rcq">RC Qualifier</SelectItem>
                 <SelectItem value="regional">Regional Championship</SelectItem>
                 <SelectItem value="pro-tour">PT</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
@@ -197,7 +201,7 @@ export function CreateEventDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start date</Label>
-              <Input id="startDate" name="startDate" type="date" defaultValue={event?.startDate ?? ""} required />
+              <Input id="startDate" name="startDate" type="date" defaultValue={event?.startDate ?? initialStartDate ?? ""} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time</Label>
@@ -230,7 +234,7 @@ export function CreateEventDialog({
             {multiDay && (
               <div className="space-y-2">
                 <Label htmlFor="endDate">End date</Label>
-                <Input id="endDate" name="endDate" type="date" defaultValue={event?.endDate ?? ""} />
+                <Input id="endDate" name="endDate" type="date" defaultValue={event?.endDate ?? initialEndDate ?? ""} />
               </div>
             )}
           </div>
