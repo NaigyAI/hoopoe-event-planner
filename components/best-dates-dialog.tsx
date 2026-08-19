@@ -36,7 +36,7 @@ export function BestDatesDialog() {
     <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-xl font-medium tracking-normal">Find best dates</DialogTitle>
-        <DialogDescription>Rank dates by how many approved team members are available.</DialogDescription>
+        <DialogDescription>Rank dates by how many team members are available.</DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2"><Label htmlFor="best-start">From</Label><Input id="best-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></div>
