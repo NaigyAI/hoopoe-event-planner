@@ -35,7 +35,7 @@ export function BestDatesDialog() {
     </DialogTrigger>
     <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
-        <DialogTitle>Find best dates</DialogTitle>
+        <DialogTitle className="text-xl font-medium tracking-normal">Find best dates</DialogTitle>
         <DialogDescription>Rank dates by how many approved team members are available.</DialogDescription>
       </DialogHeader>
       <div className="grid gap-4 sm:grid-cols-2">
