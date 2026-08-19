@@ -5,7 +5,7 @@ import { CalendarDays, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import type { EventSummary } from "@/components/event-card"
-import { setPersonalAvailabilityForDates } from "@/app/actions/personal-availability"
+import { setAvailabilityForDates } from "@/app/actions/events"
 import { formatDateRange, formatTime } from "@/lib/dates"
 
 type AvailabilitySuggestion = { event: EventSummary; matchingDates: string[] }
@@ -34,7 +34,11 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
   function respond(status: "available" | "unavailable") {
     advance()
     startTransition(async () => {
-      await setPersonalAvailabilityForDates(suggestion.matchingDates, status)
+      await setAvailabilityForDates({
+        eventId: suggestion.event.id,
+        dates: suggestion.matchingDates,
+        status,
+      })
       router.refresh()
     })
   }

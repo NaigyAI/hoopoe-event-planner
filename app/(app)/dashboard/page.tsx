@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { CalendarPlus, UserPlus } from "lucide-react"
-import { listEvents } from "@/app/actions/events"
+import { getMyEventAvailability, listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { getTeamStats } from "@/app/actions/members"
 import { EventTypeFilter } from "@/components/event-type-filter"
@@ -24,6 +24,7 @@ export default async function DashboardPage() {
     listPersonalAvailabilityFrom(todayISO()),
     getTeamStats(),
   ])
+  const answeredAvailability = await getMyEventAvailability(events.map((event) => event.id))
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
   )
@@ -60,7 +61,12 @@ export default async function DashboardPage() {
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
             .filter((date) => date <= addDaysISO(todayISO(), 21))
         : dateRange(event.startDate, event.endDate ?? event.startDate)
-      const matchingDates = openDates.filter((date) => availableDates.includes(date))
+      const answeredDates = new Set(
+        answeredAvailability
+          .filter((answer) => answer.eventId === event.id)
+          .map((answer) => answer.date),
+      )
+      const matchingDates = openDates.filter((date) => availableDates.includes(date) && !answeredDates.has(date))
       return matchingDates.length > 0 ? [{ event, matchingDates }] : []
     })
 

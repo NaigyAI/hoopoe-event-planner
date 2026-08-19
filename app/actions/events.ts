@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { event, availability, rsvp, user } from "@/lib/db/schema"
-import { and, desc, eq, sql } from "drizzle-orm"
+import { and, desc, eq, inArray, sql } from "drizzle-orm"
 import { requireUser, requireAdmin } from "@/lib/session"
 import { notifyEventCreated, notifyDateLocked } from "@/lib/email"
 import { dateRange } from "@/lib/dates"
@@ -216,6 +216,15 @@ export async function getEvent(eventId: string) {
 }
 
 /** All availability votes for an event. */
+export async function getMyEventAvailability(eventIds: string[]) {
+  const current = await requireUser()
+  if (eventIds.length === 0) return []
+  return db
+    .select({ eventId: availability.eventId, date: availability.date, status: availability.status })
+    .from(availability)
+    .where(and(eq(availability.userId, current.id), inArray(availability.eventId, eventIds)))
+}
+
 export async function getEventAvailability(eventId: string) {
   await requireUser()
   return db
@@ -274,6 +283,19 @@ export async function setRsvp(input: {
  * Upsert the current user's vote for a single date.
  * Scoped by userId — a user can only ever write their own rows.
  */
+export async function setAvailabilityForDates(input: {
+  eventId: string
+  dates: string[]
+  status: AvailabilityStatus
+}) {
+  for (const date of input.dates) {
+    await setAvailability({ eventId: input.eventId, date, status: input.status })
+  }
+  revalidatePath(`/events/${input.eventId}`)
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
 export async function setAvailability(input: {
   eventId: string
   date: string
