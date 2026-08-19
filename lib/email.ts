@@ -1,12 +1,3 @@
-/**
- * Email notification stub.
- *
- * This is a no-op placeholder that logs instead of sending. To wire up real
- * transactional email, install `resend`, set RESEND_API_KEY, and replace the
- * body of `sendEmail` with a Resend call. The rest of the app calls these
- * helpers and does not need to change.
- */
-
 type EmailPayload = {
   to: string
   subject: string
@@ -14,9 +5,34 @@ type EmailPayload = {
 }
 
 export async function sendEmail({ to, subject, body }: EmailPayload) {
-  // TODO: integrate Resend (or another provider) here.
-  console.log("[v0] [email stub] would send email:", { to, subject, body })
-  return { ok: true, stubbed: true }
+  const apiKey = process.env.RESEND_API_KEY
+  const from = process.env.RESEND_FROM_EMAIL
+
+  if (!apiKey || !from) {
+    throw new Error("Email delivery is not configured")
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject,
+      text: body,
+    }),
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    const details = await response.text()
+    throw new Error(`Resend email failed (${response.status}): ${details}`)
+  }
+
+  return { ok: true }
 }
 
 export async function notifyEventCreated(opts: {
