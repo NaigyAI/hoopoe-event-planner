@@ -21,7 +21,7 @@ export default async function ProfilePage() {
 
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-medium tracking-normal">Profile & settings</h1>
-        {user.role === "admin" ? <Badge variant="secondary">Admin</Badge> : null}
+        {user.role === "superuser" ? <Badge>Superuser</Badge> : user.role === "admin" ? <Badge variant="secondary">Admin</Badge> : null}
       </div>
 
       <ProfileForm
