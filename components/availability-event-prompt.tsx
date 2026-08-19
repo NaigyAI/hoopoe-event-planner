@@ -78,7 +78,7 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
               </Link>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={advance}
                 className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 Dismiss

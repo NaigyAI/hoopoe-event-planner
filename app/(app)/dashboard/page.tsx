@@ -138,7 +138,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {promptMatches.length > 0 ? <AvailabilityEventPrompt suggestions={promptMatches} /> : null}
+      {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDate}`).join("|")} suggestions={promptMatches} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
