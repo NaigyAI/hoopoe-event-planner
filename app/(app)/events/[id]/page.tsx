@@ -188,7 +188,7 @@ export default async function EventPage({
 
       {!isLocked ? <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             {isLocked ? "How the date was chosen" : "Mark your availability"}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
