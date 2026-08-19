@@ -15,9 +15,9 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="min-h-dvh max-w-full overflow-x-hidden bg-background">
       <AppNav user={{ name: user.name, email: user.email, role: user.role }} />
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-5xl min-w-0 overflow-x-hidden px-4 py-8 sm:px-6">{children}</main>
     </div>
   )
 }
