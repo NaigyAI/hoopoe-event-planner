@@ -26,6 +26,10 @@ export type EventSummary = {
 }
 
 export function EventCard({ event }: { event: EventSummary }) {
+  const displayTitle = event.eventType === "regional"
+    ? event.title.replace(/\bRC\b/g, "Regional Championship")
+    : event.title
+
   return (
     <div className="group block">
       <Card className="h-full gap-0 p-5 leading-[1.3] transition-colors group-hover:border-primary/40">
@@ -33,7 +37,7 @@ export function EventCard({ event }: { event: EventSummary }) {
           <div className="min-w-0 space-y-2">
             <h3 className="text-pretty text-[22px] font-medium leading-tight text-foreground">
               <Link href={`/events/${event.id}`} className="hover:underline underline-offset-4">
-                {event.title}
+                {displayTitle}
               </Link>
             </h3>
           </div>
