@@ -42,15 +42,17 @@ export function EventTypeFilter({ events }: { events: EventSummary[] }) {
               type="button"
               aria-pressed={isSelected}
               onClick={() => setSelected(isSelected ? null : key)}
-              className={`rounded-xl border p-3 text-left transition-colors sm:p-4 ${
+              className={`rounded-lg border px-3 py-2 text-left transition-colors ${
                 isSelected
                   ? "border-accent bg-accent/10 ring-2 ring-accent/30"
                   : "border-border bg-card hover:border-accent/60 hover:bg-muted/40"
               }`}
             >
-              <Icon className="size-4 text-accent" />
-              <p className="mt-3 text-sm font-bold">{title}</p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy}</p>
+              <span className="flex items-center gap-2">
+                <Icon className="size-3.5 shrink-0 text-accent" />
+                <span className="text-sm font-bold leading-tight">{title}</span>
+              </span>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{copy}</p>
             </button>
           )
         })}
