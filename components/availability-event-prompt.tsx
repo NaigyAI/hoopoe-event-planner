@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { CalendarDays, X } from "lucide-react"
 import { useState, useTransition } from "react"
 import type { EventSummary } from "@/components/event-card"
@@ -57,6 +58,20 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
                 className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
               >
                 No
+              </button>
+              <Link
+                href={`/events/${event.id}`}
+                onClick={() => setOpen(false)}
+                className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                View event
+              </Link>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                Dismiss
               </button>
             </div>
           </div>
