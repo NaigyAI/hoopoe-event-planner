@@ -62,7 +62,7 @@ ${opts.eventLink}
 Hope to see you there. May your draws be kind!
 
 Cheers,
-Hoopoe`,
+Hoopoe Event Planner`,
       })
     }),
   )
