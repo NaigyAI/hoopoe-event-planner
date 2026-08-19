@@ -35,8 +35,17 @@ export async function requireUser(): Promise<SessionUser> {
 /** Require an admin user or throw. */
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await requireUser()
-  if (user.role !== "admin") {
+  if (user.role !== "admin" && user.role !== "superuser") {
     throw new Error("Forbidden: admin access required")
+  }
+  return user
+}
+
+/** Require the elevated superuser role. */
+export async function requireSuperuser(): Promise<SessionUser> {
+  const user = await requireUser()
+  if (user.role !== "superuser") {
+    throw new Error("Forbidden: superuser access required")
   }
   return user
 }
@@ -44,7 +53,7 @@ export async function requireAdmin(): Promise<SessionUser> {
 /** Require a logged-in AND approved user (admins are always approved). */
 export async function requireApprovedUser(): Promise<SessionUser> {
   const user = await requireUser()
-  if (user.role !== "admin" && !user.approved) {
+  if (user.role !== "admin" && user.role !== "superuser" && !user.approved) {
     throw new Error("Forbidden: your account is pending approval")
   }
   return user

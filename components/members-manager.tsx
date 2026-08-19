@@ -2,10 +2,10 @@
 
 import { useTransition } from "react"
 import { toast } from "sonner"
-import { Check, X, UserPlus, Users, Trash2 } from "lucide-react"
+import { Check, X, UserPlus, Users, Trash2, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { approveMember, deleteMember, rejectMember, type MemberRow } from "@/app/actions/members"
+import { approveMember, deleteMember, rejectMember, setMemberAdmin, type MemberRow } from "@/app/actions/members"
 
 function initials(name: string) {
   return name
@@ -24,9 +24,11 @@ function firstName(name: string) {
 export function MembersManager({
   members,
   pending,
+  canManageAdmins,
 }: {
   members: MemberRow[]
   pending: MemberRow[]
+  canManageAdmins: boolean
 }) {
   return (
     <div className="space-y-8">
@@ -79,18 +81,47 @@ export function MembersManager({
                 </p>
                 <p className="truncate text-xs text-muted-foreground">{m.email}</p>
               </div>
-              {m.role === "admin" ? (
-                <Badge variant="secondary" className="text-[10px]">
-                  Admin
-                </Badge>
+              {m.role === "superuser" ? (
+                <Badge className="gap-1 text-[10px]"><ShieldCheck className="size-3" />Superuser</Badge>
+              ) : m.role === "admin" ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-[10px]">Admin</Badge>
+                  {canManageAdmins ? <RoleButton member={m} isAdmin /> : null}
+                </div>
               ) : (
-                <DeleteMemberButton member={m} />
+                <div className="flex items-center gap-2">
+                  {canManageAdmins ? <RoleButton member={m} /> : null}
+                  <DeleteMemberButton member={m} />
+                </div>
               )}
             </li>
           ))}
         </ul>
       </section>
     </div>
+  )
+}
+
+function RoleButton({ member, isAdmin = false }: { member: MemberRow; isAdmin?: boolean }) {
+  const [isPending, startTransition] = useTransition()
+
+  function handleRoleChange() {
+    const nextLabel = isAdmin ? "remove admin access from" : "make admin"
+    if (!window.confirm(`Are you sure you want to ${nextLabel} ${member.name}?`)) return
+    startTransition(async () => {
+      try {
+        await setMemberAdmin(member.id, !isAdmin)
+        toast.success(`${firstName(member.name)} is now ${isAdmin ? "a team member" : "an admin"}`)
+      } catch {
+        toast.error("Could not update this member's role")
+      }
+    })
+  }
+
+  return (
+    <Button type="button" size="sm" variant="outline" onClick={handleRoleChange} disabled={isPending}>
+      {isAdmin ? "Remove admin" : "Make admin"}
+    </Button>
   )
 }
 
