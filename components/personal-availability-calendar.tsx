@@ -101,8 +101,8 @@ export function PersonalAvailabilityCalendar({
       </div>
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-primary" />Available</span>
-        <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-destructive" />Unavailable</span>
         <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-yellow-400" />Maybe</span>
+        <span className="flex items-center gap-2"><span className="size-2 rounded-full bg-destructive" />Unavailable</span>
       </div>
     </div>
   )
