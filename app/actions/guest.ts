@@ -3,6 +3,7 @@
 import { db } from "@/lib/db"
 import { event, availability, rsvp } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
+import { requireAdmin } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { randomUUID } from "crypto"
@@ -149,6 +150,33 @@ export async function setGuestRsvp(input: {
 }
 
 /** Guest upserts their availability for a single date. */
+export async function removeGuestFromEvent(input: { eventId: string; guestId: string }) {
+  await requireAdmin()
+  const scopedId = `guest:${input.guestId}`
+  await db.transaction(async (tx) => {
+    await tx.delete(availability).where(and(eq(availability.eventId, input.eventId), eq(availability.userId, scopedId)))
+    await tx.delete(rsvp).where(and(eq(rsvp.eventId, input.eventId), eq(rsvp.userId, scopedId)))
+  })
+  revalidatePath("/members")
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
+export async function removeSelfFromGuestEvent(token: string) {
+  const ev = await getEventByToken(token)
+  if (!ev) throw new Error("This event link is invalid or has expired")
+  const session = await getGuestSession()
+  if (!session) throw new Error("Guest session not found")
+  const scopedId = `guest:${session.id}`
+  await db.transaction(async (tx) => {
+    await tx.delete(availability).where(and(eq(availability.eventId, ev.id), eq(availability.userId, scopedId)))
+    await tx.delete(rsvp).where(and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, scopedId)))
+  })
+  revalidatePath(`/join/${token}`)
+  revalidatePath("/members")
+  return { ok: true }
+}
+
 export async function setGuestAvailability(input: {
   token: string
   date: string

@@ -34,11 +34,14 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
   function respond(status: "available" | "unavailable") {
     advance()
     startTransition(async () => {
-      await setAvailabilityForDates({
+      const result = await setAvailabilityForDates({
         eventId: suggestion.event.id,
         dates: suggestion.matchingDates,
         status,
       })
+      if (result.clearedEvents.length > 0) {
+        window.alert(`You chose ${suggestion.event.title}. Your availability was cleared from: ${result.clearedEvents.join(", ")}.`)
+      }
       router.refresh()
     })
   }

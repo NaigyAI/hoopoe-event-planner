@@ -18,6 +18,7 @@ import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/da
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { GuestJoinForm } from "@/components/guest-join-form"
+import { GuestSelfRemoval } from "@/components/guest-self-removal"
 
 export const dynamic = "force-dynamic"
 
@@ -269,12 +270,15 @@ function GuestEventView({
           Responding as{" "}
           <span className="font-medium text-foreground">{guestName}</span>
         </p>
-        <Link
-          href={`/join/${token}?edit=1`}
-          className="text-sm font-medium text-primary underline-offset-4 hover:underline"
-        >
-          Change name
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/join/${token}?edit=1`}
+            className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Change name
+          </Link>
+          <GuestSelfRemoval token={token} />
+        </div>
       </div>
 
       {/* Confirmed date */}
