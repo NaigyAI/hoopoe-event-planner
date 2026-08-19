@@ -69,38 +69,6 @@ export async function listPersonalAvailability(month: string) {
     )
 }
 
-export async function getSuggestedDates(startDate: string, endDate: string) {
-  await requireUser()
-  const rows = await db
-    .select({
-      date: personalAvailability.date,
-      userId: personalAvailability.userId,
-      userName: user.name,
-      status: personalAvailability.status,
-    })
-    .from(personalAvailability)
-    .innerJoin(user, eq(personalAvailability.userId, user.id))
-    .where(
-      and(
-        gte(personalAvailability.date, startDate),
-        lt(personalAvailability.date, `${endDate}T00:00:00.000Z`),
-      ),
-    )
-
-  const dates = new Map<string, { available: number; maybe: number; unavailable: number; total: number }>()
-  for (const row of rows) {
-    const current = dates.get(row.date) ?? { available: 0, maybe: 0, unavailable: 0, total: 0 }
-    current.total += 1
-    if (row.status === "available") current.available += 1
-    else if (row.status === "maybe") current.maybe += 1
-    else current.unavailable += 1
-    dates.set(row.date, current)
-  }
-  return [...dates.entries()]
-    .map(([date, counts]) => ({ date, ...counts, score: counts.available * 2 + counts.maybe - counts.unavailable * 2 }))
-    .sort((a, b) => b.score - a.score || b.available - a.available || a.date.localeCompare(b.date))
-}
-
 export async function setPersonalAvailabilityForDates(
   dates: string[],
   status: PersonalAvailabilityStatus,
