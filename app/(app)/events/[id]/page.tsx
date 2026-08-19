@@ -49,14 +49,17 @@ export default async function EventPage({
         .filter((vote) => vote.date === event.lockedDate)
         .map((vote) => ({ name: vote.userName, status: vote.status }))
     : []
-  const days = availabilityDates
+  const isMultiDay = event.endDate != null && event.endDate !== event.startDate
+  const days = isMultiDay ? [event.startDate] : availabilityDates
 
   // Distinct respondents across the whole event
   const respondentIds = new Set(votes.map((v) => v.userId))
   const totalRespondents = respondentIds.size
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = votes.filter((v) => v.date === date)
+    const dayVotes = isMultiDay
+      ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
+      : votes.filter((v) => v.date === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
     const unavailable = dayVotes.filter((v) => v.status === "unavailable").length
@@ -214,6 +217,7 @@ export default async function EventPage({
 
         <AvailabilityGrid
           eventId={event.id}
+          eventEndDate={isMultiDay ? event.endDate : null}
           tallies={tallies}
           totalRespondents={totalRespondents}
           bestDate={bestDate}

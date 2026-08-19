@@ -136,13 +136,16 @@ function GuestEventView({
 }) {
   if (!event) return null
   const isLocked = event.status === "locked"
-  const days = dateRange(event.startDate, event.endDate ?? event.startDate)
+  const isMultiDay = event.endDate != null && event.endDate !== event.startDate
+  const days = isMultiDay ? [event.startDate] : dateRange(event.startDate, event.endDate ?? event.startDate)
   const scopedId = `guest:${guestId}`
 
   const totalRespondents = new Set(votes.map((v) => v.userId)).size
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = votes.filter((v) => v.date === date)
+    const dayVotes = isMultiDay
+      ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
+      : votes.filter((v) => v.date === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
     const unavailable = dayVotes.filter((v) => v.status === "unavailable").length
@@ -312,6 +315,7 @@ function GuestEventView({
 
         <AvailabilityGrid
           eventId={event.id}
+          eventEndDate={isMultiDay ? event.endDate : null}
           tallies={tallies}
           totalRespondents={totalRespondents}
           bestDate={bestDate}

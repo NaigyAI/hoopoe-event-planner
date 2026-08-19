@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { setAvailability, lockDate, type AvailabilityStatus } from "@/app/actions/events"
 import { setGuestAvailability } from "@/app/actions/guest"
-import { formatWeekday, formatDayMonth, isWeekend } from "@/lib/dates"
+import { formatWeekday, formatDayMonth, formatDateRange, isWeekend } from "@/lib/dates"
 
 export type DateTally = {
   date: string
@@ -44,6 +44,7 @@ function HeatBar({ tally, total }: { tally: DateTally; total: number }) {
 
 export function AvailabilityGrid({
   eventId,
+  eventEndDate,
   tallies,
   totalRespondents,
   bestDate,
@@ -54,6 +55,7 @@ export function AvailabilityGrid({
   token,
 }: {
   eventId: string
+  eventEndDate: string | null | undefined
   tallies: DateTally[]
   totalRespondents: number
   bestDate: string | null
@@ -128,7 +130,7 @@ export function AvailabilityGrid({
                   {formatWeekday(t.date)}
                 </span>
                 <span className="font-medium tabular-nums text-foreground">
-                  {formatDayMonth(t.date)}
+                  {eventEndDate ? formatDateRange(t.date, eventEndDate) : formatDayMonth(t.date)}
                 </span>
               </div>
               {isThisLocked ? (
