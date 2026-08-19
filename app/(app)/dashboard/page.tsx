@@ -41,8 +41,10 @@ export default async function DashboardPage() {
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")
-  const planningCount = active.filter((e) => e.status === "planning").length
-  const lockedCount = active.filter((e) => e.status === "locked").length
+  const today = new Date().toISOString().slice(0, 10)
+  const currentMonth = today.slice(0, 7)
+  const upcomingCount = active.filter((e) => (e.endDate ?? e.startDate) >= today).length
+  const thisMonthCount = active.filter((e) => e.startDate.slice(0, 7) === currentMonth).length
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -67,12 +69,12 @@ export default async function DashboardPage() {
             <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Active</p>
           </div>
           <div className="rounded-xl bg-primary/70 p-3">
-            <p className="text-2xl font-bold">{planningCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Planning</p>
+            <p className="text-2xl font-bold">{upcomingCount}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Upcoming</p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
-            <p className="text-2xl font-bold text-white">{lockedCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-white">Finalized</p>
+            <p className="text-2xl font-bold text-white">{thisMonthCount}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white">This month</p>
           </div>
         </div>
       </section>

@@ -1,7 +1,6 @@
 import Link from "next/link"
-import { CalendarDays, ExternalLink, Lock, MapPin, Users } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { formatDateRange, formatTime } from "@/lib/dates"
 
 export type EventSummary = {
@@ -23,29 +22,6 @@ export type EventSummary = {
   goingCount: number
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === "locked") {
-    return (
-      <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
-        <Lock className="size-3" />
-        Finalized
-      </Badge>
-    )
-  }
-  if (status === "cancelled") {
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        Cancelled
-      </Badge>
-    )
-  }
-  return (
-    <Badge variant="secondary" className="gap-1">
-      Planning
-    </Badge>
-  )
-}
-
 export function EventCard({ event }: { event: EventSummary }) {
   return (
     <Link href={`/events/${event.id}`} className="group block">
@@ -56,7 +32,6 @@ export function EventCard({ event }: { event: EventSummary }) {
               {event.title}
             </h3>
           </div>
-          <StatusBadge status={event.status} />
         </div>
 
         <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
