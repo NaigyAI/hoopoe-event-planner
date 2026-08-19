@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CalendarDays, ExternalLink, MapPin, Users } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Repeat2, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { formatDateRange, formatTime, formatRecurrence } from "@/lib/dates"
 
@@ -44,13 +44,10 @@ export function EventCard({ event }: { event: EventSummary }) {
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
+            {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+              <Repeat2 className="size-4 shrink-0" aria-label="Recurring event" />
+            ) : null}
           </div>
-          {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
-            <div className="flex items-center gap-2">
-              <CalendarDays className="size-4 shrink-0" />
-              <span>{formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal)}</span>
-            </div>
-          ) : null}
           {event.location ? (
             <div className="flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />

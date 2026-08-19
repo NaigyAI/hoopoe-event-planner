@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSuggestedDates } from "@/app/actions/personal-availability"
@@ -118,6 +118,9 @@ export default async function EventPage({
               <CalendarDays className="size-4" />
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
+              {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+                <Repeat2 className="ml-1 inline-block size-4 align-text-bottom" aria-label="Recurring event" />
+              ) : null}
             </span>
             {event.location ? (
               <span className="flex items-center gap-1.5">
@@ -129,12 +132,6 @@ export default async function EventPage({
               <Users className="size-4" />
               {totalRespondents} responded
             </span>
-            {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
-              <span className="flex items-center gap-1.5">
-                <CalendarDays className="size-4" />
-                {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal)}
-              </span>
-            ) : null}
           </div>
           {event.description ? (
             <p className="max-w-2xl whitespace-pre-line text-pretty text-sm leading-6 text-muted-foreground">
