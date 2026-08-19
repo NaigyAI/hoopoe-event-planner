@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { personalAvailability, user } from "@/lib/db/schema"
-import { requireAdmin, requireUser } from "@/lib/session"
+import { requireApprovedUser, requireUser } from "@/lib/session"
 import { and, eq, gte, lte, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
@@ -29,7 +29,7 @@ export async function listPersonalAvailabilityFrom(date: string) {
 }
 
 export async function findBestAvailabilityDates(startDate: string, endDate: string) {
-  await requireAdmin()
+  await requireApprovedUser()
   const rows = await db
     .select({ date: personalAvailability.date, userId: personalAvailability.userId, status: personalAvailability.status })
     .from(personalAvailability)

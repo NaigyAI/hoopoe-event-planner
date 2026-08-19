@@ -3,7 +3,7 @@
 import { db } from "@/lib/db"
 import { event, availability, rsvp, user } from "@/lib/db/schema"
 import { and, desc, eq, inArray, sql } from "drizzle-orm"
-import { requireUser, requireAdmin } from "@/lib/session"
+import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { notifyEventCreated, notifyDateLocked } from "@/lib/email"
 import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
@@ -69,7 +69,7 @@ export async function createEvent(input: {
   recurrenceWeekday?: number
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
-  const admin = await requireAdmin()
+  const creator = await requireApprovedUser()
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -119,8 +119,8 @@ export async function createEvent(input: {
 
     eventUrl: input.eventUrl?.trim() || null,
     travelDetails: input.travelDetails?.trim() || null,
-    createdBy: admin.id,
-    createdByName: admin.name,
+    createdBy: creator.id,
+    createdByName: creator.name,
     shareToken,
     startDate: input.startDate,
     endDate,
@@ -136,7 +136,7 @@ export async function createEvent(input: {
     await notifyEventCreated({
       recipients: await allRecipients(),
       eventTitle: title,
-      creatorName: admin.name,
+      creatorName: creator.name,
     })
   } catch (err) {
     console.log("[v0] notifyEventCreated failed (stub):", err)
