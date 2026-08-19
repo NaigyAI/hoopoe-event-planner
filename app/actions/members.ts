@@ -6,11 +6,13 @@ import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
 import { requireAdmin, requireSuperuser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
+export type MemberRole = "member" | "team-member" | "external-member" | "admin" | "superuser"
+
 export type MemberRow = {
   id: string
   name: string
   email: string
-  role: string
+  role: MemberRole
   approved: boolean
   createdAt: Date
 }
@@ -51,7 +53,7 @@ export async function listGuests(): Promise<GuestRow[]> {
 /** Approved members (admins + approved members), newest first. */
 export async function listMembers(): Promise<MemberRow[]> {
   await requireAdmin()
-  return db
+  return (await db
     .select({
       id: user.id,
       name: user.name,
@@ -62,13 +64,13 @@ export async function listMembers(): Promise<MemberRow[]> {
     })
     .from(user)
     .where(eq(user.approved, true))
-    .orderBy(desc(user.createdAt))
+    .orderBy(desc(user.createdAt))) as MemberRow[]
 }
 
 /** People who signed up but are still waiting for an admin to approve them. */
 export async function listPendingMembers(): Promise<MemberRow[]> {
   await requireAdmin()
-  return db
+  return (await db
     .select({
       id: user.id,
       name: user.name,
@@ -79,18 +81,26 @@ export async function listPendingMembers(): Promise<MemberRow[]> {
     })
     .from(user)
     .where(eq(user.approved, false))
-    .orderBy(desc(user.createdAt))
+    .orderBy(desc(user.createdAt))) as MemberRow[]
 }
 
 /** Superusers promote or demote non-superuser members as admins. */
+export async function setMemberRole(userId: string, role: "team-member" | "external-member") {
+  await requireAdmin()
+  await db.update(user).set({ role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, true), eq(user.role, "member")))
+  revalidatePath("/members")
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
 export async function setMemberAdmin(userId: string, isAdmin: boolean) {
   const actor = await requireSuperuser()
   if (actor.id === userId) throw new Error("You cannot change your own role")
 
   await db
     .update(user)
-    .set({ role: isAdmin ? "admin" : "member", updatedAt: new Date() })
-    .where(and(eq(user.id, userId), eq(user.role, isAdmin ? "member" : "admin")))
+    .set({ role: isAdmin ? "admin" : "team-member", updatedAt: new Date() })
+    .where(and(eq(user.id, userId), eq(user.role, isAdmin ? "team-member" : "admin")))
 
   revalidatePath("/members")
   revalidatePath("/dashboard")
@@ -98,9 +108,9 @@ export async function setMemberAdmin(userId: string, isAdmin: boolean) {
 }
 
 /** Admin approves a pending sign-up into a full member. */
-export async function approveMember(userId: string) {
+export async function approveMember(userId: string, role: "team-member" | "external-member") {
   await requireAdmin()
-  await db.update(user).set({ approved: true, updatedAt: new Date() }).where(eq(user.id, userId))
+  await db.update(user).set({ approved: true, role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, false)))
   revalidatePath("/members")
   revalidatePath("/dashboard")
   return { ok: true }
@@ -119,7 +129,7 @@ export async function deleteMember(userId: string) {
     await tx.delete(availability).where(eq(availability.userId, userId))
     await tx.delete(personalAvailability).where(eq(personalAvailability.userId, userId))
     await tx.delete(rsvp).where(eq(rsvp.userId, userId))
-    await tx.delete(user).where(and(eq(user.id, userId), eq(user.role, "member")))
+    await tx.delete(user).where(and(eq(user.id, userId), inArray(user.role, ["member", "team-member", "external-member"])))
   })
 
   revalidatePath("/members")
