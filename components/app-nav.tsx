@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CalendarCheck, LogOut, User } from "lucide-react"
+import { CalendarCheck, LogOut, User, Users } from "lucide-react"
 
 type NavUser = {
   name: string
@@ -89,6 +89,12 @@ export function AppNav({ user }: { user: NavUser }) {
               </span>
             </div>
             <DropdownMenuSeparator />
+            {user.role === "admin" && (
+              <DropdownMenuItem render={<Link href="/members" />}>
+                <Users className="size-4" />
+                Members
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem render={<Link href="/profile" />}>
               <User className="size-4" />
               Profile &amp; settings

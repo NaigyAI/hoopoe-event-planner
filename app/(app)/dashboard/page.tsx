@@ -1,6 +1,8 @@
-import { CalendarPlus, Plane, Swords, Trophy, Dumbbell } from "lucide-react"
+import Link from "next/link"
+import { CalendarPlus, Plane, Swords, Trophy, Dumbbell, UserPlus } from "lucide-react"
 import { listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
+import { getTeamStats } from "@/app/actions/members"
 import { EventCard, type EventSummary } from "@/components/event-card"
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { PersonalAvailabilityDialog } from "@/components/personal-availability-dialog"
@@ -11,10 +13,11 @@ export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const month = new Date().toISOString().slice(0, 7)
-  const [events, user, personalDates] = await Promise.all([
+  const [events, user, personalDates, teamStats] = await Promise.all([
     listEvents(),
     getSessionUser(),
     listPersonalAvailability(month),
+    getTeamStats(),
   ])
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
@@ -41,10 +44,6 @@ export default async function DashboardPage() {
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")
-  const today = new Date().toISOString().slice(0, 10)
-  const currentMonth = today.slice(0, 7)
-  const upcomingCount = active.filter((e) => (e.endDate ?? e.startDate) >= today).length
-  const thisMonthCount = active.filter((e) => e.startDate.slice(0, 7) === currentMonth).length
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -66,18 +65,43 @@ export default async function DashboardPage() {
         <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-md sm:gap-3">
           <div className="rounded-xl bg-primary/70 p-3">
             <p className="text-2xl font-bold">{active.length}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Active</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
+              {active.length === 1 ? "Event" : "Events"} planned
+            </p>
           </div>
           <div className="rounded-xl bg-primary/70 p-3">
-            <p className="text-2xl font-bold">{upcomingCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Upcoming</p>
+            <p className="text-2xl font-bold">{teamStats.activeMembers}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
+              Active {teamStats.activeMembers === 1 ? "member" : "members"}
+            </p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
-            <p className="text-2xl font-bold text-white">{thisMonthCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-white">This month</p>
+            <p className="text-2xl font-bold text-white">{teamStats.guests}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white">
+              {teamStats.guests === 1 ? "Guest" : "Guests"} joining
+            </p>
           </div>
         </div>
       </section>
+
+      {isAdmin && teamStats.pendingMembers > 0 ? (
+        <Link
+          href="/members"
+          className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 transition-colors hover:bg-accent/15"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
+            <UserPlus className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {teamStats.pendingMembers} {teamStats.pendingMembers === 1 ? "prospect is" : "prospects are"} waiting for approval
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Review and approve them on the Members page.
+            </p>
+          </div>
+        </Link>
+      ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
