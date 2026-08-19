@@ -57,6 +57,7 @@ export function EventTypeFilter({ events }: { events: EventSummary[] }) {
           )
         })}
       </div>
+      <div className="my-5 h-px w-full bg-border" aria-hidden="true" />
 
       {filteredEvents.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border py-12 text-center">
