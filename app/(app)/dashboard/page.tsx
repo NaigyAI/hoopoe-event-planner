@@ -10,7 +10,7 @@ import { PersonalAvailabilityDialog } from "@/components/personal-availability-d
 import { listPersonalAvailability, listPersonalAvailabilityFrom } from "@/app/actions/personal-availability"
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
 import { AvailabilityEventPrompt } from "@/components/availability-event-prompt"
-import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
+import { addDaysISO, dateRange, getRecurringDates, todayISO } from "@/lib/dates"
 import { BestDatesDialog } from "@/components/best-dates-dialog"
 
 export const dynamic = "force-dynamic"
@@ -58,6 +58,7 @@ export default async function DashboardPage() {
     .flatMap((event) => {
       const openDates = event.recurrenceType !== "none"
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
+            .filter((date) => date <= addDaysISO(todayISO(), 21))
         : dateRange(event.startDate, event.endDate ?? event.startDate)
       const matchingDates = openDates.filter((date) => availableDates.includes(date))
       return matchingDates.length > 0 ? [{ event, matchingDates }] : []

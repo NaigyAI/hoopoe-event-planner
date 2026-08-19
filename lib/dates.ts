@@ -83,6 +83,12 @@ export function todayISO(): string {
   return toISODate(new Date())
 }
 
+export function addDaysISO(iso: string, days: number): string {
+  const date = parseISODate(iso)
+  date.setDate(date.getDate() + days)
+  return toISODate(date)
+}
+
 export function getRecurringDates(
   type: string,
   startISO: string,
