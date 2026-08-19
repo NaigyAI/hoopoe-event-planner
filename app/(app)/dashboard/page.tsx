@@ -101,9 +101,9 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
-            <p className="text-2xl font-bold text-white">{teamStats.guests}</p>
+            <p className="text-2xl font-bold text-white">{teamStats.externalMembers}</p>
             <p className="text-[11px] font-medium uppercase tracking-wide text-white">
-              {teamStats.guests === 1 ? "Guest" : "Guests"}
+              {teamStats.externalMembers === 1 ? "External member" : "External members"}
             </p>
           </div>
         </div>

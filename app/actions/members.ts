@@ -159,6 +159,7 @@ export async function getTeamStats() {
   const [members] = await db
     .select({
       active: sql<number>`count(*) filter (where ${user.approved} = true)`,
+      external: sql<number>`count(*) filter (where ${user.approved} = true and ${user.role} = 'external-member')`,
       pending: sql<number>`count(*) filter (where ${user.approved} = false)`,
     })
     .from(user)
@@ -175,7 +176,8 @@ export async function getTeamStats() {
     )
 
   return {
-    activeMembers: Number(members?.active ?? 0),
+    activeMembers: Number(members?.active ?? 0) - Number(members?.external ?? 0),
+    externalMembers: Number(members?.external ?? 0),
     pendingMembers: Number(members?.pending ?? 0),
     guests: guestRows.length,
   }
