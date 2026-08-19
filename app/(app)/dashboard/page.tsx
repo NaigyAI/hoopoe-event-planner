@@ -97,7 +97,7 @@ export default async function DashboardPage() {
           <div className="rounded-xl bg-primary/70 p-3">
             <p className="text-2xl font-bold">{teamStats.activeMembers}</p>
             <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
-              Active {teamStats.activeMembers === 1 ? "member" : "members"}
+              Team {teamStats.activeMembers === 1 ? "member" : "members"}
             </p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
