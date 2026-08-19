@@ -1,10 +1,10 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Dumbbell, Plane, Swords, Trophy, type LucideIcon } from "lucide-react"
+import { Dumbbell, CalendarDays, Swords, Trophy, type LucideIcon } from "lucide-react"
 import { EventCard, type EventSummary } from "@/components/event-card"
 
-type FilterKey = "practice" | "rcq" | "travel" | "rc-pt"
+type FilterKey = "practice" | "rcq" | "weekly" | "store-championship" | "rc-pt" | "other"
 
 type FilterOption = {
   key: FilterKey
@@ -17,8 +17,10 @@ type FilterOption = {
 const FILTERS: FilterOption[] = [
   { key: "practice", title: "Practice", copy: "Schedule reps and testing", icon: Swords, eventTypes: ["practice"] },
   { key: "rcq", title: "RCQs", copy: "Lock the best date", icon: Trophy, eventTypes: ["rcq"] },
-  { key: "travel", title: "Travel", copy: "Coordinate the trip", icon: Plane, eventTypes: ["travel"] },
-  { key: "rc-pt", title: "RC + PT", copy: "Stay ready for the call", icon: Dumbbell, eventTypes: ["rc", "pt", "rc-pt"] },
+  { key: "weekly", title: "Weekly", copy: "Keep a regular rhythm", icon: CalendarDays, eventTypes: ["weekly"] },
+  { key: "store-championship", title: "Store Championship", copy: "Prepare for the big event", icon: Trophy, eventTypes: ["store-championship"] },
+  { key: "rc-pt", title: "RC + PT", copy: "Stay ready for the call", icon: Dumbbell, eventTypes: ["regional", "pro-tour", "rc", "pt", "rc-pt"] },
+  { key: "other", title: "Other", copy: "Anything else on the calendar", icon: CalendarDays, eventTypes: ["other"] },
 ]
 
 export function EventTypeFilter({ events }: { events: EventSummary[] }) {
@@ -31,7 +33,7 @@ export function EventTypeFilter({ events }: { events: EventSummary[] }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {FILTERS.map(({ key, title, copy, icon: Icon }) => {
           const isSelected = selected === key
           return (
