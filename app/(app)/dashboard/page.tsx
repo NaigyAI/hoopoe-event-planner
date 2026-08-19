@@ -1,9 +1,10 @@
 import Link from "next/link"
-import { CalendarPlus, Plane, Swords, Trophy, Dumbbell, UserPlus } from "lucide-react"
+import { CalendarPlus, UserPlus } from "lucide-react"
 import { listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { getTeamStats } from "@/app/actions/members"
-import { EventCard, type EventSummary } from "@/components/event-card"
+import { EventTypeFilter } from "@/components/event-type-filter"
+import type { EventSummary } from "@/components/event-card"
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { PersonalAvailabilityDialog } from "@/components/personal-availability-dialog"
 import { listPersonalAvailability } from "@/app/actions/personal-availability"
@@ -121,26 +122,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {active.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            [Swords, "Practice", "Schedule reps and testing"],
-            [Trophy, "RCQs", "Lock the best date"],
-            [Plane, "Travel", "Coordinate the trip"],
-            [Dumbbell, "RC + PT", "Stay ready for the call"],
-          ].map(([Icon, title, copy]) => {
-            const QuickIcon = Icon as typeof Swords
-            return (
-              <div key={title as string} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-                <QuickIcon className="size-4 text-accent" />
-                <p className="mt-3 text-sm font-bold">{title as string}</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy as string}</p>
-              </div>
-            )
-          })}
-        </div>
-      ) : null}
-
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
           <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -154,11 +135,7 @@ export default async function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {active.map((e) => (
-            <EventCard key={e.id} event={e} />
-          ))}
-        </div>
+        <EventTypeFilter events={active} />
       )}
     </div>
   )
