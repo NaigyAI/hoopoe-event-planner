@@ -136,6 +136,8 @@ export async function createEvent(input: {
     await notifyEventCreated({
       recipients: await allRecipients(),
       eventTitle: title,
+      eventLocation: location,
+      eventLink: `${process.env.BETTER_AUTH_URL ? process.env.BETTER_AUTH_URL : process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.V0_RUNTIME_URL ?? "http://localhost:3000"}/join/${shareToken}`,
       creatorName: creator.name,
     })
   } catch (err) {

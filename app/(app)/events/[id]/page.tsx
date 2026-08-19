@@ -3,8 +3,6 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
-import { getSuggestedDates } from "@/app/actions/personal-availability"
-import { SuggestedDatePicker } from "@/components/suggested-date-picker"
 import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
@@ -41,10 +39,6 @@ export default async function EventPage({
   const availabilityDates = recurringDates.length > 0
     ? recurringDates
     : dateRange(event.startDate, event.endDate ?? event.startDate)
-  const canSuggestDates = !isLocked && event.eventType !== "regional"
-  const suggestions = canSuggestDates
-    ? await getSuggestedDates(availabilityDates[0], availabilityDates[availabilityDates.length - 1])
-    : []
   const confirmedPeople = event.lockedDate
     ? votes
         .filter((vote) => vote.date === event.lockedDate)
@@ -182,7 +176,6 @@ export default async function EventPage({
         </div>
       </div>
 
-      {!isLocked && isAdmin ? <SuggestedDatePicker eventId={event.id} suggestions={suggestions} /> : null}
       {isLocked && event.lockedDate ? (
         <ConfirmedDateRoster people={confirmedPeople} />
       ) : null}
