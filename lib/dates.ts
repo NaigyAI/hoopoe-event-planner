@@ -82,3 +82,52 @@ export function isWeekend(iso: string): boolean {
 export function todayISO(): string {
   return toISODate(new Date())
 }
+
+export function getRecurringDates(
+  type: string,
+  startISO: string,
+  weekday: number | null,
+  ordinal: string | null,
+  count = 3,
+): string[] {
+  if (weekday == null || !["weekly", "monthly"].includes(type)) return []
+  const today = parseISODate(todayISO())
+  const anchor = parseISODate(startISO) > today ? parseISODate(startISO) : today
+  const dates: string[] = []
+
+  if (type === "weekly") {
+    const first = new Date(anchor)
+    first.setDate(first.getDate() + ((weekday - first.getDay() + 7) % 7))
+    for (let i = 0; i < count; i++) {
+      const next = new Date(first)
+      next.setDate(first.getDate() + i * 7)
+      dates.push(toISODate(next))
+    }
+    return dates
+  }
+
+  const ordinalIndex = ordinal === "first" ? 1 : ordinal === "second" ? 2 : ordinal === "third" ? 3 : ordinal === "fourth" ? 4 : -1
+  const cursor = new Date(anchor.getFullYear(), anchor.getMonth(), 1)
+  while (dates.length < count) {
+    if (ordinalIndex === -1) {
+      const last = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0)
+      last.setDate(last.getDate() - ((last.getDay() - weekday + 7) % 7))
+      if (last >= anchor) dates.push(toISODate(last))
+    } else {
+      const first = new Date(cursor)
+      first.setDate(1 + ((weekday - first.getDay() + 7) % 7) + (ordinalIndex - 1) * 7)
+      if (first.getMonth() === cursor.getMonth() && first >= anchor) dates.push(toISODate(first))
+    }
+    cursor.setMonth(cursor.getMonth() + 1)
+  }
+  return dates
+}
+
+export function formatRecurrence(type: string, weekday: number | null, ordinal: string | null): string | null {
+  if (type === "weekly" && weekday != null) return `Every ${WEEKDAY_FULL[weekday]}`
+  if (type === "monthly" && weekday != null && ordinal) return `${capitalize(ordinal)} ${WEEKDAY_FULL[weekday]} of every month`
+  return null
+}
+
+const WEEKDAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+function capitalize(value: string): string { return value.charAt(0).toUpperCase() + value.slice(1) }

@@ -15,6 +15,19 @@ function nextMonth(month: string) {
   return next.toISOString().slice(0, 10)
 }
 
+export async function listPersonalAvailabilityFrom(date: string) {
+  const currentUser = await requireUser()
+  return db
+    .select({ date: personalAvailability.date, status: personalAvailability.status })
+    .from(personalAvailability)
+    .where(
+      and(
+        eq(personalAvailability.userId, currentUser.id),
+        gte(personalAvailability.date, date),
+      ),
+    )
+}
+
 export async function listPersonalAvailability(month: string) {
   const currentUser = await requireUser()
   return db

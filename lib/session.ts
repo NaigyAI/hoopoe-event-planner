@@ -7,6 +7,7 @@ export type SessionUser = {
   name: string
   email: string
   role: string
+  approved: boolean
   notifyEnabled: boolean
 }
 
@@ -19,6 +20,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     name: u.name,
     email: u.email,
     role: u.role ?? "member",
+    approved: u.approved ?? false,
     notifyEnabled: u.notifyEnabled ?? true,
   }
 }
@@ -35,6 +37,15 @@ export async function requireAdmin(): Promise<SessionUser> {
   const user = await requireUser()
   if (user.role !== "admin") {
     throw new Error("Forbidden: admin access required")
+  }
+  return user
+}
+
+/** Require a logged-in AND approved user (admins are always approved). */
+export async function requireApprovedUser(): Promise<SessionUser> {
+  const user = await requireUser()
+  if (user.role !== "admin" && !user.approved) {
+    throw new Error("Forbidden: your account is pending approval")
   }
   return user
 }

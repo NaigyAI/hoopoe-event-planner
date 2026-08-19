@@ -59,7 +59,15 @@ export const auth = betterAuth({
       create: {
         before: async (user) => {
           const first = await isFirstUser()
-          return { data: { ...user, role: first ? "admin" : "member" } }
+          return {
+            data: {
+              ...user,
+              role: first ? "admin" : "member",
+              // The first user (the admin) is auto-approved. Everyone after
+              // them stays pending until an admin approves them.
+              approved: first,
+            },
+          }
         },
       },
     },
@@ -70,6 +78,12 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "member",
+        input: false,
+      },
+      approved: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
         input: false,
       },
       notifyEnabled: {

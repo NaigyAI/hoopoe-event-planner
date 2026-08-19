@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   date,
+  integer,
   unique,
 } from "drizzle-orm/pg-core"
 
@@ -16,6 +17,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("emailVerified").notNull().default(false),
   image: text("image"),
   role: text("role").notNull().default("member"),
+  approved: boolean("approved").notNull().default(false),
   notifyEnabled: boolean("notifyEnabled").notNull().default(true),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
@@ -90,6 +92,9 @@ export const event = pgTable("event", {
   endTime: text("endTime"),
   lockedDate: date("lockedDate"),
   status: text("status").notNull().default("planning"),
+  recurrenceType: text("recurrenceType").notNull().default("none"),
+  recurrenceWeekday: integer("recurrenceWeekday"),
+  recurrenceOrdinal: text("recurrenceOrdinal"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
@@ -110,6 +115,16 @@ export const availability = pgTable(
     uniqueVote: unique().on(t.eventId, t.userId, t.date),
   }),
 )
+
+export const memberInvite = pgTable("memberInvite", {
+  id: text("id").primaryKey(),
+  tokenHash: text("tokenHash").notNull().unique(),
+  createdBy: text("createdBy").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  revokedAt: timestamp("revokedAt"),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
 
 export const rsvp = pgTable(
   "rsvp",

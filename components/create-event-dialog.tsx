@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { createEvent, updateEvent } from "@/app/actions/events"
 
@@ -32,6 +33,9 @@ export type EventEditData = {
   startDate: string
   endDate: string | null
   startTime: string | null
+  recurrenceType?: string | null
+  recurrenceWeekday?: number | null
+  recurrenceOrdinal?: string | null
 }
 
 export function CreateEventDialog({
@@ -51,7 +55,10 @@ export function CreateEventDialog({
   const setOpen = onOpenChange ?? setInternalOpen
   const [pending, setPending] = useState(false)
   const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
+  const [startTime, setStartTime] = useState(event?.startTime ?? "00:00")
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
+  const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
+  const [recurrenceWeekday, setRecurrenceWeekday] = useState(String(event?.recurrenceWeekday ?? new Date().getDay()))
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -67,15 +74,17 @@ export function CreateEventDialog({
       startDate: String(form.get("startDate") ?? ""),
       endDate: String(form.get("endDate") ?? ""),
       startTime: String(form.get("startTime") ?? ""),
+      recurrenceType: String(form.get("recurrenceType") ?? "none") as "none" | "weekly" | "monthly",
+      recurrenceWeekday: Number(form.get("recurrenceWeekday") ?? 0),
+      recurrenceOrdinal: String(form.get("recurrenceOrdinal") ?? "last") as "first" | "second" | "third" | "fourth" | "last",
     }
     setPending(true)
     try {
       const id = event?.id
-      if (id) await updateEvent(id, payload)
-      else await createEvent(payload)
+      const result = id ? await updateEvent(id, payload) : await createEvent(payload)
       toast.success(event ? "Event updated" : "Event created")
       setOpen(false)
-      if (!event) router.push(`/events/${id}`)
+      if (!event && "id" in result) router.push(`/events/${result.id}`)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not create event")
@@ -92,14 +101,14 @@ export function CreateEventDialog({
           {event ? "Edit event" : "New event"}
         </DialogTrigger>
       ) : null}
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="flex max-h-[90vh] min-w-0 flex-col overflow-x-hidden overflow-y-hidden sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">{event ? "Edit event" : "Create an event"}</DialogTitle>
           <DialogDescription>
             Choose a confirmed date for the event.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form onSubmit={onSubmit} className="min-h-0 min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
           <div className="space-y-2">
             <Label htmlFor="format">Format</Label>
             <fieldset className="grid gap-2 sm:grid-cols-2" aria-describedby="format-hint">
@@ -147,7 +156,7 @@ export function CreateEventDialog({
                       weekly: "Weekly",
                       "store-championship": "Store Championship",
                       rcq: "RCQ",
-                      regional: "RC",
+                      regional: "Regional Championship",
                       "pro-tour": "PT",
                       other: "Other",
                     }[eventType] ?? "select event"}
@@ -164,7 +173,7 @@ export function CreateEventDialog({
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="store-championship">Store Championship</SelectItem>
                 <SelectItem value="rcq">RCQ</SelectItem>
-                <SelectItem value="regional">RC</SelectItem>
+                <SelectItem value="regional">Regional Championship</SelectItem>
                 <SelectItem value="pro-tour">PT</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
@@ -192,7 +201,15 @@ export function CreateEventDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time</Label>
-              <Input id="startTime" name="startTime" type="time" defaultValue={event?.startTime ?? "00:00"} />
+              <Input
+                id="startTime"
+                name="startTime"
+                type="time"
+                value={multiDay ? "" : startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={multiDay}
+                aria-describedby={multiDay ? "start-time-hint" : undefined}
+              />
             </div>
           </div>
           <div className="space-y-2">
@@ -200,17 +217,76 @@ export function CreateEventDialog({
               <input
                 type="checkbox"
                 checked={multiDay}
-                onChange={(e) => setMultiDay(e.target.checked)}
+                onChange={(e) => {
+                  const checked = e.target.checked
+                  setMultiDay(checked)
+                  if (checked) setStartTime("")
+                }}
                 className="size-4 rounded border-input accent-primary"
               />
               This event spans multiple days
             </label>
+            {multiDay ? <p id="start-time-hint" className="text-xs text-muted-foreground">Start time is disabled for multi-day events.</p> : null}
             {multiDay && (
               <div className="space-y-2">
                 <Label htmlFor="endDate">End date</Label>
                 <Input id="endDate" name="endDate" type="date" defaultValue={event?.endDate ?? ""} />
               </div>
             )}
+          </div>
+          <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+            <input type="hidden" name="recurrenceType" value={recurrenceType} />
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="recurrenceToggle">This is a repeated event</Label>
+              <Switch
+                id="recurrenceToggle"
+                checked={recurrenceType !== "none"}
+                onCheckedChange={(checked) => setRecurrenceType(checked ? "weekly" : "none")}
+              />
+            </div>
+            {recurrenceType !== "none" ? (
+              <Select value={recurrenceType} onValueChange={(value) => setRecurrenceType(value ?? "weekly")}>
+                <SelectTrigger className="h-10 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="weekly">Every week</SelectItem>
+                  <SelectItem value="monthly">Every month</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : null}
+            {recurrenceType !== "none" ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="recurrenceWeekday">On</Label>
+                  <Select name="recurrenceWeekday" value={recurrenceWeekday} onValueChange={(value) => setRecurrenceWeekday(value ?? "0")}>
+                    <SelectTrigger id="recurrenceWeekday" className="h-10 w-full">
+                      <span>{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][Number(recurrenceWeekday)]}</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => (
+                        <SelectItem key={day} value={String(index)}>{day}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {recurrenceType === "monthly" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="recurrenceOrdinal">Occurrence</Label>
+                    <Select name="recurrenceOrdinal" defaultValue={event?.recurrenceOrdinal ?? "last"}>
+                      <SelectTrigger id="recurrenceOrdinal" className="h-10 w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="first">First</SelectItem>
+                        <SelectItem value="second">Second</SelectItem>
+                        <SelectItem value="third">Third</SelectItem>
+                        <SelectItem value="fourth">Fourth</SelectItem>
+                        <SelectItem value="last">Last</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="eventUrl">Official event link (optional)</Label>
@@ -229,6 +305,7 @@ export function CreateEventDialog({
               name="description"
               placeholder="Format, entry, decklists, qualification, or practice goals…"
               rows={3}
+              className="h-24 resize-none overflow-y-auto"
               defaultValue={event?.description ?? ""}
             />
           </div>
@@ -239,6 +316,7 @@ export function CreateEventDialog({
               name="travelDetails"
               placeholder="Flights, hotel, carpool, meetup point…"
               rows={2}
+              className="h-24 resize-none overflow-y-auto"
               defaultValue={event?.travelDetails ?? ""}
             />
           </div>

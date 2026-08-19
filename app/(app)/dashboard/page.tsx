@@ -1,20 +1,27 @@
-import { CalendarPlus, Plane, Swords, Trophy, Dumbbell } from "lucide-react"
+import Link from "next/link"
+import { CalendarPlus, UserPlus } from "lucide-react"
 import { listEvents } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
-import { EventCard, type EventSummary } from "@/components/event-card"
+import { getTeamStats } from "@/app/actions/members"
+import { EventTypeFilter } from "@/components/event-type-filter"
+import type { EventSummary } from "@/components/event-card"
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { PersonalAvailabilityDialog } from "@/components/personal-availability-dialog"
-import { listPersonalAvailability } from "@/app/actions/personal-availability"
+import { listPersonalAvailability, listPersonalAvailabilityFrom } from "@/app/actions/personal-availability"
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
+import { AvailabilityEventPrompt } from "@/components/availability-event-prompt"
+import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const month = new Date().toISOString().slice(0, 7)
-  const [events, user, personalDates] = await Promise.all([
+  const [events, user, personalDates, futurePersonalDates, teamStats] = await Promise.all([
     listEvents(),
     getSessionUser(),
     listPersonalAvailability(month),
+    listPersonalAvailabilityFrom(todayISO()),
+    getTeamStats(),
   ])
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
@@ -38,11 +45,22 @@ export default async function DashboardPage() {
     createdByName: e.createdByName,
     respondentCount: e.responderCount,
     goingCount: e.goingCount,
+    recurrenceType: e.recurrenceType,
+    recurrenceWeekday: e.recurrenceWeekday,
+    recurrenceOrdinal: e.recurrenceOrdinal,
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")
-  const planningCount = active.filter((e) => e.status === "planning").length
-  const lockedCount = active.filter((e) => e.status === "locked").length
+  const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
+  const promptMatch = active
+    .filter((event) => !event.lockedDate)
+    .map((event) => {
+      const openDates = event.recurrenceType !== "none"
+        ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
+        : dateRange(event.startDate, event.endDate ?? event.startDate)
+      return { event, matchingDate: openDates.find((date) => availableDates.includes(date)) }
+    })
+    .find((match) => match.matchingDate)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -64,53 +82,60 @@ export default async function DashboardPage() {
         <div className="mt-6 grid grid-cols-3 gap-2 sm:max-w-md sm:gap-3">
           <div className="rounded-xl bg-primary/70 p-3">
             <p className="text-2xl font-bold">{active.length}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Active</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
+              {active.length === 1 ? "Event" : "Events"} planned
+            </p>
           </div>
           <div className="rounded-xl bg-primary/70 p-3">
-            <p className="text-2xl font-bold">{planningCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">Planning</p>
+            <p className="text-2xl font-bold">{teamStats.activeMembers}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-foreground/70">
+              Active {teamStats.activeMembers === 1 ? "member" : "members"}
+            </p>
           </div>
           <div className="rounded-xl bg-accent p-3 text-white">
-            <p className="text-2xl font-bold text-white">{lockedCount}</p>
-            <p className="text-[11px] font-medium uppercase tracking-wide text-white">Finalized</p>
+            <p className="text-2xl font-bold text-white">{teamStats.guests}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-white">
+              {teamStats.guests === 1 ? "Guest" : "Guests"} joining
+            </p>
           </div>
         </div>
       </section>
+
+      {isAdmin && teamStats.pendingMembers > 0 ? (
+        <Link
+          href="/members"
+          className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 transition-colors hover:bg-accent/15"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
+            <UserPlus className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {teamStats.pendingMembers} {teamStats.pendingMembers === 1 ? "prospect is" : "prospects are"} waiting for approval
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Review and approve them on the Members page.
+            </p>
+          </div>
+        </Link>
+      ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">
             {isAdmin
-              ? "Build the next practice, qualifier, RC, PT, or travel plan."
+              ? "Find your next practice, weekly or qualifier here."
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <PersonalAvailabilityDialog initialStatuses={initialStatuses} />
+          <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
           {isAdmin ? <CreateEventDialog /> : null}
         </div>
       </div>
 
-      {active.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            [Swords, "Practice", "Schedule reps and testing"],
-            [Trophy, "RCQs", "Lock the best date"],
-            [Plane, "Travel", "Coordinate the trip"],
-            [Dumbbell, "RC + PT", "Stay ready for the call"],
-          ].map(([Icon, title, copy]) => {
-            const QuickIcon = Icon as typeof Swords
-            return (
-              <div key={title as string} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-                <QuickIcon className="size-4 text-accent" />
-                <p className="mt-3 text-sm font-bold">{title as string}</p>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy as string}</p>
-              </div>
-            )
-          })}
-        </div>
-      ) : null}
+      {promptMatch ? <AvailabilityEventPrompt event={promptMatch.event} matchingDate={promptMatch.matchingDate!} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
@@ -125,11 +150,7 @@ export default async function DashboardPage() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {active.map((e) => (
-            <EventCard key={e.id} event={e} />
-          ))}
-        </div>
+        <EventTypeFilter events={active} />
       )}
     </div>
   )

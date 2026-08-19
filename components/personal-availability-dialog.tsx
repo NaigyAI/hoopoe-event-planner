@@ -6,8 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PersonalAvailabilityCalendar } from "@/components/personal-availability-calendar"
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
+import type { EventSummary } from "@/components/event-card"
 
-export function PersonalAvailabilityDialog({ initialStatuses }: { initialStatuses: Record<string, PersonalAvailabilityStatus> }) {
+export function PersonalAvailabilityDialog({
+  initialStatuses,
+  events = [],
+}: {
+  initialStatuses: Record<string, PersonalAvailabilityStatus>
+  events?: EventSummary[]
+}) {
   const [open, setOpen] = useState(false)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -19,12 +26,12 @@ export function PersonalAvailabilityDialog({ initialStatuses }: { initialStatuse
         <CalendarDays className="size-4" />
         <span>+ Date availability</span>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">Your dates</DialogTitle>
           <DialogDescription>Mark the dates you are available or unavailable for future team plans.</DialogDescription>
         </DialogHeader>
-        <PersonalAvailabilityCalendar initialStatuses={initialStatuses} />
+        <PersonalAvailabilityCalendar initialStatuses={initialStatuses} events={events} />
       </DialogContent>
     </Dialog>
   )

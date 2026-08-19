@@ -1,8 +1,7 @@
 import Link from "next/link"
-import { CalendarDays, ExternalLink, Lock, MapPin, Users } from "lucide-react"
+import { CalendarDays, ExternalLink, MapPin, Repeat2, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { formatDateRange, formatTime } from "@/lib/dates"
+import { formatDateRange, formatTime, formatRecurrence } from "@/lib/dates"
 
 export type EventSummary = {
   id: string
@@ -21,42 +20,23 @@ export type EventSummary = {
   createdByName: string
   respondentCount: number
   goingCount: number
-}
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === "locked") {
-    return (
-      <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
-        <Lock className="size-3" />
-        Finalized
-      </Badge>
-    )
-  }
-  if (status === "cancelled") {
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        Cancelled
-      </Badge>
-    )
-  }
-  return (
-    <Badge variant="secondary" className="gap-1">
-      Planning
-    </Badge>
-  )
+  recurrenceType: string
+  recurrenceWeekday: number | null
+  recurrenceOrdinal: string | null
 }
 
 export function EventCard({ event }: { event: EventSummary }) {
   return (
-    <Link href={`/events/${event.id}`} className="group block">
+    <div className="group block">
       <Card className="h-full gap-0 p-5 leading-[1.3] transition-colors group-hover:border-primary/40">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
             <h3 className="text-pretty text-[22px] font-medium leading-tight text-foreground">
-              {event.title}
+              <Link href={`/events/${event.id}`} className="hover:underline underline-offset-4">
+                {event.title}
+              </Link>
             </h3>
           </div>
-          <StatusBadge status={event.status} />
         </div>
 
         <dl className="mt-4 space-y-2 text-sm text-muted-foreground">
@@ -66,6 +46,9 @@ export function EventCard({ event }: { event: EventSummary }) {
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
+            {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+              <Repeat2 className="size-4 shrink-0" aria-label="Recurring event" />
+            ) : null}
           </div>
           {event.location ? (
             <div className="flex items-center gap-2">
@@ -74,10 +57,17 @@ export function EventCard({ event }: { event: EventSummary }) {
             </div>
           ) : null}
           {event.eventUrl ? (
-            <div className="flex items-center gap-2 text-primary">
+            <a
+              href={event.eventUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="flex items-center gap-2 text-primary underline-offset-4 hover:underline"
+            >
               <ExternalLink className="size-4 shrink-0" />
               <span>Official event details</span>
-            </div>
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
           ) : null}
           <div className="flex items-center gap-2">
             <Users className="size-4 shrink-0" />
@@ -89,6 +79,6 @@ export function EventCard({ event }: { event: EventSummary }) {
         </dl>
 
       </Card>
-    </Link>
+    </div>
   )
 }

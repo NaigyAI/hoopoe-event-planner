@@ -1,13 +1,13 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSuggestedDates } from "@/app/actions/personal-availability"
 import { SuggestedDatePicker } from "@/components/suggested-date-picker"
 import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
-import { dateRange, formatDateRange, formatTime } from "@/lib/dates"
+import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
@@ -32,20 +32,35 @@ export default async function EventPage({
 
   const isAdmin = user?.role === "admin"
   const isLocked = event.status === "locked"
-  const suggestions = !isLocked ? await getSuggestedDates(event.startDate, event.endDate ?? event.startDate) : []
+  const recurringDates = getRecurringDates(
+    event.recurrenceType,
+    event.startDate,
+    event.recurrenceWeekday,
+    event.recurrenceOrdinal,
+  )
+  const availabilityDates = recurringDates.length > 0
+    ? recurringDates
+    : dateRange(event.startDate, event.endDate ?? event.startDate)
+  const canSuggestDates = !isLocked && event.eventType !== "regional"
+  const suggestions = canSuggestDates
+    ? await getSuggestedDates(availabilityDates[0], availabilityDates[availabilityDates.length - 1])
+    : []
   const confirmedPeople = event.lockedDate
     ? votes
         .filter((vote) => vote.date === event.lockedDate)
         .map((vote) => ({ name: vote.userName, status: vote.status }))
     : []
-  const days = dateRange(event.startDate, event.endDate ?? event.startDate)
+  const isMultiDay = event.endDate != null && event.endDate !== event.startDate
+  const days = isMultiDay ? [event.startDate] : availabilityDates
 
   // Distinct respondents across the whole event
   const respondentIds = new Set(votes.map((v) => v.userId))
   const totalRespondents = respondentIds.size
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = votes.filter((v) => v.date === date)
+    const dayVotes = isMultiDay
+      ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
+      : votes.filter((v) => v.date === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
     const unavailable = dayVotes.filter((v) => v.status === "unavailable").length
@@ -105,7 +120,7 @@ export default async function EventPage({
                     : event.eventType === "rcq"
                       ? "RCQ"
                       : event.eventType === "regional"
-                        ? "RC"
+                        ? "Regional Championship"
                         : event.eventType === "pro-tour"
                           ? "PT"
                           : event.eventType === "travel"
@@ -118,6 +133,9 @@ export default async function EventPage({
               <CalendarDays className="size-4" />
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
+              {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+                <Repeat2 className="ml-1 inline-block size-4 align-text-bottom" aria-label="Recurring event" />
+              ) : null}
             </span>
             {event.location ? (
               <span className="flex items-center gap-1.5">
@@ -182,7 +200,7 @@ export default async function EventPage({
 
       {!isLocked ? <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             {isLocked ? "How the date was chosen" : "Mark your availability"}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -200,6 +218,7 @@ export default async function EventPage({
 
         <AvailabilityGrid
           eventId={event.id}
+          eventEndDate={isMultiDay ? event.endDate : null}
           tallies={tallies}
           totalRespondents={totalRespondents}
           bestDate={bestDate}
