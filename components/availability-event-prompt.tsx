@@ -55,7 +55,7 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
                 type="button"
                 onClick={() => respond("unavailable")}
                 disabled={isPending}
-                className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
+                className="rounded-lg border border-destructive/40 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:opacity-60"
               >
                 No
               </button>
