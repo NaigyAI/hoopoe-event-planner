@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import {
   CalendarCheck,
@@ -13,13 +14,40 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { getGuestContext } from "@/app/actions/guest"
+import { getEventByToken, getGuestContext } from "@/app/actions/guest"
 import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { GuestJoinForm } from "@/components/guest-join-form"
 
 export const dynamic = "force-dynamic"
+
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params
+  const event = await getEventByToken(token)
+  if (!event) return { title: "Shared event | Hoopoe Event Planner" }
+
+  const date = formatDateRange(event.startDate, event.endDate ?? event.startDate)
+  const time = event.startTime ? ` · ${formatTime(event.startTime)}${event.endTime ? `–${formatTime(event.endTime)}` : ""}` : ""
+  const details = `${date}${time} · ${event.location}`
+  return {
+    title: event.title,
+    description: `${details}. ${event.description ?? "Plan and share your availability with the team."}`,
+    openGraph: {
+      title: event.title,
+      description: details,
+      type: "website",
+      url: `/join/${token}`,
+      images: [{ url: `/join/${token}/opengraph-image`, width: 1200, height: 630, alt: `${event.title} event details` }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: event.title,
+      description: details,
+      images: [`/join/${token}/opengraph-image`],
+    },
+  }
+}
 
 export default async function JoinPage({
   params,
