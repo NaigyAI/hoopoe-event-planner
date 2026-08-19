@@ -133,8 +133,8 @@ export default async function DashboardPage() {
         </Link>
       ) : null}
 
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
           <p className="mt-1 text-sm text-muted-foreground text-pretty">
             {isAdmin
@@ -142,7 +142,7 @@ export default async function DashboardPage() {
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
           <BestDatesDialog />
           <CreateEventDialog />
