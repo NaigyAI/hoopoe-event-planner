@@ -247,7 +247,9 @@ export function CreateEventDialog({
                 <div className="space-y-2">
                   <Label htmlFor="recurrenceWeekday">On</Label>
                   <Select name="recurrenceWeekday" value={recurrenceWeekday} onValueChange={(value) => setRecurrenceWeekday(value ?? "0")}>
-                    <SelectTrigger id="recurrenceWeekday" className="h-10 w-full"><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="recurrenceWeekday" className="h-10 w-full">
+                      <span>{["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][Number(recurrenceWeekday)]}</span>
+                    </SelectTrigger>
                     <SelectContent>
                       {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => (
                         <SelectItem key={day} value={String(index)}>{day}</SelectItem>
