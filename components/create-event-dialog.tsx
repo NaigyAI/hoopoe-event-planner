@@ -45,6 +45,7 @@ export function CreateEventDialog({
   showTrigger = true,
   initialStartDate,
   initialEndDate,
+  triggerClassName,
 }: {
   event?: EventEditData
   open?: boolean
@@ -52,6 +53,7 @@ export function CreateEventDialog({
   showTrigger?: boolean
   initialStartDate?: string
   initialEndDate?: string
+  triggerClassName?: string
 }) {
   const router = useRouter()
   const [internalOpen, setInternalOpen] = useState(false)
@@ -100,7 +102,7 @@ export function CreateEventDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {showTrigger ? (
-        <DialogTrigger render={<Button className="gap-2" />}>
+        <DialogTrigger render={<Button className={`${triggerClassName ?? ""} gap-2`} />}>
           <Plus className="size-4" />
           {event ? "Edit event" : "New event"}
         </DialogTrigger>

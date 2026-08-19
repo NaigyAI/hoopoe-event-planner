@@ -142,12 +142,14 @@ export default async function DashboardPage() {
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
-          <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
-          <BestDatesDialog />
-          <CreateEventDialog />
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0">
+          <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} triggerClassName="w-full" />
+          <BestDatesDialog triggerClassName="w-full" />
+          <CreateEventDialog triggerClassName="w-full" />
         </div>
       </div>
+
+      <div className="my-5 h-px w-full bg-border" aria-hidden="true" />
 
       {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDates.join(",")}`).join("|")} suggestions={promptMatches} /> : null}
 

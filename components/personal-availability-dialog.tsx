@@ -11,16 +11,18 @@ import type { EventSummary } from "@/components/event-card"
 export function PersonalAvailabilityDialog({
   initialStatuses,
   events = [],
+  triggerClassName,
 }: {
   initialStatuses: Record<string, PersonalAvailabilityStatus>
   events?: EventSummary[]
+  triggerClassName?: string
 }) {
   const [open, setOpen] = useState(false)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" className="gap-2" />
+          <Button variant="outline" className={`${triggerClassName ?? ""} gap-2`} />
         }
       >
         <CalendarDays className="size-4" />
