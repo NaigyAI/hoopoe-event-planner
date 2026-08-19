@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic"
 export default async function MembersPage() {
   const user = await getSessionUser()
   if (!user) redirect("/sign-in")
-  if (user.role !== "admin") redirect("/dashboard")
+  if (user.role !== "admin" && user.role !== "superuser") redirect("/dashboard")
 
   const [members, pending, activeInvite] = await Promise.all([
     listMembers(),
@@ -27,7 +27,7 @@ export default async function MembersPage() {
         </p>
       </div>
       <MemberInviteManager active={activeInvite} />
-      <MembersManager members={members} pending={pending} />
+      <MembersManager members={members} pending={pending} canManageAdmins={user.role === "superuser"} />
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import { db } from "@/lib/db"
 import { user, availability, personalAvailability, rsvp } from "@/lib/db/schema"
 import { and, desc, eq, like, sql } from "drizzle-orm"
-import { requireAdmin } from "@/lib/session"
+import { requireAdmin, requireSuperuser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export type MemberRow = {
@@ -49,6 +49,21 @@ export async function listPendingMembers(): Promise<MemberRow[]> {
     .orderBy(desc(user.createdAt))
 }
 
+/** Superusers promote or demote non-superuser members as admins. */
+export async function setMemberAdmin(userId: string, isAdmin: boolean) {
+  const actor = await requireSuperuser()
+  if (actor.id === userId) throw new Error("You cannot change your own role")
+
+  await db
+    .update(user)
+    .set({ role: isAdmin ? "admin" : "member", updatedAt: new Date() })
+    .where(and(eq(user.id, userId), eq(user.role, isAdmin ? "member" : "admin")))
+
+  revalidatePath("/members")
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
 /** Admin approves a pending sign-up into a full member. */
 export async function approveMember(userId: string) {
   await requireAdmin()
@@ -65,7 +80,7 @@ export async function deleteMember(userId: string) {
 
   const [target] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId)).limit(1)
   if (!target) throw new Error("Member not found")
-  if (target.role === "admin") throw new Error("Admin accounts cannot be removed")
+  if (target.role === "admin" || target.role === "superuser") throw new Error("Admin accounts cannot be removed")
 
   await db.transaction(async (tx) => {
     await tx.delete(availability).where(eq(availability.userId, userId))

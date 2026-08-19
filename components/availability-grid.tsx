@@ -31,11 +31,11 @@ const OPTIONS: {
   { value: "unavailable", label: "No", icon: X, active: "bg-unavailable text-unavailable-foreground border-unavailable" },
 ]
 
-function HeatBar({ tally, total }: { tally: DateTally; total: number }) {
+function HeatBar({ tally, total, variant }: { tally: DateTally; total: number; variant: "member" | "guest" }) {
   const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0)
   return (
     <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div className="bg-available" style={{ width: `${pct(tally.available)}%` }} />
+      <div className={variant === "guest" ? "bg-muted-foreground/30" : "bg-available"} style={{ width: `${pct(tally.available)}%` }} />
       <div className="bg-maybe" style={{ width: `${pct(tally.maybe)}%` }} />
       <div className="bg-unavailable" style={{ width: `${pct(tally.unavailable)}%` }} />
     </div>
@@ -142,7 +142,7 @@ export function AvailabilityGrid({
 
             {/* Heat */}
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <HeatBar tally={t} total={totalRespondents} />
+              <HeatBar tally={t} total={totalRespondents} variant={variant} />
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="tabular-nums">
                   <span className="font-medium text-foreground">{t.available}</span> yes
