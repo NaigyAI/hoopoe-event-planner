@@ -9,7 +9,6 @@ import {
   LogIn,
   UserRound,
   MapPin,
-  Trophy,
   Users,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -189,15 +188,6 @@ function GuestEventView({
     }
   })
 
-  let bestDate: string | null = null
-  if (totalRespondents > 0) {
-    const ranked = [...tallies].sort(
-      (a, b) => b.score - a.score || a.unavailable - b.unavailable,
-    )
-    if (ranked[0] && ranked[0].score > 0) bestDate = ranked[0].date
-  }
-  const highlightDate = event.lockedDate ?? bestDate
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -287,25 +277,15 @@ function GuestEventView({
         </Link>
       </div>
 
-      {/* Highlight banner */}
-      {highlightDate ? (
-        <div
-          className={
-            isLocked
-              ? "flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3"
-              : "flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3"
-          }
-        >
+      {/* Confirmed date */}
+      {isLocked && event.lockedDate ? (
+        <div className="flex items-center gap-3 rounded-xl border border-accent/40 bg-accent/10 px-4 py-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent-foreground">
-            {isLocked ? <Lock className="size-4" /> : <Trophy className="size-4" />}
+            <Lock className="size-4" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">
-              {isLocked ? "Confirmed date" : "Best date so far"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {formatFullDate(highlightDate)}
-            </p>
+            <p className="text-sm font-medium text-foreground">Confirmed date</p>
+            <p className="text-sm text-muted-foreground">{formatFullDate(event.lockedDate)}</p>
           </div>
         </div>
       ) : null}
@@ -325,7 +305,7 @@ function GuestEventView({
       {/* Grid */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-foreground">
+          <h2 className="text-lg font-medium text-foreground">
             {isLocked ? "How the date was chosen" : "Mark your availability"}
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -346,7 +326,7 @@ function GuestEventView({
           eventEndDate={isMultiDay ? event.endDate : null}
           tallies={tallies}
           totalRespondents={totalRespondents}
-          bestDate={bestDate}
+          bestDate={null}
           lockedDate={event.lockedDate}
           isAdmin={false}
           isLocked={isLocked}
