@@ -11,6 +11,7 @@ import { listPersonalAvailability, listPersonalAvailabilityFrom } from "@/app/ac
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
 import { AvailabilityEventPrompt } from "@/components/availability-event-prompt"
 import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
+import { BestDatesDialog } from "@/components/best-dates-dialog"
 
 export const dynamic = "force-dynamic"
 
@@ -131,6 +132,7 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
+          {isAdmin ? <BestDatesDialog /> : null}
           {isAdmin ? <CreateEventDialog /> : null}
         </div>
       </div>

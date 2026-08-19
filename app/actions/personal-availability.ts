@@ -2,8 +2,8 @@
 
 import { db } from "@/lib/db"
 import { personalAvailability, user } from "@/lib/db/schema"
-import { requireUser } from "@/lib/session"
-import { and, eq, gte, lt } from "drizzle-orm"
+import { requireAdmin, requireUser } from "@/lib/session"
+import { and, eq, gte, lte, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 
@@ -26,6 +26,33 @@ export async function listPersonalAvailabilityFrom(date: string) {
         gte(personalAvailability.date, date),
       ),
     )
+}
+
+export async function findBestAvailabilityDates(startDate: string, endDate: string) {
+  await requireAdmin()
+  const rows = await db
+    .select({ date: personalAvailability.date, userId: personalAvailability.userId, status: personalAvailability.status })
+    .from(personalAvailability)
+    .innerJoin(user, eq(user.id, personalAvailability.userId))
+    .where(and(
+      eq(user.approved, true),
+      gte(personalAvailability.date, startDate),
+      lte(personalAvailability.date, endDate),
+    ))
+
+  const byDate = new Map<string, Map<string, string>>()
+  for (const row of rows) {
+    if (!byDate.has(row.date)) byDate.set(row.date, new Map())
+    byDate.get(row.date)!.set(row.userId, row.status)
+  }
+
+  return Array.from(byDate, ([date, statuses]) => ({
+    date,
+    available: Array.from(statuses.values()).filter((status) => status === "available").length,
+    maybe: Array.from(statuses.values()).filter((status) => status === "maybe").length,
+    unavailable: Array.from(statuses.values()).filter((status) => status === "unavailable").length,
+    total: statuses.size,
+  })).sort((a, b) => (b.available - a.available) || (b.maybe - a.maybe) || a.date.localeCompare(b.date))
 }
 
 export async function listPersonalAvailability(month: string) {
