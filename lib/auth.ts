@@ -21,6 +21,13 @@ function getBaseURL() {
 
 const isDev = process.env.NODE_ENV === "development"
 
+function asOrigin(value?: string) {
+  if (!value) return null
+  return value.startsWith("http://") || value.startsWith("https://")
+    ? value.replace(/\/$/, "")
+    : `https://${value}`
+}
+
 function getTrustedOrigins() {
   if (isDev) {
     const origins = [
@@ -29,14 +36,15 @@ function getTrustedOrigins() {
       "https://*.vercel.run",
       "https://*.v0.build",
     ]
-    if (process.env.V0_RUNTIME_URL) origins.push(process.env.V0_RUNTIME_URL)
+    const runtimeOrigin = asOrigin(process.env.V0_RUNTIME_URL)
+    if (runtimeOrigin) origins.push(runtimeOrigin)
     return origins
   }
-  const origins: string[] = []
-  if (process.env.VERCEL_URL) origins.push(`https://${process.env.VERCEL_URL}`)
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
-    origins.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`)
-  return origins
+  return [
+    asOrigin(process.env.BETTER_AUTH_URL),
+    asOrigin(process.env.VERCEL_URL),
+    asOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL),
+  ].filter((origin): origin is string => Boolean(origin))
 }
 
 export const auth = betterAuth({
