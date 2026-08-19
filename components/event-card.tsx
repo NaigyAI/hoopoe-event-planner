@@ -27,7 +27,7 @@ export type EventSummary = {
 
 export function EventCard({ event }: { event: EventSummary }) {
   const displayTitle = event.title.replace(/\b(RCQ|RC)\b/gi, (label) =>
-    label.toUpperCase() === "RCQ" ? "RC Qualifier" : "Regional Championship",
+    label.toUpperCase() === "RCQ" ? "RC Qualifier" : "Regional Championships",
   )
 
   return (

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { listPersonalAvailability, setPersonalAvailability, type PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,10 @@ export function PersonalAvailabilityCalendar({
   })
   const [statuses, setStatuses] = useState<Record<string, PersonalAvailabilityStatus>>(initialStatuses)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    setStatuses(initialStatuses)
+  }, [initialStatuses])
   const monthLabel = month.toLocaleDateString(undefined, { month: "long", year: "numeric" })
   const visibleEvents = useMemo(() => {
     const monthStart = isoDate(new Date(month.getFullYear(), month.getMonth(), 1))

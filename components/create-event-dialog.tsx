@@ -160,7 +160,7 @@ export function CreateEventDialog({
                       weekly: "Weekly",
                       "store-championship": "Store Championship",
                       rcq: "RC Qualifier",
-                      regional: "Regional Championship",
+                      regional: "Regional Championships",
                       "pro-tour": "PT",
                       other: "Other",
                     }[eventType] ?? "select event"}

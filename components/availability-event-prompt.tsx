@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { CalendarDays, X } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import type { EventSummary } from "@/components/event-card"
 import { setPersonalAvailabilityForDates } from "@/app/actions/personal-availability"
@@ -10,6 +11,7 @@ import { formatDateRange, formatTime } from "@/lib/dates"
 type AvailabilitySuggestion = { event: EventSummary; matchingDates: string[] }
 
 export function AvailabilityEventPrompt({ suggestions }: { suggestions: AvailabilitySuggestion[] }) {
+  const router = useRouter()
   const [index, setIndex] = useState(0)
   const [open, setOpen] = useState(true)
   const [isPending, startTransition] = useTransition()
@@ -33,6 +35,7 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
     advance()
     startTransition(async () => {
       await setPersonalAvailabilityForDates(suggestion.matchingDates, status)
+      router.refresh()
     })
   }
 

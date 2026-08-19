@@ -120,7 +120,7 @@ export default async function EventPage({
                     : event.eventType === "rcq"
                       ? "RC Qualifier"
                       : event.eventType === "regional"
-                        ? "Regional Championship"
+                        ? "Regional Championships"
                         : event.eventType === "pro-tour"
                           ? "PT"
                           : event.eventType === "travel"
