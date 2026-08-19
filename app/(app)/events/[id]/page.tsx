@@ -41,7 +41,8 @@ export default async function EventPage({
   const availabilityDates = recurringDates.length > 0
     ? recurringDates
     : dateRange(event.startDate, event.endDate ?? event.startDate)
-  const suggestions = !isLocked
+  const canSuggestDates = !isLocked && event.eventType !== "regional"
+  const suggestions = canSuggestDates
     ? await getSuggestedDates(availabilityDates[0], availabilityDates[availabilityDates.length - 1])
     : []
   const confirmedPeople = event.lockedDate
