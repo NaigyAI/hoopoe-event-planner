@@ -61,7 +61,7 @@ export function MembersManager({
       </section>
 
       {(["team", "external"] as const).map((role) => {
-        const sectionMembers = members.filter((m) => role === "team" ? m.role === "member" || m.role === "team-member" : m.role === "external-member")
+        const sectionMembers = members.filter((m) => role === "team" ? m.role === "member" || m.role === "team-member" || m.role === "admin" || m.role === "superuser" : m.role === "external-member")
         const title = role === "team" ? "Team members" : "External members"
         return (
           <section key={role} className="space-y-4">
@@ -92,11 +92,11 @@ export function MembersManager({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
+                  <DeleteMemberButton member={m} />
                   <Badge variant="outline" className="text-[10px]">
                     {m.role === "external-member" ? "External member" : "Team member"}
                   </Badge>
                   {canManageRoles ? <RoleButton member={m} /> : null}
-                  <DeleteMemberButton member={m} />
                 </div>
               )}
             </li>
@@ -167,7 +167,6 @@ function DeleteMemberButton({ member }: { member: MemberRow }) {
       className="gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
     >
       <Trash2 className="size-4" />
-      <span className="hidden sm:inline">Delete</span>
     </Button>
   )
 }
