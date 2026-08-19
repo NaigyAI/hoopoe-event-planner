@@ -118,7 +118,7 @@ export default async function EventPage({
                   : event.eventType === "store-championship"
                     ? "Store Championship"
                     : event.eventType === "rcq"
-                      ? "RCQ"
+                      ? "RC Qualifier"
                       : event.eventType === "regional"
                         ? "Regional Championship"
                         : event.eventType === "pro-tour"

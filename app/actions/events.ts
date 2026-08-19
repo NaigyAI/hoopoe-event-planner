@@ -97,7 +97,7 @@ export async function createEvent(input: {
     training: "Practice",
     weekly: "Weekly",
     "store-championship": "Store Championship",
-    rcq: "RCQ",
+    rcq: "RC Qualifier",
     regional: "Regional Championship",
     "pro-tour": "PT",
     other: eventTypeDetail ?? "Other",
@@ -189,7 +189,7 @@ export async function updateEvent(eventId: string, input: {
   const normalizedEventType = eventType === "training" ? "practice" : eventType
   const labels: Record<string, string> = {
     practice: "Practice", training: "Practice", weekly: "Weekly",
-    "store-championship": "Store Championship", rcq: "RCQ", regional: "Regional Championship", "pro-tour": "PT",
+    "store-championship": "Store Championship", rcq: "RC Qualifier", regional: "Regional Championship", "pro-tour": "PT",
     other: eventTypeDetail ?? "Other",
   }
   const title = `${formats.join("/")} ${labels[normalizedEventType] ?? normalizedEventType}`
