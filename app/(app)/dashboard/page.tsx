@@ -7,17 +7,20 @@ import { EventTypeFilter } from "@/components/event-type-filter"
 import type { EventSummary } from "@/components/event-card"
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { PersonalAvailabilityDialog } from "@/components/personal-availability-dialog"
-import { listPersonalAvailability } from "@/app/actions/personal-availability"
+import { listPersonalAvailability, listPersonalAvailabilityFrom } from "@/app/actions/personal-availability"
 import type { PersonalAvailabilityStatus } from "@/app/actions/personal-availability"
+import { AvailabilityEventPrompt } from "@/components/availability-event-prompt"
+import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
 
 export const dynamic = "force-dynamic"
 
 export default async function DashboardPage() {
   const month = new Date().toISOString().slice(0, 7)
-  const [events, user, personalDates, teamStats] = await Promise.all([
+  const [events, user, personalDates, futurePersonalDates, teamStats] = await Promise.all([
     listEvents(),
     getSessionUser(),
     listPersonalAvailability(month),
+    listPersonalAvailabilityFrom(todayISO()),
     getTeamStats(),
   ])
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
@@ -48,6 +51,16 @@ export default async function DashboardPage() {
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")
+  const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
+  const promptMatch = active
+    .filter((event) => !event.lockedDate)
+    .map((event) => {
+      const openDates = event.recurrenceType !== "none"
+        ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
+        : dateRange(event.startDate, event.endDate ?? event.startDate)
+      return { event, matchingDate: openDates.find((date) => availableDates.includes(date)) }
+    })
+    .find((match) => match.matchingDate)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -121,6 +134,8 @@ export default async function DashboardPage() {
           {isAdmin ? <CreateEventDialog /> : null}
         </div>
       </div>
+
+      {promptMatch ? <AvailabilityEventPrompt event={promptMatch.event} matchingDate={promptMatch.matchingDate!} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
