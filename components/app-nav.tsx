@@ -78,18 +78,18 @@ export function AppNav({ user }: { user: NavUser }) {
             <div className="flex flex-col gap-1 px-1.5 py-1">
               <span className="flex items-center gap-2 text-sm font-medium">
                 {user.name}
-                {user.role === "admin" && (
-                  <Badge variant="secondary" className="text-[10px]">
-                    Admin
-                  </Badge>
-                )}
+                {user.role === "superuser" ? (
+                  <Badge className="text-[10px]">Superuser</Badge>
+                ) : user.role === "admin" ? (
+                  <Badge variant="secondary" className="text-[10px]">Admin</Badge>
+                ) : null}
               </span>
               <span className="text-xs font-normal text-muted-foreground">
                 {user.email}
               </span>
             </div>
             <DropdownMenuSeparator />
-            {user.role === "admin" && (
+            {(user.role === "admin" || user.role === "superuser") && (
               <DropdownMenuItem render={<Link href="/members" />}>
                 <Users className="size-4" />
                 Members

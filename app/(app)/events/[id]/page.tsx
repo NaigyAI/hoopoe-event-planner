@@ -30,7 +30,7 @@ export default async function EventPage({
 
   if (!event) notFound()
 
-  const isAdmin = user?.role === "admin"
+  const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
   const recurringDates = getRecurringDates(
     event.recurrenceType,

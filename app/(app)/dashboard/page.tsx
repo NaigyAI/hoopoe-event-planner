@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   const initialStatuses: Record<string, PersonalAvailabilityStatus> = Object.fromEntries(
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
   )
-  const isAdmin = user?.role === "admin"
+  const isAdmin = user?.role === "admin" || user?.role === "superuser"
 
   const summaries: EventSummary[] = events.map((e) => ({
     id: e.id,

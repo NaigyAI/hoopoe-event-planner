@@ -10,7 +10,7 @@ export default async function AppLayout({
   const user = await requireUser()
 
   // Only approved members (and admins) may use the app. Everyone else waits.
-  if (user.role !== "admin" && !user.approved) {
+  if (user.role !== "admin" && user.role !== "superuser" && !user.approved) {
     return <PendingApproval name={user.name} />
   }
 
