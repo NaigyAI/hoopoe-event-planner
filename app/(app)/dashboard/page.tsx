@@ -81,7 +81,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            Hoopoe Boys team command center
+            Hoopoe Boys | command center
           </p>
           <h1 className="mt-2 text-4xl leading-none tracking-wide text-balance sm:text-5xl">
             Keep the reps, trips, and tournaments organized.
