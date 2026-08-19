@@ -1,13 +1,22 @@
 "use client"
 
-import Link from "next/link"
 import { CalendarDays, X } from "lucide-react"
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import type { EventSummary } from "@/components/event-card"
+import { setPersonalAvailability } from "@/app/actions/personal-availability"
 import { formatDateRange, formatTime } from "@/lib/dates"
 
 export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventSummary; matchingDate: string }) {
   const [open, setOpen] = useState(true)
+  const [isPending, startTransition] = useTransition()
+
+  function respond(status: "available" | "unavailable") {
+    startTransition(async () => {
+      await setPersonalAvailability(matchingDate, status)
+      setOpen(false)
+    })
+  }
+
   if (!open) return null
 
   return (
@@ -33,8 +42,22 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
             </p>
             <p className="mt-1 text-xs text-muted-foreground">Your availability matches {matchingDate === event.startDate ? "this date" : matchingDate}.</p>
             <div className="mt-3 flex items-center gap-2">
-              <Link href={`/events/${event.id}`} className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">View event</Link>
-              <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted">Not now</button>
+              <button
+                type="button"
+                onClick={() => respond("available")}
+                disabled={isPending}
+                className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              >
+                Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => respond("unavailable")}
+                disabled={isPending}
+                className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-60"
+              >
+                No
+              </button>
             </div>
           </div>
         </div>
