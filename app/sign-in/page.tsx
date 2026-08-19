@@ -13,7 +13,7 @@ export default async function SignInPage({
   if (user) redirect("/dashboard")
   return (
     <AuthShell>
-      <AuthForm mode="sign-in" returnTo={returnTo} />
+      <AuthForm mode="sign-in" returnTo={returnTo} captchaEnabled={process.env.VERCEL_ENV === "production"} />
     </AuthShell>
   )
 }

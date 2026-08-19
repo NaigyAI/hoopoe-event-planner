@@ -26,10 +26,12 @@ export function AuthForm({
   mode,
   returnTo,
   inviteToken,
+  captchaEnabled = false,
 }: {
   mode: Mode
   returnTo?: string
   inviteToken?: string
+  captchaEnabled?: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState("")
@@ -42,7 +44,7 @@ export function AuthForm({
   const widgetRef = useRef<string | undefined>(undefined)
 
   const isSignUp = mode === "sign-up"
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const siteKey = captchaEnabled ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined
 
   useEffect(() => {
     if (!siteKey || !captchaRef.current) return
@@ -71,18 +73,24 @@ export function AuthForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (!captchaToken) {
-      setError("Please complete the CAPTCHA verification.")
-      return
+    if (captchaEnabled) {
+      if (!captchaToken) {
+        setError("Please complete the CAPTCHA verification.")
+        return
+      }
+      setLoading(true)
+    } else {
+      setLoading(true)
     }
-    setLoading(true)
     try {
-      const captchaResponse = await fetch("/api/turnstile/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken }),
-      })
-      if (!captchaResponse.ok) throw new Error("CAPTCHA verification failed. Please try again.")
+      if (captchaEnabled) {
+        const captchaResponse = await fetch("/api/turnstile/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: captchaToken }),
+        })
+        if (!captchaResponse.ok) throw new Error("CAPTCHA verification failed. Please try again.")
+      }
       if (isSignUp) {
         const { error } = await authClient.signUp.email({ email, password, name })
         if (error) throw new Error(error.message ?? "Could not create account")

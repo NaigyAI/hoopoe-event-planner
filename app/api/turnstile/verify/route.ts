@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
+  if (process.env.VERCEL_ENV !== "production") {
+    return NextResponse.json({ success: true, skipped: true })
+  }
+
   const { token } = await request.json().catch(() => ({}))
 
   if (typeof token !== "string" || !token) {
