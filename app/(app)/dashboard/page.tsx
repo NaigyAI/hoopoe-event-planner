@@ -59,9 +59,8 @@ export default async function DashboardPage() {
       const openDates = event.recurrenceType !== "none"
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
         : dateRange(event.startDate, event.endDate ?? event.startDate)
-      return openDates
-        .filter((date) => availableDates.includes(date))
-        .map((matchingDate) => ({ event, matchingDate }))
+      const matchingDates = openDates.filter((date) => availableDates.includes(date))
+      return matchingDates.length > 0 ? [{ event, matchingDates }] : []
     })
 
   return (
@@ -138,7 +137,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDate}`).join("|")} suggestions={promptMatches} /> : null}
+      {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDates.join(",")}`).join("|")} suggestions={promptMatches} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">

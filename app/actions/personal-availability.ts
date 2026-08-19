@@ -101,6 +101,17 @@ export async function getSuggestedDates(startDate: string, endDate: string) {
     .sort((a, b) => b.score - a.score || b.available - a.available || a.date.localeCompare(b.date))
 }
 
+export async function setPersonalAvailabilityForDates(
+  dates: string[],
+  status: PersonalAvailabilityStatus,
+) {
+  await requireUser()
+  for (const date of dates) {
+    await setPersonalAvailability(date, status)
+  }
+  revalidatePath("/dashboard")
+}
+
 export async function setPersonalAvailability(
   date: string,
   status: PersonalAvailabilityStatus | null,

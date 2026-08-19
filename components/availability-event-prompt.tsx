@@ -4,10 +4,10 @@ import Link from "next/link"
 import { CalendarDays, X } from "lucide-react"
 import { useState, useTransition } from "react"
 import type { EventSummary } from "@/components/event-card"
-import { setPersonalAvailability } from "@/app/actions/personal-availability"
+import { setPersonalAvailabilityForDates } from "@/app/actions/personal-availability"
 import { formatDateRange, formatTime } from "@/lib/dates"
 
-type AvailabilitySuggestion = { event: EventSummary; matchingDate: string }
+type AvailabilitySuggestion = { event: EventSummary; matchingDates: string[] }
 
 export function AvailabilityEventPrompt({ suggestions }: { suggestions: AvailabilitySuggestion[] }) {
   const [index, setIndex] = useState(0)
@@ -32,12 +32,12 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
   function respond(status: "available" | "unavailable") {
     advance()
     startTransition(async () => {
-      await setPersonalAvailability(suggestion.matchingDate, status)
+      await setPersonalAvailabilityForDates(suggestion.matchingDates, status)
     })
   }
 
   if (!open || !suggestion) return null
-  const { event, matchingDate } = suggestion
+  const { event } = suggestion
 
   return (
     <aside className="fixed inset-x-4 bottom-4 z-50 sm:left-auto sm:right-6 sm:w-[min(28rem,calc(100vw-3rem))]" role="dialog" aria-label="Event availability suggestion">
@@ -60,7 +60,7 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}{event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
               {event.location ? ` · ${event.location}` : ""}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">Your availability matches {matchingDate === event.startDate ? "this date" : matchingDate}.</p>
+            <p className="mt-1 text-xs text-muted-foreground">Your availability matches {suggestion.matchingDates.length === 1 ? "this date" : `${suggestion.matchingDates.length} dates`}.</p>
             <div className="mt-3 flex items-center gap-2">
               <button
                 type="button"
