@@ -29,7 +29,10 @@ export function BestDatesDialog() {
   }
 
   return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger render={<Button variant="outline"><Search className="mr-2 size-4" />Find best dates</Button>} />
+    <DialogTrigger render={<Button variant="outline" />}>
+      <Search className="mr-2 size-4" />
+      Find best dates
+    </DialogTrigger>
     <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>Find best dates</DialogTitle>

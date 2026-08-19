@@ -21,9 +21,9 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
   }
 
   function respond(status: "available" | "unavailable") {
+    advance()
     startTransition(async () => {
       await setPersonalAvailability(suggestion.matchingDate, status)
-      advance()
     })
   }
 
