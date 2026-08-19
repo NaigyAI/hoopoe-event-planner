@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { authClient } from "@/lib/auth-client"
@@ -12,6 +12,15 @@ import { CalendarCheck, Loader2 } from "lucide-react"
 import { approveCurrentUserWithInvite } from "@/app/actions/member-invites"
 
 type Mode = "sign-in" | "sign-up"
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: HTMLElement, options: { sitekey: string; callback: (token: string) => void; "expired-callback": () => void; "error-callback": () => void; theme: "auto" }) => string
+      reset: (widgetId?: string) => void
+    }
+  }
+}
 
 export function AuthForm({
   mode,
@@ -28,14 +37,52 @@ export function AuthForm({
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const captchaRef = useRef<HTMLDivElement>(null)
+  const widgetRef = useRef<string | undefined>(undefined)
 
   const isSignUp = mode === "sign-up"
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
+  useEffect(() => {
+    if (!siteKey || !captchaRef.current) return
+    const render = () => {
+      if (window.turnstile && captchaRef.current && !widgetRef.current) {
+        widgetRef.current = window.turnstile.render(captchaRef.current, {
+          sitekey: siteKey,
+          theme: "auto",
+          callback: setCaptchaToken,
+          "expired-callback": () => setCaptchaToken(null),
+          "error-callback": () => setCaptchaToken(null),
+        })
+      }
+    }
+    if (window.turnstile) render()
+    else {
+      const script = document.createElement("script")
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+      script.async = true
+      script.defer = true
+      script.onload = render
+      document.head.appendChild(script)
+    }
+  }, [siteKey])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA verification.")
+      return
+    }
     setLoading(true)
     try {
+      const captchaResponse = await fetch("/api/turnstile/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      })
+      if (!captchaResponse.ok) throw new Error("CAPTCHA verification failed. Please try again.")
       if (isSignUp) {
         const { error } = await authClient.signUp.email({ email, password, name })
         if (error) throw new Error(error.message ?? "Could not create account")
@@ -131,6 +178,8 @@ export function AuthForm({
             </p>
           )}
         </div>
+
+        {siteKey ? <div ref={captchaRef} className="min-h-[65px]" aria-label="CAPTCHA verification" /> : null}
 
         {error && (
           <p
