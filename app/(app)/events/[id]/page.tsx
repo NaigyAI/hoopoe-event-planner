@@ -7,7 +7,7 @@ import { getSuggestedDates } from "@/app/actions/personal-availability"
 import { SuggestedDatePicker } from "@/components/suggested-date-picker"
 import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
-import { dateRange, formatDateRange, formatTime, formatRecurrence } from "@/lib/dates"
+import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
@@ -32,13 +32,24 @@ export default async function EventPage({
 
   const isAdmin = user?.role === "admin"
   const isLocked = event.status === "locked"
-  const suggestions = !isLocked ? await getSuggestedDates(event.startDate, event.endDate ?? event.startDate) : []
+  const recurringDates = getRecurringDates(
+    event.recurrenceType,
+    event.startDate,
+    event.recurrenceWeekday,
+    event.recurrenceOrdinal,
+  )
+  const availabilityDates = recurringDates.length > 0
+    ? recurringDates
+    : dateRange(event.startDate, event.endDate ?? event.startDate)
+  const suggestions = !isLocked
+    ? await getSuggestedDates(availabilityDates[0], availabilityDates[availabilityDates.length - 1])
+    : []
   const confirmedPeople = event.lockedDate
     ? votes
         .filter((vote) => vote.date === event.lockedDate)
         .map((vote) => ({ name: vote.userName, status: vote.status }))
     : []
-  const days = dateRange(event.startDate, event.endDate ?? event.startDate)
+  const days = availabilityDates
 
   // Distinct respondents across the whole event
   const respondentIds = new Set(votes.map((v) => v.userId))
