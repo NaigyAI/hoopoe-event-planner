@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Dumbbell, CalendarDays, Swords, Trophy, type LucideIcon } from "lucide-react"
+import { CalendarDays, GitBranch, Medal, Repeat2, Swords, Trophy, type LucideIcon } from "lucide-react"
 import { EventCard, type EventSummary } from "@/components/event-card"
 
 type FilterKey = "practice" | "rcq" | "weekly" | "store-championship" | "rc-pt" | "other"
@@ -16,11 +16,11 @@ type FilterOption = {
 
 const FILTERS: FilterOption[] = [
   { key: "practice", title: "Practice", copy: "Schedule reps and testing", icon: Swords, eventTypes: ["practice"] },
-  { key: "rcq", title: "RC Qualifier", copy: "Lock the best date", icon: Trophy, eventTypes: ["rcq"] },
-  { key: "weekly", title: "Weekly", copy: "Keep a regular rhythm", icon: CalendarDays, eventTypes: ["weekly"] },
-  { key: "store-championship", title: "Store Championship", copy: "Prepare for the big event", icon: Trophy, eventTypes: ["store-championship"] },
-  { key: "rc-pt", title: "RC + PT", copy: "Stay ready for the call", icon: Dumbbell, eventTypes: ["regional", "pro-tour", "rc", "pt", "rc-pt"] },
-  { key: "other", title: "Other", copy: "Anything else on the calendar", icon: CalendarDays, eventTypes: ["other"] },
+  { key: "rcq", title: "RC Qualifier", copy: "Find your Qualifier", icon: Trophy, eventTypes: ["rcq"] },
+  { key: "weekly", title: "Weekly", copy: "Keep a regular rhythm", icon: Repeat2, eventTypes: ["weekly"] },
+  { key: "store-championship", title: "Store Championship", copy: "Prepare for the big event", icon: Medal, eventTypes: ["store-championship"] },
+  { key: "rc-pt", title: "RC + PT", copy: "This is your time to shine!", icon: GitBranch, eventTypes: ["regional", "pro-tour", "rc", "pt", "rc-pt"] },
+  { key: "other", title: "Other", copy: "Other scheduled events", icon: CalendarDays, eventTypes: ["other"] },
 ]
 
 export function EventTypeFilter({ events }: { events: EventSummary[] }) {

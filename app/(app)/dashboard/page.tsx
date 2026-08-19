@@ -83,7 +83,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-secondary-foreground/80 sm:text-base">
             Plan practice sessions, find the best RC Qualifier date, coordinate travel,
-            and keep the roster aligned when it is time to register.
+            and keep everyone aligned when it is time to register for the big event.
           </p>
           </div>
         </div>
