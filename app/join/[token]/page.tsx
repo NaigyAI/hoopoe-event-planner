@@ -174,12 +174,14 @@ function GuestEventView({
       ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
       : votes.filter((v) => v.date === date)
     const available = dayVotes.filter((v) => v.status === "available").length
+    const guestAvailable = dayVotes.filter((v) => v.status === "available" && v.userId.startsWith("guest:")).length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
     const unavailable = dayVotes.filter((v) => v.status === "unavailable").length
     const mine = dayVotes.find((v) => v.userId === scopedId)
     return {
       date,
       available,
+      guestAvailable,
       maybe,
       unavailable,
       score: available * 2 + maybe,
@@ -308,13 +310,7 @@ function GuestEventView({
           </h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-available" /> Yes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-maybe" /> Maybe
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-unavailable" /> No
+              <span className="size-2.5 rounded-full bg-muted-foreground/30" /> Yes
             </span>
           </div>
         </div>

@@ -62,12 +62,14 @@ export default async function EventPage({
       ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
       : votes.filter((v) => v.date === date)
     const available = dayVotes.filter((v) => v.status === "available").length
+    const guestAvailable = dayVotes.filter((v) => v.status === "available" && v.userId.startsWith("guest:")).length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
     const unavailable = dayVotes.filter((v) => v.status === "unavailable").length
     const mine = dayVotes.find((v) => v.userId === user?.id)
     return {
       date,
       available,
+      guestAvailable,
       maybe,
       unavailable,
       score: available * 2 + maybe,

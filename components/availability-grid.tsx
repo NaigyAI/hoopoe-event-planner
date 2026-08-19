@@ -13,6 +13,7 @@ import { formatWeekday, formatDayMonth, formatDateRange, isWeekend } from "@/lib
 export type DateTally = {
   date: string
   available: number
+  guestAvailable: number
   maybe: number
   unavailable: number
   score: number
@@ -31,11 +32,13 @@ const OPTIONS: {
   { value: "unavailable", label: "No", icon: X, active: "bg-unavailable text-unavailable-foreground border-unavailable" },
 ]
 
-function HeatBar({ tally, total, variant }: { tally: DateTally; total: number; variant: "member" | "guest" }) {
+function HeatBar({ tally, total }: { tally: DateTally; total: number }) {
   const pct = (n: number) => (total > 0 ? (n / total) * 100 : 0)
+  const memberAvailable = Math.max(0, tally.available - tally.guestAvailable)
   return (
     <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted">
-      <div className={variant === "guest" ? "bg-muted-foreground/30" : "bg-available"} style={{ width: `${pct(tally.available)}%` }} />
+      <div className="bg-available" style={{ width: `${pct(memberAvailable)}%` }} />
+      <div className="bg-muted-foreground/30" style={{ width: `${pct(tally.guestAvailable)}%` }} />
       <div className="bg-maybe" style={{ width: `${pct(tally.maybe)}%` }} />
       <div className="bg-unavailable" style={{ width: `${pct(tally.unavailable)}%` }} />
     </div>
@@ -142,7 +145,7 @@ export function AvailabilityGrid({
 
             {/* Heat */}
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <HeatBar tally={t} total={totalRespondents} variant={variant} />
+              <HeatBar tally={t} total={totalRespondents} />
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="tabular-nums">
                   <span className="font-medium text-foreground">{t.available}</span> yes
@@ -160,7 +163,7 @@ export function AvailabilityGrid({
                 </span>
               ) : (
                 <div className="inline-flex rounded-lg border border-border p-0.5">
-                  {OPTIONS.map((opt) => {
+                  {OPTIONS.filter((opt) => variant !== "guest" || opt.value === "available").map((opt) => {
                     const Icon = opt.icon
                     const selected = t.myStatus === opt.value
                     const loading = pendingDate === t.date && isPending
