@@ -139,7 +139,7 @@ export async function createEvent(input: {
       creatorName: creator.name,
     })
   } catch (err) {
-    console.log("[v0] notifyEventCreated failed (stub):", err)
+    console.error("[v0] notifyEventCreated failed:", err)
   }
 
   revalidatePath("/dashboard")
