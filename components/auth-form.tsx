@@ -73,18 +73,24 @@ export function AuthForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (!captchaToken) {
-      setError("Please complete the CAPTCHA verification.")
-      return
+    if (captchaEnabled) {
+      if (!captchaToken) {
+        setError("Please complete the CAPTCHA verification.")
+        return
+      }
+      setLoading(true)
+    } else {
+      setLoading(true)
     }
-    setLoading(true)
     try {
-      const captchaResponse = await fetch("/api/turnstile/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken }),
-      })
-      if (!captchaResponse.ok) throw new Error("CAPTCHA verification failed. Please try again.")
+      if (captchaEnabled) {
+        const captchaResponse = await fetch("/api/turnstile/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: captchaToken }),
+        })
+        if (!captchaResponse.ok) throw new Error("CAPTCHA verification failed. Please try again.")
+      }
       if (isSignUp) {
         const { error } = await authClient.signUp.email({ email, password, name })
         if (error) throw new Error(error.message ?? "Could not create account")
