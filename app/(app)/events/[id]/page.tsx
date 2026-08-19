@@ -107,9 +107,7 @@ export default async function EventPage({
                 <Lock className="size-3" />
                 Finalized
               </Badge>
-            ) : (
-              <Badge variant="secondary">Planning</Badge>
-            )}
+            ) : null}
             <Badge variant="outline" className="border-primary/30 text-primary">
               {(event.eventType === "practice" || event.eventType === "training")
                 ? "Practice"

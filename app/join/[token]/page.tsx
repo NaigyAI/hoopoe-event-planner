@@ -193,6 +193,15 @@ function GuestEventView({
       {/* Header */}
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-medium tracking-normal text-balance">
+            {event.title}
+          </h1>
+          {isLocked ? (
+            <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
+              <Lock className="size-3" />
+              Finalized
+            </Badge>
+          ) : null}
           <Badge variant="outline" className="border-primary/30 text-primary">
             {(event.eventType === "practice" || event.eventType === "training")
               ? "Practice"
@@ -210,17 +219,6 @@ function GuestEventView({
                           ? "Travel / logistics"
                           : "Team event"}
           </Badge>
-          <h1 className="text-2xl font-semibold tracking-tight text-balance">
-            {event.title}
-          </h1>
-          {isLocked ? (
-            <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
-              <Lock className="size-3" />
-              Finalized
-            </Badge>
-          ) : (
-            <Badge variant="secondary">Planning</Badge>
-          )}
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
