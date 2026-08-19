@@ -101,14 +101,14 @@ export function CreateEventDialog({
           {event ? "Edit event" : "New event"}
         </DialogTrigger>
       ) : null}
-      <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg">
+      <DialogContent className="flex max-h-[90vh] min-w-0 flex-col overflow-x-hidden overflow-y-hidden sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">{event ? "Edit event" : "Create an event"}</DialogTitle>
           <DialogDescription>
             Choose a confirmed date for the event.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="min-h-0 space-y-4 overflow-y-auto pr-1">
+        <form onSubmit={onSubmit} className="min-h-0 min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
           <div className="space-y-2">
             <Label htmlFor="format">Format</Label>
             <fieldset className="grid gap-2 sm:grid-cols-2" aria-describedby="format-hint">
