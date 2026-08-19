@@ -1,8 +1,8 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { user, availability, personalAvailability, rsvp } from "@/lib/db/schema"
-import { and, desc, eq, like, sql } from "drizzle-orm"
+import { user, availability, personalAvailability, rsvp, event } from "@/lib/db/schema"
+import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
 import { requireAdmin, requireSuperuser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
@@ -13,6 +13,39 @@ export type MemberRow = {
   role: string
   approved: boolean
   createdAt: Date
+}
+
+export type GuestRow = {
+  id: string
+  name: string
+  events: { id: string; title: string; shareToken: string; responses: number }[]
+}
+
+export async function listGuests(): Promise<GuestRow[]> {
+  await requireAdmin()
+  const [availabilityRows, rsvpRows] = await Promise.all([
+    db.select({ userId: availability.userId, userName: availability.userName, eventId: availability.eventId }).from(availability).where(like(availability.userId, "guest:%")),
+    db.select({ userId: rsvp.userId, userName: rsvp.userName, eventId: rsvp.eventId }).from(rsvp).where(like(rsvp.userId, "guest:%")),
+  ])
+  const eventIds = [...new Set([...availabilityRows, ...rsvpRows].map((row) => row.eventId))]
+  if (eventIds.length === 0) return []
+  const events = await db.select({ id: event.id, title: event.title, shareToken: event.shareToken }).from(event).where(inArray(event.id, eventIds))
+  const eventMap = new Map(events.map((item) => [item.id, item]))
+  const guests = new Map<string, GuestRow>()
+  for (const row of [...availabilityRows, ...rsvpRows]) {
+    const item = eventMap.get(row.eventId)
+    if (!item) continue
+    const guest = guests.get(row.userId) ?? { id: row.userId.replace(/^guest:/, ""), name: row.userName, events: [] }
+    guest.name = row.userName
+    let guestEvent = guest.events.find((entry) => entry.id === item.id)
+    if (!guestEvent) {
+      guestEvent = { ...item, responses: 0 }
+      guest.events.push(guestEvent)
+    }
+    guestEvent.responses += 1
+    guests.set(row.userId, guest)
+  }
+  return [...guests.values()].sort((a, b) => a.name.localeCompare(b.name))
 }
 
 /** Approved members (admins + approved members), newest first. */

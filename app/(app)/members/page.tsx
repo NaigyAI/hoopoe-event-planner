@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/session"
-import { listMembers, listPendingMembers } from "@/app/actions/members"
+import { listMembers, listPendingMembers, listGuests } from "@/app/actions/members"
+import { GuestsManager } from "@/components/guests-manager"
 import { MembersManager } from "@/components/members-manager"
 import { MemberInviteManager } from "@/components/member-invite-manager"
 import { getActiveMemberInvite } from "@/app/actions/member-invites"
@@ -12,10 +13,11 @@ export default async function MembersPage() {
   if (!user) redirect("/sign-in")
   if (user.role !== "admin" && user.role !== "superuser") redirect("/dashboard")
 
-  const [members, pending, activeInvite] = await Promise.all([
+  const [members, pending, activeInvite, guests] = await Promise.all([
     listMembers(),
     listPendingMembers(),
     getActiveMemberInvite(),
+    listGuests(),
   ])
 
   return (
@@ -28,6 +30,7 @@ export default async function MembersPage() {
       </div>
       <MemberInviteManager active={activeInvite} />
       <MembersManager members={members} pending={pending} canManageAdmins={user.role === "superuser"} />
+      <GuestsManager guests={guests} />
     </div>
   )
 }
