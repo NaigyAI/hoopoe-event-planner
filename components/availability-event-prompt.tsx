@@ -91,7 +91,7 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
                 aria-disabled={isAnimating}
                 className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
-                View event
+                Details
               </Link>
               <button
                 type="button"
