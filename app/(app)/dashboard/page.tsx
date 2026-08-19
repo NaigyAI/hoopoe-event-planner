@@ -41,6 +41,9 @@ export default async function DashboardPage() {
     createdByName: e.createdByName,
     respondentCount: e.responderCount,
     goingCount: e.goingCount,
+    recurrenceType: e.recurrenceType,
+    recurrenceWeekday: e.recurrenceWeekday,
+    recurrenceOrdinal: e.recurrenceOrdinal,
   }))
 
   const active = summaries.filter((e) => e.status !== "cancelled")

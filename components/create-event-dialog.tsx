@@ -32,6 +32,9 @@ export type EventEditData = {
   startDate: string
   endDate: string | null
   startTime: string | null
+  recurrenceType?: string | null
+  recurrenceWeekday?: number | null
+  recurrenceOrdinal?: string | null
 }
 
 export function CreateEventDialog({
@@ -52,6 +55,7 @@ export function CreateEventDialog({
   const [pending, setPending] = useState(false)
   const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate))
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
+  const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -67,6 +71,9 @@ export function CreateEventDialog({
       startDate: String(form.get("startDate") ?? ""),
       endDate: String(form.get("endDate") ?? ""),
       startTime: String(form.get("startTime") ?? ""),
+      recurrenceType: String(form.get("recurrenceType") ?? "none") as "none" | "weekly" | "monthly",
+      recurrenceWeekday: Number(form.get("recurrenceWeekday") ?? 0),
+      recurrenceOrdinal: String(form.get("recurrenceOrdinal") ?? "last") as "first" | "second" | "third" | "fourth" | "last",
     }
     setPending(true)
     try {
@@ -211,6 +218,49 @@ export function CreateEventDialog({
                 <Input id="endDate" name="endDate" type="date" defaultValue={event?.endDate ?? ""} />
               </div>
             )}
+          </div>
+          <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+            <Label htmlFor="recurrenceType">Repeat event</Label>
+            <Select name="recurrenceType" value={recurrenceType} onValueChange={(value) => setRecurrenceType(value ?? "none")}>
+              <SelectTrigger id="recurrenceType" className="h-10 w-full">
+                <SelectValue placeholder="Does not repeat" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Does not repeat</SelectItem>
+                <SelectItem value="weekly">Every week</SelectItem>
+                <SelectItem value="monthly">Every month</SelectItem>
+              </SelectContent>
+            </Select>
+            {recurrenceType !== "none" ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="recurrenceWeekday">On</Label>
+                  <Select name="recurrenceWeekday" defaultValue={String(event?.recurrenceWeekday ?? 0)}>
+                    <SelectTrigger id="recurrenceWeekday" className="h-10 w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => (
+                        <SelectItem key={day} value={String(index)}>{day}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {recurrenceType === "monthly" ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="recurrenceOrdinal">Occurrence</Label>
+                    <Select name="recurrenceOrdinal" defaultValue={event?.recurrenceOrdinal ?? "last"}>
+                      <SelectTrigger id="recurrenceOrdinal" className="h-10 w-full"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="first">First</SelectItem>
+                        <SelectItem value="second">Second</SelectItem>
+                        <SelectItem value="third">Third</SelectItem>
+                        <SelectItem value="fourth">Fourth</SelectItem>
+                        <SelectItem value="last">Last</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="space-y-2">
             <Label htmlFor="eventUrl">Official event link (optional)</Label>

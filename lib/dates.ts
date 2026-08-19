@@ -82,3 +82,12 @@ export function isWeekend(iso: string): boolean {
 export function todayISO(): string {
   return toISODate(new Date())
 }
+
+export function formatRecurrence(type: string, weekday: number | null, ordinal: string | null): string | null {
+  if (type === "weekly" && weekday != null) return `Every ${WEEKDAY_FULL[weekday]}`
+  if (type === "monthly" && weekday != null && ordinal) return `${capitalize(ordinal)} ${WEEKDAY_FULL[weekday]} of every month`
+  return null
+}
+
+const WEEKDAY_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+function capitalize(value: string): string { return value.charAt(0).toUpperCase() + value.slice(1) }

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { CalendarDays, ExternalLink, MapPin, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { formatDateRange, formatTime } from "@/lib/dates"
+import { formatDateRange, formatTime, formatRecurrence } from "@/lib/dates"
 
 export type EventSummary = {
   id: string
@@ -20,6 +20,9 @@ export type EventSummary = {
   createdByName: string
   respondentCount: number
   goingCount: number
+  recurrenceType: string
+  recurrenceWeekday: number | null
+  recurrenceOrdinal: string | null
 }
 
 export function EventCard({ event }: { event: EventSummary }) {
@@ -42,6 +45,12 @@ export function EventCard({ event }: { event: EventSummary }) {
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
           </div>
+          {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+            <div className="flex items-center gap-2">
+              <CalendarDays className="size-4 shrink-0" />
+              <span>{formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal)}</span>
+            </div>
+          ) : null}
           {event.location ? (
             <div className="flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />

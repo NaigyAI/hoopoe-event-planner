@@ -65,6 +65,9 @@ export async function createEvent(input: {
   startDate: string
   endDate?: string
   startTime?: string
+  recurrenceType?: "none" | "weekly" | "monthly"
+  recurrenceWeekday?: number
+  recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
   const admin = await requireAdmin()
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
@@ -79,6 +82,14 @@ export async function createEvent(input: {
   const endDate = input.endDate?.trim() || input.startDate
   if (endDate < input.startDate)
     throw new Error("End date must be on or after the start date")
+  const recurrenceType = input.recurrenceType ?? "none"
+  if (!["none", "weekly", "monthly"].includes(recurrenceType)) throw new Error("Invalid recurrence")
+  if (recurrenceType !== "none" && (input.recurrenceWeekday == null || input.recurrenceWeekday < 0 || input.recurrenceWeekday > 6)) {
+    throw new Error("Choose a valid recurrence day")
+  }
+  if (recurrenceType === "monthly" && !["first", "second", "third", "fourth", "last"].includes(input.recurrenceOrdinal ?? "")) {
+    throw new Error("Choose a monthly occurrence")
+  }
 
   const normalizedEventType = eventType === "training" ? "practice" : eventType
   const eventTypeLabel: Record<string, string> = {
@@ -116,6 +127,9 @@ export async function createEvent(input: {
     startTime: input.startTime?.trim() || null,
     endTime: null,
     status: "planning",
+    recurrenceType,
+    recurrenceWeekday: recurrenceType === "none" ? null : input.recurrenceWeekday,
+    recurrenceOrdinal: recurrenceType === "monthly" ? input.recurrenceOrdinal : null,
   })
 
   try {
@@ -153,6 +167,9 @@ export async function updateEvent(eventId: string, input: {
   startDate: string
   endDate?: string
   startTime?: string
+  recurrenceType?: "none" | "weekly" | "monthly"
+  recurrenceWeekday?: number
+  recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
   await requireAdmin()
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
@@ -165,6 +182,10 @@ export async function updateEvent(eventId: string, input: {
     throw new Error("Enter a name for the event type")
   const endDate = input.endDate?.trim() || input.startDate
   if (endDate < input.startDate) throw new Error("End date must be on or after the start date")
+  const recurrenceType = input.recurrenceType ?? "none"
+  if (!["none", "weekly", "monthly"].includes(recurrenceType)) throw new Error("Invalid recurrence")
+  if (recurrenceType !== "none" && (input.recurrenceWeekday == null || input.recurrenceWeekday < 0 || input.recurrenceWeekday > 6)) throw new Error("Choose a valid recurrence day")
+  if (recurrenceType === "monthly" && !["first", "second", "third", "fourth", "last"].includes(input.recurrenceOrdinal ?? "")) throw new Error("Choose a monthly occurrence")
   const normalizedEventType = eventType === "training" ? "practice" : eventType
   const labels: Record<string, string> = {
     practice: "Practice", training: "Practice", weekly: "Weekly",
@@ -177,7 +198,11 @@ export async function updateEvent(eventId: string, input: {
     description: input.description?.trim() || null, location,
     eventUrl: input.eventUrl?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
     startDate: input.startDate, endDate, startTime: input.startTime?.trim() || null,
-    endTime: null, updatedAt: new Date(),
+    endTime: null,
+    recurrenceType,
+    recurrenceWeekday: recurrenceType === "none" ? null : input.recurrenceWeekday,
+    recurrenceOrdinal: recurrenceType === "monthly" ? input.recurrenceOrdinal : null,
+    updatedAt: new Date(),
   }).where(eq(event.id, eventId))
   revalidatePath(`/events/${eventId}`)
   revalidatePath("/dashboard")

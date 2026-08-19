@@ -7,7 +7,7 @@ import { getSuggestedDates } from "@/app/actions/personal-availability"
 import { SuggestedDatePicker } from "@/components/suggested-date-picker"
 import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
-import { dateRange, formatDateRange, formatTime } from "@/lib/dates"
+import { dateRange, formatDateRange, formatTime, formatRecurrence } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
@@ -129,6 +129,12 @@ export default async function EventPage({
               <Users className="size-4" />
               {totalRespondents} responded
             </span>
+            {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="size-4" />
+                {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal)}
+              </span>
+            ) : null}
           </div>
           {event.description ? (
             <p className="max-w-2xl whitespace-pre-line text-pretty text-sm leading-6 text-muted-foreground">

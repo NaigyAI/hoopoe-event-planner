@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   date,
+  integer,
   unique,
 } from "drizzle-orm/pg-core"
 
@@ -91,6 +92,9 @@ export const event = pgTable("event", {
   endTime: text("endTime"),
   lockedDate: date("lockedDate"),
   status: text("status").notNull().default("planning"),
+  recurrenceType: text("recurrenceType").notNull().default("none"),
+  recurrenceWeekday: integer("recurrenceWeekday"),
+  recurrenceOrdinal: text("recurrenceOrdinal"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })
