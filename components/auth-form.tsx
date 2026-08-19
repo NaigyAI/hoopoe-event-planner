@@ -26,10 +26,12 @@ export function AuthForm({
   mode,
   returnTo,
   inviteToken,
+  captchaEnabled = false,
 }: {
   mode: Mode
   returnTo?: string
   inviteToken?: string
+  captchaEnabled?: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState("")
@@ -42,7 +44,7 @@ export function AuthForm({
   const widgetRef = useRef<string | undefined>(undefined)
 
   const isSignUp = mode === "sign-up"
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const siteKey = captchaEnabled ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : undefined
 
   useEffect(() => {
     if (!siteKey || !captchaRef.current) return

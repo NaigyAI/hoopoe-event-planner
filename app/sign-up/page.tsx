@@ -13,7 +13,7 @@ export default async function SignUpPage({
   if (user) redirect("/dashboard")
   return (
     <AuthShell>
-      <AuthForm mode="sign-up" returnTo={returnTo} inviteToken={invite} />
+      <AuthForm mode="sign-up" returnTo={returnTo} inviteToken={invite} captchaEnabled={process.env.VERCEL_ENV === "production"} />
     </AuthShell>
   )
 }
