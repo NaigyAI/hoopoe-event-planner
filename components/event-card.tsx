@@ -27,12 +27,14 @@ export type EventSummary = {
 
 export function EventCard({ event }: { event: EventSummary }) {
   return (
-    <Link href={`/events/${event.id}`} className="group block">
+    <div className="group block">
       <Card className="h-full gap-0 p-5 leading-[1.3] transition-colors group-hover:border-primary/40">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-2">
             <h3 className="text-pretty text-[22px] font-medium leading-tight text-foreground">
-              {event.title}
+              <Link href={`/events/${event.id}`} className="hover:underline underline-offset-4">
+                {event.title}
+              </Link>
             </h3>
           </div>
         </div>
@@ -77,6 +79,6 @@ export function EventCard({ event }: { event: EventSummary }) {
         </dl>
 
       </Card>
-    </Link>
+    </div>
   )
 }
