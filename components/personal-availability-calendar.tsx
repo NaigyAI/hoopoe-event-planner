@@ -73,7 +73,7 @@ export function PersonalAvailabilityCalendar({
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-medium tracking-normal">Your availability</h2>
-          <p className="text-sm text-muted-foreground">Tap a date to cycle through available, unavailable, maybe, and neutral.</p>
+          <p className="text-sm text-muted-foreground">Tap a date to cycle through available, maybe, unavailable and neutral.</p>
         </div>
         <div className="flex items-center gap-1">
           <Button type="button" variant="ghost" size="icon" aria-label="Previous month" onClick={() => changeMonth(-1)} disabled={isPending}>
