@@ -13,7 +13,7 @@ import { CreateEventDialog } from "@/components/create-event-dialog"
 type Result = { date: string; available: number; maybe: number; unavailable: number; total: number }
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-export function BestDatesDialog({ triggerClassName }: { triggerClassName?: string }) {
+export function BestDatesDialog() {
   const [open, setOpen] = useState(false)
   const [startDate, setStartDate] = useState(toISODate(new Date()))
   const [endDate, setEndDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 60); return toISODate(d) })
@@ -29,7 +29,7 @@ export function BestDatesDialog({ triggerClassName }: { triggerClassName?: strin
   }
 
   return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger render={<Button variant="outline" className={triggerClassName} />}>
+    <DialogTrigger render={<Button variant="outline" />}>
       <Search className="mr-2 size-4" />
       Find best dates
     </DialogTrigger>

@@ -81,7 +81,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            Hoopoe Boys | command center
+            Hoopoe Boys team command center
           </p>
           <h1 className="mt-2 text-4xl leading-none tracking-wide text-balance sm:text-5xl">
             Keep the reps, trips, and tournaments organized.
@@ -142,14 +142,12 @@ export default async function DashboardPage() {
               : "Mark availability, RSVP when locked, and keep the team moving."}
           </p>
         </div>
-        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0">
-          <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} triggerClassName="w-full" />
-          <BestDatesDialog triggerClassName="w-full" />
-          <CreateEventDialog triggerClassName="w-full" />
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
+          <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
+          <BestDatesDialog />
+          <CreateEventDialog />
         </div>
       </div>
-
-      <div className="my-5 h-px w-full bg-border" aria-hidden="true" />
 
       {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDates.join(",")}`).join("|")} suggestions={promptMatches} /> : null}
 
