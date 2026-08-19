@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { event, availability, rsvp, user } from "@/lib/db/schema"
-import { and, desc, eq, inArray, sql } from "drizzle-orm"
+import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { notifyEventCreated, notifyDateLocked } from "@/lib/email"
 import { dateRange } from "@/lib/dates"
@@ -288,12 +288,14 @@ export async function setAvailabilityForDates(input: {
   dates: string[]
   status: AvailabilityStatus
 }) {
+  const clearedEvents = new Set<string>()
   for (const date of input.dates) {
-    await setAvailability({ eventId: input.eventId, date, status: input.status })
+    const result = await setAvailability({ eventId: input.eventId, date, status: input.status })
+    result.clearedEvents.forEach((title) => clearedEvents.add(title))
   }
   revalidatePath(`/events/${input.eventId}`)
   revalidatePath("/dashboard")
-  return { ok: true }
+  return { ok: true, clearedEvents: [...clearedEvents] }
 }
 
 export async function setAvailability(input: {
@@ -307,6 +309,24 @@ export async function setAvailability(input: {
   if (!ev) throw new Error("Event not found")
   if (ev.status === "locked")
     throw new Error("This event is locked and can no longer be edited")
+
+  const competing = input.status === "available"
+    ? await db
+        .select({ id: availability.id, eventId: availability.eventId, title: event.title })
+        .from(availability)
+        .innerJoin(event, eq(event.id, availability.eventId))
+        .where(and(
+          eq(availability.userId, current.id),
+          eq(availability.date, input.date),
+          eq(availability.status, "available"),
+          ne(availability.eventId, input.eventId),
+        ))
+    : []
+
+  if (competing.length > 0) {
+    await db.delete(availability).where(inArray(availability.id, competing.map((row) => row.id)))
+    for (const row of competing) revalidatePath(`/events/${row.eventId}`)
+  }
 
   const existing = await db
     .select({ id: availability.id })
@@ -337,7 +357,7 @@ export async function setAvailability(input: {
   }
 
   revalidatePath(`/events/${input.eventId}`)
-  return { ok: true }
+  return { ok: true, clearedEvents: competing.map((row) => row.title) }
 }
 
 /** Admin locks a winning date. */
