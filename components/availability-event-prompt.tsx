@@ -21,7 +21,7 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">You may be available</p>
-                <h2 className="mt-1 text-lg font-medium text-foreground">Want to attend {event.title}?</h2>
+                <h2 className="mt-1 text-lg font-medium tracking-normal text-foreground">Want to attend {event.title}?</h2>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Dismiss event suggestion">
                 <X className="size-4" />
