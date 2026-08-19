@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { user, availability, rsvp } from "@/lib/db/schema"
+import { user, availability, personalAvailability, rsvp } from "@/lib/db/schema"
 import { and, desc, eq, like, sql } from "drizzle-orm"
 import { requireAdmin } from "@/lib/session"
 import { revalidatePath } from "next/cache"
@@ -53,6 +53,27 @@ export async function listPendingMembers(): Promise<MemberRow[]> {
 export async function approveMember(userId: string) {
   await requireAdmin()
   await db.update(user).set({ approved: true, updatedAt: new Date() }).where(eq(user.id, userId))
+  revalidatePath("/members")
+  revalidatePath("/dashboard")
+  return { ok: true }
+}
+
+/** Admin removes an approved member and all member-owned records. */
+export async function deleteMember(userId: string) {
+  const admin = await requireAdmin()
+  if (admin.id === userId) throw new Error("You cannot remove your own account")
+
+  const [target] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId)).limit(1)
+  if (!target) throw new Error("Member not found")
+  if (target.role === "admin") throw new Error("Admin accounts cannot be removed")
+
+  await db.transaction(async (tx) => {
+    await tx.delete(availability).where(eq(availability.userId, userId))
+    await tx.delete(personalAvailability).where(eq(personalAvailability.userId, userId))
+    await tx.delete(rsvp).where(eq(rsvp.userId, userId))
+    await tx.delete(user).where(and(eq(user.id, userId), eq(user.role, "member")))
+  })
+
   revalidatePath("/members")
   revalidatePath("/dashboard")
   return { ok: true }
