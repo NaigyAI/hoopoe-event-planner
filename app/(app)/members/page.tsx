@@ -29,7 +29,7 @@ export default async function MembersPage() {
         </p>
       </div>
       <MemberInviteManager active={activeInvite} />
-      <MembersManager members={members} pending={pending} canManageAdmins={user.role === "superuser"} />
+      <MembersManager members={members} pending={pending} canManageAdmins={user.role === "superuser"} canManageRoles={user.role === "admin" || user.role === "superuser"} />
       <GuestsManager guests={guests} />
     </div>
   )

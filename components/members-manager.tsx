@@ -25,10 +25,12 @@ export function MembersManager({
   members,
   pending,
   canManageAdmins,
+  canManageRoles,
 }: {
   members: MemberRow[]
   pending: MemberRow[]
   canManageAdmins: boolean
+  canManageRoles: boolean
 }) {
   return (
     <div className="space-y-8">
@@ -93,7 +95,7 @@ export function MembersManager({
                   <Badge variant="outline" className="text-[10px]">
                     {m.role === "external-member" ? "External member" : "Team member"}
                   </Badge>
-                  {canManageAdmins ? <RoleButton member={m} /> : null}
+                  {canManageRoles ? <RoleButton member={m} /> : null}
                   <DeleteMemberButton member={m} />
                 </div>
               )}

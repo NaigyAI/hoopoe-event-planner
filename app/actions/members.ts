@@ -87,7 +87,7 @@ export async function listPendingMembers(): Promise<MemberRow[]> {
 /** Superusers promote or demote non-superuser members as admins. */
 export async function setMemberRole(userId: string, role: "team-member" | "external-member") {
   await requireAdmin()
-  await db.update(user).set({ role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, true), eq(user.role, "member")))
+  await db.update(user).set({ role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, true), inArray(user.role, ["member", "team-member", "external-member"])))
   revalidatePath("/members")
   revalidatePath("/dashboard")
   return { ok: true }
