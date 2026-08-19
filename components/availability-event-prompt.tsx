@@ -7,18 +7,28 @@ import type { EventSummary } from "@/components/event-card"
 import { setPersonalAvailability } from "@/app/actions/personal-availability"
 import { formatDateRange, formatTime } from "@/lib/dates"
 
-export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventSummary; matchingDate: string }) {
+type AvailabilitySuggestion = { event: EventSummary; matchingDate: string }
+
+export function AvailabilityEventPrompt({ suggestions }: { suggestions: AvailabilitySuggestion[] }) {
+  const [index, setIndex] = useState(0)
   const [open, setOpen] = useState(true)
   const [isPending, startTransition] = useTransition()
+  const suggestion = suggestions[index]
+
+  function advance() {
+    if (index < suggestions.length - 1) setIndex((current) => current + 1)
+    else setOpen(false)
+  }
 
   function respond(status: "available" | "unavailable") {
     startTransition(async () => {
-      await setPersonalAvailability(matchingDate, status)
-      setOpen(false)
+      await setPersonalAvailability(suggestion.matchingDate, status)
+      advance()
     })
   }
 
-  if (!open) return null
+  if (!open || !suggestion) return null
+  const { event, matchingDate } = suggestion
 
   return (
     <aside className="fixed inset-x-4 bottom-4 z-50 sm:left-auto sm:right-6 sm:w-[min(28rem,calc(100vw-3rem))]" role="dialog" aria-label="Event availability suggestion">
@@ -33,7 +43,7 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">You may be available</p>
                 <h2 className="mt-1 text-lg font-medium tracking-normal text-foreground">Want to attend {event.title}?</h2>
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Dismiss event suggestion">
+              <button type="button" onClick={advance} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Dismiss event suggestion">
                 <X className="size-4" />
               </button>
             </div>
@@ -61,7 +71,7 @@ export function AvailabilityEventPrompt({ event, matchingDate }: { event: EventS
               </button>
               <Link
                 href={`/events/${event.id}`}
-                onClick={() => setOpen(false)}
+                onClick={advance}
                 className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
               >
                 View event

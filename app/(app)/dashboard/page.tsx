@@ -53,15 +53,16 @@ export default async function DashboardPage() {
 
   const active = summaries.filter((e) => e.status !== "cancelled")
   const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
-  const promptMatch = active
+  const promptMatches = active
     .filter((event) => !event.lockedDate)
-    .map((event) => {
+    .flatMap((event) => {
       const openDates = event.recurrenceType !== "none"
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
         : dateRange(event.startDate, event.endDate ?? event.startDate)
-      return { event, matchingDate: openDates.find((date) => availableDates.includes(date)) }
+      return openDates
+        .filter((date) => availableDates.includes(date))
+        .map((matchingDate) => ({ event, matchingDate }))
     })
-    .find((match) => match.matchingDate)
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -137,7 +138,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {promptMatch ? <AvailabilityEventPrompt event={promptMatch.event} matchingDate={promptMatch.matchingDate!} /> : null}
+      {promptMatches.length > 0 ? <AvailabilityEventPrompt suggestions={promptMatches} /> : null}
 
       {active.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
