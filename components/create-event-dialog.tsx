@@ -80,11 +80,10 @@ export function CreateEventDialog({
     setPending(true)
     try {
       const id = event?.id
-      if (id) await updateEvent(id, payload)
-      else await createEvent(payload)
+      const result = id ? await updateEvent(id, payload) : await createEvent(payload)
       toast.success(event ? "Event updated" : "Event created")
       setOpen(false)
-      if (!event) router.push(`/events/${id}`)
+      if (!event && "id" in result) router.push(`/events/${result.id}`)
       router.refresh()
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not create event")
