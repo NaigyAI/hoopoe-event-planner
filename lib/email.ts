@@ -48,20 +48,20 @@ export async function notifyEventCreated(opts: {
       const firstName = r.name.trim().split(/\s+/)[0] || "there"
       return sendEmail({
         to: r.email,
-        subject: `New event planned ${opts.eventTitle} @ ${opts.eventLocation}`,
-        body: `Hello ${firstName},
+        subject: `New event planned - ${opts.eventTitle} @ ${opts.eventLocation}`,
+        body: `Hey ${firstName},
 
-We are pleased to let you know that ${opts.creatorName} has planned a new event for the team:
+${opts.creatorName} just added a new event for the team:
 
 ${opts.eventTitle}
-Location: ${opts.eventLocation}
+Where: ${opts.eventLocation}
 
-You can review the event details and let us know whether you will be joining us here:
+Check out the details and let us know if you are joining us:
 ${opts.eventLink}
 
-We would appreciate your response so we can coordinate the event with everyone.
+Hope to see you there. May your draws be kind!
 
-With kind regards,
+Cheers,
 Hoopoe Event Planner`,
       })
     }),
