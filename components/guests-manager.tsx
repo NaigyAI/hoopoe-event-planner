@@ -3,6 +3,7 @@
 import { useTransition } from "react"
 import { toast } from "sonner"
 import { Trash2, Users } from "lucide-react"
+import { capitalizeName } from "@/lib/names"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { removeGuestFromEvent } from "@/app/actions/guest"
@@ -28,7 +29,7 @@ export function GuestsManager({ guests }: { guests: GuestRow[] }) {
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium text-foreground">
                   {guest.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
                 </span>
-                <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{guest.name}</p>
+                <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{capitalizeName(guest.name)}</p>
               </div>
               <ul className="mt-3 space-y-2 border-t border-border pt-3">
                 {guest.events.map((item) => (
@@ -46,11 +47,11 @@ export function GuestsManager({ guests }: { guests: GuestRow[] }) {
 function GuestEventRow({ guest, event }: { guest: GuestRow; event: GuestRow["events"][number] }) {
   const [isPending, startTransition] = useTransition()
   function handleRemove() {
-    if (!window.confirm(`Remove ${guest.name} from ${event.title}?`)) return
+    if (!window.confirm(`Remove ${capitalizeName(guest.name)} from ${event.title}?`)) return
     startTransition(async () => {
       try {
         await removeGuestFromEvent({ eventId: event.id, guestId: guest.id })
-        toast.success(`${guest.name} removed from ${event.title}`)
+        toast.success(`${capitalizeName(guest.name)} removed from ${event.title}`)
       } catch {
         toast.error("Could not remove this guest")
       }

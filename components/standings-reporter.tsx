@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { saveStandings } from "@/app/actions/standings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { capitalizeName } from "@/lib/names"
 
 export function StandingsReporter({ eventId, members }: { eventId: string; members: Array<{ id: string; name: string }> }) {
   const router = useRouter()
@@ -24,7 +25,7 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
             <span className="row-span-2 self-center text-sm font-bold text-muted-foreground">#{entry.placement}</span>
             <select aria-label={`Player ${entry.placement}`} className="h-8 min-w-0 rounded-md border border-input bg-background px-2 text-sm" value={entry.memberId} onChange={(e) => update(entryIndex, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             <div className="grid min-w-0 grid-cols-2 gap-2">
-              <Input className="h-8 min-w-0 px-2 text-sm" placeholder="Player name" value={entry.playerName} onChange={(e) => update(entryIndex, "playerName", e.target.value)} />
+              <Input className="h-8 min-w-0 px-2 text-sm" placeholder="Player name" value={capitalizeName(entry.playerName)} onChange={(e) => update(entryIndex, "playerName", e.target.value)} />
               <Input className="h-8 min-w-0 px-2 text-sm" placeholder="Deck name" value={entry.deckName} onChange={(e) => update(entryIndex, "deckName", e.target.value)} />
             </div>
           </div>

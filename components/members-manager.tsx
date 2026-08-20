@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
 import { ArrowRightLeft, Check, X, UserPlus, Users, Trash2, ShieldCheck } from "lucide-react"
+import { capitalizeName, capitalizeFirstName } from "@/lib/names"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { approveMember, deleteMember, rejectMember, setMemberAdmin, setMemberRole, type MemberRow } from "@/app/actions/members"
@@ -15,10 +16,6 @@ function initials(name: string) {
     .slice(0, 2)
     .join("")
     .toUpperCase()
-}
-
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0]
 }
 
 export function MembersManager({
@@ -78,7 +75,7 @@ export function MembersManager({
                 {initials(m.name)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{m.name}</p>
+                <p className="truncate text-sm font-medium text-foreground">{capitalizeName(m.name)}</p>
                 <div className="mt-1">
                   {m.role === "superuser" ? (
                     <Badge className="gap-1 text-[10px]"><ShieldCheck className="size-3" />Superuser</Badge>
@@ -117,7 +114,7 @@ function RoleButton({ member, isAdmin = false }: { member: MemberRow; isAdmin?: 
     if (isAdmin) {
       if (!window.confirm(`Are you sure you want to remove admin access from ${member.name}?`)) return
       startTransition(async () => {
-        try { await setMemberAdmin(member.id, false); toast.success(`${firstName(member.name)} is now a team member`) }
+        try { await setMemberAdmin(member.id, false); toast.success(`${capitalizeFirstName(member.name)} is now a team member`) }
         catch { toast.error("Could not update this member's role") }
       })
       return
@@ -125,7 +122,7 @@ function RoleButton({ member, isAdmin = false }: { member: MemberRow; isAdmin?: 
     const nextRole = isExternal ? "team-member" : "external-member"
     if (!window.confirm(`Are you sure you want to make ${member.name} an ${isExternal ? "team" : "external"} member?`)) return
     startTransition(async () => {
-      try { await setMemberRole(member.id, nextRole); toast.success(`${firstName(member.name)} role updated`) }
+      try { await setMemberRole(member.id, nextRole); toast.success(`${capitalizeFirstName(member.name)} role updated`) }
       catch { toast.error("Could not update this member's role") }
     })
   }
@@ -157,7 +154,7 @@ function DeleteMemberButton({ member }: { member: MemberRow }) {
     startTransition(async () => {
       try {
         await deleteMember(member.id)
-        toast.success(`${firstName(member.name)} deleted`)
+        toast.success(`${capitalizeFirstName(member.name)} deleted`)
       } catch {
         toast.error("Could not delete this member")
       }
@@ -187,7 +184,7 @@ function PendingRow({ member }: { member: MemberRow }) {
     startTransition(async () => {
       try {
         await approveMember(member.id, role)
-        toast.success(`${firstName(member.name)} approved`)
+        toast.success(`${capitalizeFirstName(member.name)} approved`)
       } catch {
         toast.error("Could not approve this member")
       }
@@ -198,7 +195,7 @@ function PendingRow({ member }: { member: MemberRow }) {
     startTransition(async () => {
       try {
         await rejectMember(member.id)
-        toast.success(`${firstName(member.name)} removed`)
+        toast.success(`${capitalizeFirstName(member.name)} removed`)
       } catch {
         toast.error("Could not remove this request")
       }

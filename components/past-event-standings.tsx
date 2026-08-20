@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Trash2 } from "lucide-react"
 import { deleteDecklist, deleteStandings, saveDecklistUrl } from "@/app/actions/standings"
+import { capitalizeName } from "@/lib/names"
 import { Button } from "@/components/ui/button"
 
 type Entry = { id: string; standingId: string; placement: number; memberId: string | null; playerName: string; deckName: string; decklistPathname: string | null; decklistFilename: string | null; decklistUrl: string | null }
@@ -29,7 +30,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
       <li key={entry.id} className="flex flex-col gap-1 rounded-lg bg-muted/40 p-3 text-sm">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <div className="min-w-0">
-            <strong className="block truncate">#{entry.placement} {entry.playerName}</strong>
+            <strong className="block truncate">#{entry.placement} {capitalizeName(entry.playerName)}</strong>
             <span className="block text-muted-foreground">{entry.deckName}</span>
           </div>
           {entry.decklistUrl ? (

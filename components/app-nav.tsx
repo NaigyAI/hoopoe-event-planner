@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { CalendarCheck, ClipboardList, History, LogOut, User, Users } from "lucide-react"
+import { capitalizeName } from "@/lib/names"
 
 type NavUser = {
   name: string
@@ -71,13 +72,13 @@ export function AppNav({ user }: { user: NavUser }) {
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium sm:inline">
-              {user.name}
+              {capitalizeName(user.name)}
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="flex flex-col gap-1 px-1.5 py-1">
               <span className="flex items-center gap-2 text-sm font-medium">
-                {user.name}
+                {capitalizeName(user.name)}
                 {user.role === "superuser" ? (
                   <Badge className="text-[10px]">Superuser</Badge>
                 ) : user.role === "admin" ? (

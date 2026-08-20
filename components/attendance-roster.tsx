@@ -1,15 +1,12 @@
 "use client"
 
 import { ChevronDown, Clock3, UserRoundCheck, UserRoundX } from "lucide-react"
+import { capitalizeFirstName } from "@/lib/names"
 
 export type AttendanceMember = {
   id: string
   name: string
   status: "attending" | "unavailable" | "awaiting"
-}
-
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0] || name
 }
 
 export function AttendanceRoster({ members }: { members: AttendanceMember[] }) {
@@ -40,7 +37,7 @@ export function AttendanceRoster({ members }: { members: AttendanceMember[] }) {
                 <ul className="flex flex-wrap gap-2" aria-label={group.label}>
                   {group.members.map((member) => (
                     <li key={member.id} className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-foreground">
-                      {firstName(member.name)}
+                      {capitalizeFirstName(member.name)}
                     </li>
                   ))}
                 </ul>
