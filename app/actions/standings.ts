@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { event, eventStanding, eventStandingEntry, user } from "@/lib/db/schema"
 import { and, asc, eq } from "drizzle-orm"
+import { requireDecklistAccess, requireStandingAdmin, requireTeamMember } from "@/lib/authorization"
 import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 
@@ -32,7 +33,8 @@ export async function saveStandings(input: {
   eventId: string
   entries: Array<{ placement: number; memberId?: string; playerName: string; deckName: string; decklistPathname?: string; decklistFilename?: string }>
 }) {
-  const reporterId = await getUserId()
+  const reporter = await requireTeamMember()
+  const reporterId = reporter.id
   const submittedEntries = input.entries.filter((entry) => entry.playerName.trim() || entry.deckName.trim() || entry.memberId)
   if (submittedEntries.length < 4 || submittedEntries.length > 8 || submittedEntries.some((entry, index) => entry.placement !== index + 1 || !entry.playerName.trim() || !entry.deckName.trim())) {
     throw new Error("Please complete at least the Top 4 entries, with optional placements through Top 8")
@@ -50,11 +52,7 @@ export async function saveStandings(input: {
 }
 
 export async function saveDecklistUrl(entryId: string, value: string) {
-  const userId = await getUserId()
-  const session = await auth.api.getSession({ headers: await headers() })
-  const role = (session?.user as { role?: string } | undefined)?.role
-  const entry = await db.select({ memberId: eventStandingEntry.memberId }).from(eventStandingEntry).where(eq(eventStandingEntry.id, entryId)).limit(1)
-  if (!entry[0] || (entry[0].memberId !== userId && role !== "admin" && role !== "superuser")) throw new Error("Only the listed member or an admin can manage this decklist")
+  await requireDecklistAccess(entryId)
   let url: string
   try {
     url = new URL(value.trim()).toString()
@@ -68,23 +66,17 @@ export async function saveDecklistUrl(entryId: string, value: string) {
 }
 
 export async function deleteDecklist(entryId: string) {
-  const user = await getUserId()
-  const entry = await db.select({ memberId: eventStandingEntry.memberId, pathname: eventStandingEntry.decklistPathname }).from(eventStandingEntry).where(eq(eventStandingEntry.id, entryId)).limit(1)
-  const session = await auth.api.getSession({ headers: await headers() })
-  const isAdmin = session?.user && ((session.user as { role?: string }).role === "admin" || (session.user as { role?: string }).role === "superuser")
-  if (!entry[0] || (!isAdmin && entry[0].memberId !== user)) throw new Error("Only the listed member or an admin can manage this decklist")
-  if (entry[0].pathname) {
+  const { entry } = await requireDecklistAccess(entryId)
+  if (entry.decklistPathname) {
     const { del } = await import("@vercel/blob")
-    await del(entry[0].pathname)
+    await del(entry.decklistPathname)
   }
   await db.update(eventStandingEntry).set({ decklistPathname: null, decklistFilename: null, decklistUrl: null }).where(eq(eventStandingEntry.id, entryId))
   revalidatePath("/past-events")
 }
 
 export async function deleteStandings(standingId: string) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const role = (session?.user as { role?: string } | undefined)?.role
-  if (role !== "admin" && role !== "superuser") throw new Error("Admin access required")
+  await requireStandingAdmin(standingId)
   const entries = await db.select({ pathname: eventStandingEntry.decklistPathname }).from(eventStandingEntry).where(eq(eventStandingEntry.standingId, standingId))
   const pathnames = entries.flatMap((entry) => entry.pathname ? [entry.pathname] : [])
   if (pathnames.length) {

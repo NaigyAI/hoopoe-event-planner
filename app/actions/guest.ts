@@ -4,10 +4,12 @@ import { db } from "@/lib/db"
 import { event, availability, rsvp } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
 import { requireAdmin } from "@/lib/session"
+import { requireEvent } from "@/lib/authorization"
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
 import { randomUUID } from "crypto"
 import type { AvailabilityStatus, RsvpStatus } from "@/app/actions/events"
+import { enforceRateLimit, requestKey } from "@/lib/rate-limit"
 
 const GUEST_ID_COOKIE = "rcq_guest_id"
 const GUEST_NAME_COOKIE = "rcq_guest_name"
@@ -72,6 +74,7 @@ export async function getGuestContext(token: string) {
 
 /** Guest enters (or updates) their display name. */
 export async function joinAsGuest(input: { token: string; name: string }) {
+  await enforceRateLimit("join", await requestKey(`token:${input.token}`))
   const name = input.name.trim()
   if (name.length < 2) throw new Error("Please enter your name (at least 2 characters)")
   if (name.length > 60) throw new Error("Name is too long")
@@ -114,6 +117,7 @@ export async function setGuestRsvp(input: {
   token: string
   status: RsvpStatus
 }) {
+  await enforceRateLimit("rsvp", await requestKey(`guest:${input.token}`))
   const ev = await getEventByToken(input.token)
   if (!ev) throw new Error("This event link is invalid or has expired")
   if (ev.status !== "locked")
@@ -152,6 +156,7 @@ export async function setGuestRsvp(input: {
 /** Guest upserts their availability for a single date. */
 export async function removeGuestFromEvent(input: { eventId: string; guestId: string }) {
   await requireAdmin()
+  await requireEvent(input.eventId)
   const scopedId = `guest:${input.guestId}`
   await db.transaction(async (tx) => {
     await tx.delete(availability).where(and(eq(availability.eventId, input.eventId), eq(availability.userId, scopedId)))
@@ -182,6 +187,7 @@ export async function setGuestAvailability(input: {
   date: string
   status: AvailabilityStatus
 }) {
+  await enforceRateLimit("join", await requestKey(`guest:${input.token}`))
   const ev = await getEventByToken(input.token)
   if (!ev) throw new Error("This event link is invalid or has expired")
   if (ev.status === "locked")
