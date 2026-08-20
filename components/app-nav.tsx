@@ -97,12 +97,6 @@ export function AppNav({ user }: { user: NavUser }) {
               <CalendarCheck className="size-4" />
               Dashboard
             </DropdownMenuItem>
-            {(user.role === "admin" || user.role === "superuser") && (
-              <DropdownMenuItem render={<Link href="/members" />}>
-                <Users className="size-4" />
-                Members
-              </DropdownMenuItem>
-            )}
             <DropdownMenuItem render={<Link href="/past-events" />}>
               <History className="size-4" />
               Past events
@@ -111,6 +105,12 @@ export function AppNav({ user }: { user: NavUser }) {
               <ClipboardList className="size-4" />
               Report standings
             </DropdownMenuItem>
+            {(user.role === "admin" || user.role === "superuser") && (
+              <DropdownMenuItem render={<Link href="/members" />}>
+                <Users className="size-4" />
+                Members
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem render={<Link href="/profile" />}>
               <User className="size-4" />
               Profile &amp; settings
