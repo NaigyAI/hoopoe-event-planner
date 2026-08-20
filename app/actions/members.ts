@@ -5,6 +5,7 @@ import { user, availability, personalAvailability, rsvp, event } from "@/lib/db/
 import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
 import { requireAdmin, requireSuperuser, requireUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
+import { idSchema } from "@/lib/validation"
 
 export type MemberRole = "member" | "team-member" | "external-member" | "admin" | "superuser"
 
@@ -95,6 +96,7 @@ export async function listPendingMembers(): Promise<MemberRow[]> {
 
 /** Superusers promote or demote non-superuser members as admins. */
 export async function setMemberRole(userId: string, role: "team-member" | "external-member") {
+  userId = idSchema.parse(userId)
   await requireAdmin()
   await db.update(user).set({ role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, true), inArray(user.role, ["member", "team-member", "external-member"])))
   revalidatePath("/members")
@@ -103,6 +105,7 @@ export async function setMemberRole(userId: string, role: "team-member" | "exter
 }
 
 export async function setMemberAdmin(userId: string, isAdmin: boolean) {
+  userId = idSchema.parse(userId)
   const actor = await requireSuperuser()
   if (actor.id === userId) throw new Error("You cannot change your own role")
 
@@ -118,6 +121,7 @@ export async function setMemberAdmin(userId: string, isAdmin: boolean) {
 
 /** Admin approves a pending sign-up into a full member. */
 export async function approveMember(userId: string, role: "team-member" | "external-member") {
+  userId = idSchema.parse(userId)
   await requireAdmin()
   await db.update(user).set({ approved: true, role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, false)))
   revalidatePath("/members")
@@ -127,6 +131,7 @@ export async function approveMember(userId: string, role: "team-member" | "exter
 
 /** Admin removes an approved member and all member-owned records. */
 export async function deleteMember(userId: string) {
+  userId = idSchema.parse(userId)
   const admin = await requireAdmin()
   if (admin.id === userId) throw new Error("You cannot remove your own account")
 
@@ -148,6 +153,7 @@ export async function deleteMember(userId: string) {
 
 /** Admin rejects a pending sign-up, removing the account entirely. */
 export async function rejectMember(userId: string) {
+  userId = idSchema.parse(userId)
   const admin = await requireAdmin()
   if (admin.id === userId) throw new Error("You cannot remove your own account")
   await db.delete(user).where(and(eq(user.id, userId), eq(user.approved, false)))

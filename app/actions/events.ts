@@ -10,6 +10,7 @@ import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { dateSchema, eventIdSchema, eventInputSchema, rsvpStatusSchema } from "@/lib/validation"
 
 export type AvailabilityStatus = "available" | "maybe" | "unavailable"
 export type RsvpStatus = "going" | "maybe" | "not_going"
@@ -86,6 +87,7 @@ export async function createEvent(input: {
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
   const creator = await requireAdmin()
+  input = eventInputSchema.parse(input)
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -165,6 +167,8 @@ export async function createEvent(input: {
 }
 
 export async function confirmEventDate(eventId: string, date: string) {
+  eventId = eventIdSchema.parse(eventId)
+  date = dateSchema.parse(date)
   const { event: ev } = await requireEventAdmin(eventId)
   if (!ev) throw new Error("Event not found")
   await db.update(event).set({ startDate: date, endDate: date, lockedDate: null, status: "planning", updatedAt: new Date() }).where(eq(event.id, eventId))
@@ -188,7 +192,9 @@ export async function updateEvent(eventId: string, input: {
   recurrenceWeekday?: number
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
+  eventId = eventIdSchema.parse(eventId)
   await requireEventAdmin(eventId)
+  input = eventInputSchema.parse(input)
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -264,6 +270,7 @@ export async function setRsvp(input: {
   eventId: string
   status: RsvpStatus
 }) {
+  input = { eventId: eventIdSchema.parse(input.eventId), status: rsvpStatusSchema.parse(input.status) }
   const current = await requireEventParticipant(input.eventId)
   await enforceRateLimit("rsvp", `user:${current.id}:event:${input.eventId}`)
 
