@@ -11,7 +11,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
   const [entries, setEntries] = useState(rows)
   async function remove(entryId: string) {
     await deleteDecklist(entryId)
-    setEntries((current) => current.map((entry) => entry.id === entryId ? { ...entry, decklistPathname: null, decklistFilename: null } : entry))
+    setEntries((current) => current.map((entry) => entry.id === entryId ? { ...entry, decklistPathname: null, decklistFilename: null, decklistUrl: null } : entry))
   }
   async function removeStandings() {
     await deleteStandings(entries[0].standingId)
@@ -33,7 +33,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
             <span className="block text-muted-foreground">{entry.deckName}</span>
           </div>
           {entry.decklistUrl ? (
-            <div className="flex shrink-0 flex-col items-end gap-1">
+            <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
               <a className="text-accent hover:underline" href={entry.decklistUrl} target="_blank" rel="noreferrer">
                 View decklist
               </a>
