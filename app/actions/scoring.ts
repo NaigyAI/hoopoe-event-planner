@@ -132,11 +132,8 @@ export async function nextScoringRound(eventId: string) {
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can start the next round")
   const currentRound = await db.select({ id: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
   const allMatches = currentRound[0] ? await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, currentRound[0].id)) : []
-  const visibleMatches = allMatches.filter((match) => {
-    if (!match.playerTwoId) return true
-    const reciprocal = allMatches.find((other) => other.playerOneId === match.playerTwoId && other.playerTwoId === match.playerOneId)
-    return !reciprocal || match.id < reciprocal.id
-  })
+  const assignedElsewhere = new Set(allMatches.map((match) => match.playerTwoId).filter((id): id is string => Boolean(id)))
+  const visibleMatches = allMatches.filter((match) => !match.playerOneId || !assignedElsewhere.has(match.playerOneId))
   if (!visibleMatches.length || visibleMatches.some((match) => !match.playerTwoName.trim() || match.completedAt === null)) throw new Error("Assign every opponent and complete every score before starting the next round")
   if (session[0].currentRound >= session[0].roundCount) {
     await db.update(scoringSession).set({ status: "completed", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
