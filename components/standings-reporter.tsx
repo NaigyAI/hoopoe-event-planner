@@ -1,11 +1,13 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { saveStandings } from "@/app/actions/standings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export function StandingsReporter({ eventId, members }: { eventId: string; members: Array<{ id: string; name: string }> }) {
+  const router = useRouter()
   const [entries, setEntries] = useState(() => Array.from({ length: 8 }, (_, index) => ({ placement: index + 1, memberId: "", playerName: "", deckName: "", decklistPathname: "", decklistFilename: "" })))
   const [message, setMessage] = useState("")
   const [pending, startTransition] = useTransition()
@@ -20,7 +22,7 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
     if (!response.ok) return setMessage(result.error ?? "Upload failed")
     setEntries((current) => current.map((entry, i) => i === index ? { ...entry, decklistPathname: result.pathname, decklistFilename: result.filename } : entry))
   }
-  function submit() { startTransition(async () => { try { await saveStandings({ eventId, entries }); setMessage("Standings saved") } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save standings") } }) }
+  function submit() { startTransition(async () => { try { await saveStandings({ eventId, entries }); router.push("/report-standings?saved=1") } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save standings") } }) }
   return <div className="flex flex-col gap-3">
     {entries.map((entry, index) => <div key={entry.placement} className="grid gap-2 rounded-xl border border-border p-2.5 sm:grid-cols-[2.5rem_minmax(8rem,0.7fr)_minmax(0,1fr)_auto] sm:items-center">
       <span className="font-bold">#{entry.placement}</span>
