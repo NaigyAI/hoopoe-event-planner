@@ -76,7 +76,7 @@ export async function deleteDecklist(entryId: string) {
     const { del } = await import("@vercel/blob")
     await del(entry[0].pathname)
   }
-  await db.update(eventStandingEntry).set({ decklistPathname: null, decklistFilename: null }).where(eq(eventStandingEntry.id, entryId))
+  await db.update(eventStandingEntry).set({ decklistPathname: null, decklistFilename: null, decklistUrl: null }).where(eq(eventStandingEntry.id, entryId))
   revalidatePath("/past-events")
 }
 
