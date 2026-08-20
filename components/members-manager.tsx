@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
-import { Check, X, UserPlus, Users, Trash2, ShieldCheck } from "lucide-react"
+import { ArrowRightLeft, Check, X, UserPlus, Users, Trash2, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { approveMember, deleteMember, rejectMember, setMemberAdmin, setMemberRole, type MemberRow } from "@/app/actions/members"
@@ -78,25 +78,25 @@ export function MembersManager({
                 {initials(m.name)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">
-                  {m.name}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">{m.email}</p>
-              </div>
-              {m.role === "superuser" ? (
-                <Badge className="gap-1 text-[10px]"><ShieldCheck className="size-3" />Superuser</Badge>
-              ) : m.role === "admin" ? (
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="text-[10px]">Admin</Badge>
-                  {canManageAdmins ? <RoleButton member={m} isAdmin /> : null}
+                <p className="truncate text-sm font-medium text-foreground">{m.name}</p>
+                <div className="mt-1">
+                  {m.role === "superuser" ? (
+                    <Badge className="gap-1 text-[10px]"><ShieldCheck className="size-3" />Superuser</Badge>
+                  ) : m.role === "admin" ? (
+                    <Badge variant="secondary" className="text-[10px]">Admin</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px]">
+                      {m.role === "external-member" ? "External member" : "Team member"}
+                    </Badge>
+                  )}
                 </div>
+              </div>
+              {m.role === "superuser" ? null : m.role === "admin" ? (
+                canManageAdmins ? <RoleButton member={m} isAdmin /> : null
               ) : (
-                <div className="flex items-center gap-2">
-                  <DeleteMemberButton member={m} />
-                  <Badge variant="outline" className="text-[10px]">
-                    {m.role === "external-member" ? "External member" : "Team member"}
-                  </Badge>
+                <div className="flex items-center gap-1">
                   {canManageRoles ? <RoleButton member={m} /> : null}
+                  <DeleteMemberButton member={m} />
                 </div>
               )}
             </li>
@@ -131,8 +131,16 @@ function RoleButton({ member, isAdmin = false }: { member: MemberRow; isAdmin?: 
   }
 
   return (
-    <Button type="button" size="sm" variant="outline" onClick={handleRoleChange} disabled={isPending}>
-      {isAdmin ? "Remove admin" : isExternal ? "Make team" : "Make external"}
+    <Button
+      type="button"
+      size="icon-sm"
+      variant="outline"
+      onClick={handleRoleChange}
+      disabled={isPending}
+      aria-label={isAdmin ? `Remove admin from ${member.name}` : isExternal ? `Make ${member.name} a team member` : `Make ${member.name} external`}
+      title={isAdmin ? "Remove admin" : isExternal ? "Make team member" : "Make external"}
+    >
+      <ArrowRightLeft data-icon="inline-start" />
     </Button>
   )
 }
@@ -204,7 +212,6 @@ function PendingRow({ member }: { member: MemberRow }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">{member.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{member.email}</p>
       </div>
       <div className="flex items-center gap-2">
         <select
