@@ -1,9 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Repeat2, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
-import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
@@ -39,11 +38,6 @@ export default async function EventPage({
   const availabilityDates = recurringDates.length > 0
     ? recurringDates
     : dateRange(event.startDate, event.endDate ?? event.startDate)
-  const confirmedPeople = event.lockedDate
-    ? votes
-        .filter((vote) => vote.date === event.lockedDate)
-        .map((vote) => ({ name: vote.userName, status: vote.status }))
-    : []
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
 
@@ -67,7 +61,7 @@ export default async function EventPage({
       maybe,
       unavailable,
       score: available * 2 + maybe,
-      responders: dayVotes.map((v) => v.userName),
+      responders: dayVotes.filter((v) => v.status === "available").map((v) => v.userName),
       myStatus: (mine?.status as DateTally["myStatus"]) ?? null,
     }
   })
@@ -176,10 +170,6 @@ export default async function EventPage({
         </div>
       </div>
 
-      {isLocked && event.lockedDate ? (
-        <ConfirmedDateRoster people={confirmedPeople} />
-      ) : null}
-
       {/* Attendance / RSVP phase — only once a date is locked */}
       {isLocked && event.lockedDate ? (
         <AttendancePanel
@@ -191,7 +181,7 @@ export default async function EventPage({
         />
       ) : null}
 
-      {!isLocked ? <section className="space-y-3">
+      <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-foreground">
             {isLocked ? "How the date was chosen" : "Mark your availability"}
@@ -215,11 +205,8 @@ export default async function EventPage({
           tallies={tallies}
           totalRespondents={totalRespondents}
           bestDate={bestDate}
-          lockedDate={event.lockedDate}
-          isAdmin={isAdmin}
-          isLocked={isLocked}
         />
-      </section> : null}
+      </section>
     </div>
   )
 }

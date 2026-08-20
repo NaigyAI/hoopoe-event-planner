@@ -2,11 +2,10 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Check, HelpCircle, X, Lock, Trophy, Loader2 } from "lucide-react"
+import { Check, ChevronDown, HelpCircle, X, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { setAvailability, lockDate, type AvailabilityStatus } from "@/app/actions/events"
+import { setAvailability, type AvailabilityStatus } from "@/app/actions/events"
 import { setGuestAvailability } from "@/app/actions/guest"
 import { formatWeekday, formatDayMonth, formatDateRange, isWeekend } from "@/lib/dates"
 
@@ -51,9 +50,6 @@ export function AvailabilityGrid({
   tallies,
   totalRespondents,
   bestDate,
-  lockedDate,
-  isAdmin,
-  isLocked,
   variant = "member",
   token,
 }: {
@@ -62,19 +58,14 @@ export function AvailabilityGrid({
   tallies: DateTally[]
   totalRespondents: number
   bestDate: string | null
-  lockedDate: string | null
-  isAdmin: boolean
-  isLocked: boolean
   variant?: "member" | "guest"
   token?: string
 }) {
   const router = useRouter()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [lockingDate, setLockingDate] = useState<string | null>(null)
 
   function vote(date: string, status: AvailabilityStatus) {
-    if (isLocked) return
     setPendingDate(date)
     startTransition(async () => {
       try {
@@ -92,33 +83,16 @@ export function AvailabilityGrid({
     })
   }
 
-  function handleLock(date: string) {
-    setLockingDate(date)
-    startTransition(async () => {
-      try {
-        await lockDate({ eventId, date })
-        toast.success(`Locked in ${formatDayMonth(date)}`)
-        router.refresh()
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Could not lock date")
-      } finally {
-        setLockingDate(null)
-      }
-    })
-  }
-
   return (
     <ul className="divide-y divide-border rounded-xl border border-border bg-card">
       {tallies.map((t) => {
         const isBest = t.date === bestDate && totalRespondents > 0
-        const isThisLocked = t.date === lockedDate
         const weekend = isWeekend(t.date)
         return (
           <li
             key={t.date}
             className={cn(
               "flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4",
-              isThisLocked && "bg-accent/10",
             )}
           >
             {/* Date */}
@@ -136,9 +110,7 @@ export function AvailabilityGrid({
                   {eventEndDate ? formatDateRange(t.date, eventEndDate) : formatDayMonth(t.date)}
                 </span>
               </div>
-              {isThisLocked ? (
-                <Lock className="size-3.5 text-accent-foreground" />
-              ) : isBest ? (
+              {isBest ? (
                 <Trophy className="size-3.5 text-accent-foreground" aria-label="Best date" />
               ) : null}
             </div>
@@ -152,17 +124,20 @@ export function AvailabilityGrid({
                 </span>
                 <span className="tabular-nums">{t.maybe} maybe</span>
                 <span className="tabular-nums">{t.unavailable} no</span>
+                <details className="ml-auto">
+                  <summary className="flex cursor-pointer list-none items-center gap-1 text-foreground/80 hover:text-foreground">
+                    Attending <ChevronDown className="size-3.5" />
+                  </summary>
+                  <div className="mt-2 rounded-lg border border-border bg-muted/40 p-2 text-xs text-foreground">
+                    {t.responders.length > 0 ? t.responders.map((name) => name.trim().split(/\\s+/)[0]).join(", ") : "No one yet"}
+                  </div>
+                </details>
               </div>
             </div>
 
             {/* Your vote */}
             <div className="flex shrink-0 items-center gap-1.5">
-              {isLocked ? (
-                <span className="text-xs text-muted-foreground">
-                  {t.myStatus ? `You: ${t.myStatus}` : "—"}
-                </span>
-              ) : (
-                <div className="inline-flex rounded-lg border border-border p-0.5">
+              <div className="inline-flex rounded-lg border border-border p-0.5">
                   {OPTIONS.filter((opt) => variant !== "guest" || opt.value === "available").map((opt) => {
                     const Icon = opt.icon
                     const selected = t.myStatus === opt.value
@@ -189,24 +164,6 @@ export function AvailabilityGrid({
                     )
                   })}
                 </div>
-              )}
-
-              {isAdmin && !isLocked ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="gap-1 text-xs"
-                  onClick={() => handleLock(t.date)}
-                  disabled={isPending}
-                >
-                  {lockingDate === t.date && isPending ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Lock className="size-3.5" />
-                  )}
-                  Lock
-                </Button>
-              ) : null}
             </div>
           </li>
         )
