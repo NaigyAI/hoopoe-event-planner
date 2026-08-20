@@ -87,6 +87,8 @@ async function createRound(sessionId: string, eventId: string, eventDate: string
       .orderBy(asc(availability.userName)),
   ])
   const attendees = Array.from(new Map([...rsvpAttendees, ...availableAttendees].map((attendee) => [attendee.id, attendee])).values())
+  const existingRound = await db.select({ id: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, sessionId), eq(scoringRound.roundNumber, roundNumber))).limit(1)
+  if (existingRound[0]) return
   const round = { id: randomUUID(), sessionId, roundNumber }
   await db.insert(scoringRound).values(round)
   const matches = []
