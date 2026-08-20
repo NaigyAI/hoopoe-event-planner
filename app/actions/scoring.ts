@@ -119,7 +119,7 @@ export async function saveMatchScore(eventId: string, matchId: string, playerOne
   const actor = await requireApprovedUser()
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can save scores")
-  if (!Number.isInteger(playerOneScore) || !Number.isInteger(playerTwoScore) || playerOneScore < 0 || playerTwoScore < 0 || playerOneScore > 99 || playerTwoScore > 99) throw new Error("Invalid score")
+  if (!Number.isInteger(playerOneScore) || !Number.isInteger(playerTwoScore) || playerOneScore < 0 || playerTwoScore < 0 || playerOneScore > 2 || playerTwoScore > 2 || (playerOneScore === 2 && playerTwoScore === 2)) throw new Error("Invalid score")
   await db.update(scoringMatch).set({ playerOneScore, playerTwoScore, completedAt: new Date() }).where(eq(scoringMatch.id, matchId))
   revalidatePath("/scoring")
 }
