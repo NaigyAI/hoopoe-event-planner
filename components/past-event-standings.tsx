@@ -24,6 +24,21 @@ export function PastEventStandings({ rows, currentUserId, isAdmin, scores = [] }
     setEntries((current) => current.map((entry) => entry.id === entryId ? { ...entry, decklistUrl: url } : entry))
   }
   if (!entries.length) return <p className="mt-4 text-sm text-muted-foreground">No standings reported yet.</p>
+  const records = new Map<string, { wins: number; losses: number; draws: number }>()
+  for (const score of scores) {
+    if (!score.playerTwoName.trim()) continue
+    const first = records.get(score.playerOneName) ?? { wins: 0, losses: 0, draws: 0 }
+    const second = records.get(score.playerTwoName) ?? { wins: 0, losses: 0, draws: 0 }
+    if (score.playerOneScore > score.playerTwoScore) { first.wins += 1; second.losses += 1 }
+    else if (score.playerTwoScore > score.playerOneScore) { second.wins += 1; first.losses += 1 }
+    else { first.draws += 1; second.draws += 1 }
+    records.set(score.playerOneName, first)
+    records.set(score.playerTwoName, second)
+  }
+  const recordFor = (name: string) => {
+    const record = records.get(name)
+    return record ? ` ${record.wins}-${record.losses}-${record.draws}` : ""
+  }
   const render = (entry: Entry) => {
     const canManage = entry.memberId === currentUserId || isAdmin
 
@@ -31,7 +46,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin, scores = [] }
       <li key={entry.id} className="flex flex-col gap-1 rounded-lg bg-muted/40 p-3 text-sm">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <div className="min-w-0">
-            <strong className="block truncate">#{entry.placement} {capitalizeName(entry.playerName)}</strong>
+            <strong className="block truncate">#{entry.placement} {capitalizeName(entry.playerName)}{recordFor(entry.playerName) ? <span className="ml-1 font-mono text-muted-foreground">{recordFor(entry.playerName)}</span> : null}</strong>
             <span className="block text-muted-foreground">{entry.deckName}</span>
             {!entry.decklistUrl && canManage ? (
               <form
