@@ -5,12 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
-import { AttendanceRoster, type AttendanceMember } from "@/components/attendance-roster"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
+import { EventAttendancePanel } from "@/components/event-attendance-panel"
 import { EventAdminActions } from "@/components/event-admin-actions"
 import { ShareEventButton } from "@/components/share-event-button"
+import { RemindAttendeesButton } from "@/components/remind-attendees-button"
 
 export const dynamic = "force-dynamic"
 
@@ -78,14 +79,14 @@ export default async function EventPage({
     if (ranked[0] && ranked[0].score > 0) bestDate = ranked[0].date
   }
 
-  const attendanceMembers: AttendanceMember[] = members.map((member) => {
-    const memberVotes = votes.filter((vote) => vote.userId === member.id)
-    const hasAttendingVote = memberVotes.some((vote) => vote.status === "available" || vote.status === "maybe")
-    const hasUnavailableVote = memberVotes.some((vote) => vote.status === "unavailable")
+  const dateAttendance = days.map((date) => {
+    const dayVotes = votes.filter((vote) => vote.date === date)
+    const voted = new Set(dayVotes.map((vote) => vote.userId))
     return {
-      id: member.id,
-      name: member.name,
-      status: hasAttendingVote ? "attending" : hasUnavailableVote ? "unavailable" : "awaiting",
+      date,
+      attending: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && (vote.status === "available" || vote.status === "maybe"))),
+      unavailable: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && vote.status === "unavailable")),
+      awaiting: members.filter((member) => !voted.has(member.id)),
     }
   })
 
@@ -179,7 +180,10 @@ export default async function EventPage({
         <div className="flex items-center gap-2">
           <ShareEventButton token={event.shareToken} />
           {isAdmin ? (
-            <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
+            <>
+              <RemindAttendeesButton eventId={event.id} />
+              <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
+            </>
           ) : null}
         </div>
       </div>
@@ -195,7 +199,7 @@ export default async function EventPage({
         />
       ) : null}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:items-start">
+      <div className="flex max-w-5xl flex-col gap-8">
         <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-foreground">Availability</h2>
@@ -224,9 +228,9 @@ export default async function EventPage({
         <section className="space-y-3">
           <div>
             <h2 className="text-lg font-medium text-foreground">Attending</h2>
-            <p className="mt-1 text-sm text-muted-foreground">See who is coming and who still needs to respond.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Select a date to see who is attending, unavailable, or awaiting a response.</p>
           </div>
-          <AttendanceRoster members={attendanceMembers} />
+          <EventAttendancePanel dates={dateAttendance} />
         </section>
       </div>
     </div>
