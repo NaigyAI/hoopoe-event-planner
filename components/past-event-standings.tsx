@@ -7,8 +7,9 @@ import { capitalizeName } from "@/lib/names"
 import { Button } from "@/components/ui/button"
 
 type Entry = { id: string; standingId: string; placement: number; memberId: string | null; playerName: string; deckName: string; decklistPathname: string | null; decklistFilename: string | null; decklistUrl: string | null }
+type ScoreRow = { roundNumber: number; playerOneName: string; playerTwoName: string; playerOneScore: number; playerTwoScore: number }
 
-export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Entry[]; currentUserId: string; isAdmin: boolean }) {
+export function PastEventStandings({ rows, currentUserId, isAdmin, scores = [] }: { rows: Entry[]; currentUserId: string; isAdmin: boolean; scores?: ScoreRow[] }) {
   const [entries, setEntries] = useState(rows)
   async function remove(entryId: string) {
     await deleteDecklist(entryId)
@@ -88,6 +89,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
         <ol className="flex flex-col gap-2">{entries.filter((entry) => entry.placement <= 4).map(render)}</ol>
         <ol className="flex flex-col gap-2">{entries.filter((entry) => entry.placement >= 5).map(render)}</ol>
       </div>
+      {scores.length ? <details className="mt-4 rounded-xl border border-border p-3"><summary className="cursor-pointer text-sm font-medium text-accent">Show match scores</summary><div className="mt-3 space-y-2">{scores.map((score, index) => <div key={`${score.roundNumber}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"><span className="text-xs font-medium text-muted-foreground">R{score.roundNumber}</span><span className="min-w-0 flex-1 truncate text-right">{score.playerOneName}</span><strong className="shrink-0 rounded-md bg-background px-2 py-1">{score.playerOneScore}–{score.playerTwoScore}</strong><span className="min-w-0 flex-1 truncate">{score.playerTwoName || "Opponent"}</span></div>)}</div></details> : null}
     </div>
   )
 }

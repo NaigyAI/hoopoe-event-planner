@@ -13,6 +13,17 @@ function ensureToday(target: string) {
   if (target !== todayISO()) throw new Error("Only events scheduled for today can be tracked")
 }
 
+export async function listCompletedScoringMatches(eventId: string) {
+  const matches = await db.select({
+    roundNumber: scoringRound.roundNumber,
+    playerOneName: scoringMatch.playerOneName,
+    playerTwoName: scoringMatch.playerTwoName,
+    playerOneScore: scoringMatch.playerOneScore,
+    playerTwoScore: scoringMatch.playerTwoScore,
+  }).from(scoringMatch).innerJoin(scoringRound, eq(scoringRound.id, scoringMatch.roundId)).innerJoin(scoringSession, eq(scoringSession.id, scoringRound.sessionId)).where(and(eq(scoringSession.eventId, eventId), eq(scoringSession.status, "completed"))).orderBy(asc(scoringRound.roundNumber), asc(scoringMatch.createdAt))
+  return matches
+}
+
 export async function listScoringEvents() {
   const actor = await requireApprovedUser()
   const today = todayISO()
