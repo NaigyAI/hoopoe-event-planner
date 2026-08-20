@@ -33,6 +33,17 @@ export async function claimScoring(eventId: string) {
   return session
 }
 
+export async function deleteScoring(eventId: string) {
+  const actor = await requireApprovedUser()
+  const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
+  if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can delete scoring")
+  const rounds = await db.select({ id: scoringRound.id }).from(scoringRound).where(eq(scoringRound.sessionId, session[0].id))
+  for (const round of rounds) await db.delete(scoringMatch).where(eq(scoringMatch.roundId, round.id))
+  await db.delete(scoringRound).where(eq(scoringRound.sessionId, session[0].id))
+  await db.delete(scoringSession).where(eq(scoringSession.id, session[0].id))
+  revalidatePath("/scoring")
+}
+
 export async function transferScoring(eventId: string, userId: string, userName: string) {
   const actor = await requireApprovedUser()
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
@@ -57,7 +68,7 @@ async function createRound(sessionId: string, eventId: string, eventDate: string
   const [rsvpAttendees, availableAttendees] = await Promise.all([
     db.select({ id: rsvp.userId, name: rsvp.userName })
       .from(rsvp)
-      .where(and(eq(rsvp.eventId, eventId), eq(rsvp.status, "going")))
+      .where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"])))
       .orderBy(asc(rsvp.userName)),
     db.select({ id: availability.userId, name: availability.userName })
       .from(availability)
