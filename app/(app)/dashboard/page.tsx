@@ -151,6 +151,7 @@ export default async function DashboardPage() {
           {!isExternalMember ? <BestDatesDialog /> : null}
           {isAdmin ? <CreateEventDialog /> : null}
         </div>
+        <div className="border-t border-border" aria-hidden="true" />
       </div>
 
       {promptMatches.length > 0 ? <AvailabilityEventPrompt key={promptMatches.map((match) => `${match.event.id}-${match.matchingDates.join(",")}`).join("|")} suggestions={promptMatches} /> : null}
