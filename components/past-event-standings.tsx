@@ -32,6 +32,24 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
           <div className="min-w-0">
             <strong className="block truncate">#{entry.placement} {capitalizeName(entry.playerName)}</strong>
             <span className="block text-muted-foreground">{entry.deckName}</span>
+            {!entry.decklistUrl && canManage ? (
+              <form
+                className="mt-2 flex min-w-0 flex-col items-stretch gap-1 sm:flex-row sm:items-center"
+                action={(formData) => { void saveUrl(entry.id, String(formData.get("decklistUrl") ?? "")) }}
+              >
+                <input
+                  name="decklistUrl"
+                  type="url"
+                  required
+                  placeholder="Add decklist link"
+                  aria-label="External decklist link"
+                  className="h-8 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-44"
+                />
+                <Button type="submit" variant="outline" size="sm" className="shrink-0 border-accent bg-accent text-primary-foreground hover:bg-accent/90 hover:text-primary-foreground">
+                  Save link
+                </Button>
+              </form>
+            ) : null}
           </div>
           {entry.decklistUrl ? (
             <div className="ml-auto flex shrink-0 items-center gap-3">
@@ -50,23 +68,6 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
                 </Button>
               ) : null}
             </div>
-          ) : canManage ? (
-            <form
-              className="ml-auto flex min-w-0 flex-col items-stretch gap-1 sm:flex-row sm:items-center"
-              action={(formData) => { void saveUrl(entry.id, String(formData.get("decklistUrl") ?? "")) }}
-            >
-              <input
-                name="decklistUrl"
-                type="url"
-                required
-                placeholder="Add decklist link"
-                aria-label="External decklist link"
-                className="h-8 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-44"
-              />
-              <Button type="submit" variant="outline" size="sm" className="shrink-0 border-accent bg-accent text-primary-foreground hover:bg-accent/90 hover:text-primary-foreground">
-                Save link
-              </Button>
-            </form>
           ) : null}
         </div>
       </li>
