@@ -20,7 +20,7 @@ export async function listCompletedScoringMatches(eventId: string) {
     playerTwoName: scoringMatch.playerTwoName,
     playerOneScore: scoringMatch.playerOneScore,
     playerTwoScore: scoringMatch.playerTwoScore,
-  }).from(scoringMatch).innerJoin(scoringRound, eq(scoringRound.id, scoringMatch.roundId)).innerJoin(scoringSession, eq(scoringSession.id, scoringRound.sessionId)).where(and(eq(scoringSession.eventId, eventId), eq(scoringSession.status, "completed"))).orderBy(asc(scoringRound.roundNumber), asc(scoringMatch.createdAt))
+  }).from(scoringMatch).innerJoin(scoringRound, eq(scoringRound.id, scoringMatch.roundId)).innerJoin(scoringSession, eq(scoringSession.id, scoringRound.sessionId)).where(eq(scoringSession.eventId, eventId)).orderBy(asc(scoringRound.roundNumber), asc(scoringMatch.createdAt))
   return matches
 }
 
