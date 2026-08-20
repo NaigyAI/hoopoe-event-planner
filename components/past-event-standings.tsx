@@ -39,9 +39,9 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
               </a>
               {canManage ? (
                 <Button
-                  variant="ghost"
+                  variant="destructive"
                   size="icon-sm"
-                  className="text-destructive hover:text-destructive"
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   onClick={() => remove(entry.id)}
                   aria-label={`Delete decklist for ${entry.playerName}`}
                   title="Delete decklist"
