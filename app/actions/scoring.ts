@@ -1,7 +1,7 @@
 "use server"
 
 import { randomUUID } from "crypto"
-import { and, asc, eq, inArray } from "drizzle-orm"
+import { and, asc, eq, inArray, lt } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { availability, event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
@@ -102,7 +102,15 @@ export async function getScoringSession(eventId: string) {
   if (!session[0]) return { actor, event: target, session: null, round: null, matches: [] }
   const round = await db.select().from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
   const matches = round[0] ? await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, round[0].id)).orderBy(asc(scoringMatch.createdAt)) : []
-  return { actor, event: target, session: session[0], round: round[0] ?? null, matches }
+  const priorRounds = await db.select({ roundId: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), lt(scoringRound.roundNumber, session[0].currentRound)))
+  const priorMatches = priorRounds.length ? await db.select({ playerOneId: scoringMatch.playerOneId, playerTwoId: scoringMatch.playerTwoId }).from(scoringMatch).where(inArray(scoringMatch.roundId, priorRounds.map((row) => row.roundId))) : []
+  const priorOpponents: Record<string, string[]> = {}
+  for (const pair of priorMatches) {
+    if (!pair.playerOneId || !pair.playerTwoId) continue
+    ;(priorOpponents[pair.playerOneId] ??= []).push(pair.playerTwoId)
+    ;(priorOpponents[pair.playerTwoId] ??= []).push(pair.playerOneId)
+  }
+  return { actor, event: target, session: session[0], round: round[0] ?? null, matches, priorOpponents }
 }
 
 export async function assignMatchOpponent(eventId: string, matchId: string, opponentId: string | null, opponentName: string) {
