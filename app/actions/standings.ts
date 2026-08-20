@@ -47,3 +47,15 @@ export async function saveStandings(input: {
   revalidatePath("/report-standings")
   return standingId
 }
+
+export async function deleteDecklist(entryId: string) {
+  const userId = await getUserId()
+  const entry = await db.select({ memberId: eventStandingEntry.memberId, pathname: eventStandingEntry.decklistPathname }).from(eventStandingEntry).where(eq(eventStandingEntry.id, entryId)).limit(1)
+  if (!entry[0] || entry[0].memberId !== userId) throw new Error("Only the listed member can manage this decklist")
+  if (entry[0].pathname) {
+    const { del } = await import("@vercel/blob")
+    await del(entry[0].pathname)
+  }
+  await db.update(eventStandingEntry).set({ decklistPathname: null, decklistFilename: null }).where(eq(eventStandingEntry.id, entryId))
+  revalidatePath("/past-events")
+}
