@@ -170,6 +170,15 @@ export default async function DashboardPage() {
       ) : (
         <EventTypeFilter events={active} />
       )}
+
+      <div className="flex justify-center pt-2">
+        <Link
+          href="/past-events"
+          className="rounded-lg border border-accent/50 px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10"
+        >
+          Looking for past events? Press here.
+        </Link>
+      </div>
     </div>
   )
 }
