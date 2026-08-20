@@ -169,21 +169,20 @@ export default async function EventPage({
               </a>
             ) : null}
           </div>
+          <div className="flex items-center gap-2 pt-2">
+            <ShareEventButton token={event.shareToken} />
+            {isAdmin ? (
+              <>
+                <RemindAttendeesButton eventId={event.id} />
+                <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
+              </>
+            ) : null}
+          </div>
           {event.travelDetails ? (
             <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm leading-6">
               <p className="font-bold text-foreground">Travel notes</p>
               <p className="mt-1 whitespace-pre-line text-muted-foreground">{event.travelDetails}</p>
             </div>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ShareEventButton token={event.shareToken} />
-          {isAdmin ? (
-            <>
-              <RemindAttendeesButton eventId={event.id} />
-              <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
-            </>
           ) : null}
         </div>
       </div>
