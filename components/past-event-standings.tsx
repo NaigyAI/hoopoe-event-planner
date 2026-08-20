@@ -33,15 +33,15 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
             <span className="block text-muted-foreground">{entry.deckName}</span>
           </div>
           {entry.decklistUrl ? (
-            <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-3">
               <a className="text-accent hover:underline" href={entry.decklistUrl} target="_blank" rel="noreferrer">
                 View decklist
               </a>
               {canManage ? (
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="icon-sm"
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="border-accent bg-accent text-accent-foreground hover:bg-accent/90 hover:text-accent-foreground"
                   onClick={() => remove(entry.id)}
                   aria-label={`Delete decklist for ${entry.playerName}`}
                   title="Delete decklist"
