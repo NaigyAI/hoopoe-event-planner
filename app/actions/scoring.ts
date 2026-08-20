@@ -138,10 +138,11 @@ export async function adminResetRoundScores(eventId: string, roundNumber: number
   const actor = await requireApprovedUser()
   if (actor.role !== "admin" && actor.role !== "superuser") throw new Error("Only admins and superusers can reset round scores")
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
-  if (!session[0] || !Number.isInteger(roundNumber) || roundNumber < 1 || roundNumber > session[0].roundCount) throw new Error("Invalid scoring round")
+  if (!session[0] || !Number.isInteger(roundNumber) || roundNumber < 1 || roundNumber > session[0].currentRound || roundNumber > session[0].roundCount) throw new Error("Invalid scoring round")
   const round = await db.select({ id: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, roundNumber))).limit(1)
   if (!round[0]) throw new Error("Scoring round not found")
   await db.update(scoringMatch).set({ playerOneScore: 0, playerTwoScore: 0, completedAt: null }).where(eq(scoringMatch.roundId, round[0].id))
+  await db.update(scoringSession).set({ currentRound: roundNumber, status: "active", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
   revalidatePath("/scoring")
 }
 
