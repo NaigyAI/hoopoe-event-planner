@@ -34,7 +34,7 @@ export function ScoringTracker({ eventId, eventTitle, actorId, actorRole, sessio
     const isBye = opponentId === "bye"
     await assignMatchOpponent(eventId, matchId, isBye ? null : opponentId, opponentName)
     if (isBye) await saveMatchScore(eventId, matchId, 2, 0)
-    setCurrentMatches((matches) => matches.map((match) => match.id === matchId ? { ...match, playerTwoId: null, playerTwoName: opponentName, playerOneScore: isBye ? 2 : match.playerOneScore, playerTwoScore: isBye ? 0 : match.playerTwoScore, completedAt: isBye ? new Date() : match.completedAt } : match))
+    setCurrentMatches((matches) => matches.map((match) => match.id === matchId ? { ...match, playerTwoId: isBye ? null : opponentId, playerTwoName: opponentName, playerOneScore: isBye ? 2 : match.playerOneScore, playerTwoScore: isBye ? 0 : match.playerTwoScore, completedAt: isBye ? new Date() : match.completedAt } : match))
   }
 
   async function score(matchId: string, side: "one" | "two", value: number) {
