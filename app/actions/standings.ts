@@ -33,8 +33,9 @@ export async function saveStandings(input: {
   entries: Array<{ placement: number; memberId?: string; playerName: string; deckName: string; decklistPathname?: string; decklistFilename?: string }>
 }) {
   const reporterId = await getUserId()
-  if (input.entries.length !== 8 || input.entries.some((entry) => entry.placement < 1 || entry.placement > 8 || !entry.playerName.trim() || !entry.deckName.trim())) {
-    throw new Error("Please complete all eight Top 8 entries")
+  const submittedEntries = input.entries.filter((entry) => entry.playerName.trim() || entry.deckName.trim() || entry.memberId)
+  if (submittedEntries.length < 4 || submittedEntries.length > 8 || submittedEntries.some((entry, index) => entry.placement !== index + 1 || !entry.playerName.trim() || !entry.deckName.trim())) {
+    throw new Error("Please complete at least the Top 4 entries, with optional placements through Top 8")
   }
   const target = await db.select({ id: event.id }).from(event).where(eq(event.id, input.eventId)).limit(1)
   if (!target[0]) throw new Error("Event not found")
@@ -42,7 +43,7 @@ export async function saveStandings(input: {
   const standingId = existing[0]?.id ?? crypto.randomUUID()
   if (!existing[0]) await db.insert(eventStanding).values({ id: standingId, eventId: input.eventId, reportedBy: reporterId })
   await db.delete(eventStandingEntry).where(eq(eventStandingEntry.standingId, standingId))
-  await db.insert(eventStandingEntry).values(input.entries.map((entry) => ({ ...entry, id: crypto.randomUUID(), standingId, playerName: entry.playerName.trim(), deckName: entry.deckName.trim() })))
+  await db.insert(eventStandingEntry).values(submittedEntries.map((entry) => ({ ...entry, id: crypto.randomUUID(), standingId, playerName: entry.playerName.trim(), deckName: entry.deckName.trim() })))
   revalidatePath("/past-events")
   revalidatePath("/report-standings")
   return standingId

@@ -15,7 +15,22 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
   function update(index: number, key: "memberId" | "playerName" | "deckName" | "decklistPathname" | "decklistFilename", value: string) {
     setEntries((current) => current.map((entry, i) => i === index ? { ...entry, [key]: value, ...(key === "memberId" ? { playerName: members.find((member) => member.id === value)?.name ?? "" } : {}) } : entry))
   }
-  function submit() { startTransition(async () => { try { await saveStandings({ eventId, entries }); router.push("/report-standings?saved=1") } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save standings") } }) }
+  function submit() {
+    const completedEntries = entries.filter((entry) => entry.playerName.trim() || entry.deckName.trim() || entry.memberId)
+    if (completedEntries.length < 4) {
+      setMessage("Please complete at least the Top 4 entries")
+      return
+    }
+    if (completedEntries.length < 8 && !window.confirm(`You have entered only the Top ${completedEntries.length}. Are you sure you want to submit fewer than Top 8 standings?`)) return
+    startTransition(async () => {
+      try {
+        await saveStandings({ eventId, entries: completedEntries })
+        router.push("/report-standings?saved=1")
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Could not save standings")
+      }
+    })
+  }
   return <div className="flex max-w-3xl flex-col gap-3">
     <div className="grid gap-2 md:grid-cols-2">
       {[entries.slice(0, 4), entries.slice(4)].map((group, groupIndex) => <div key={groupIndex} className="flex flex-col gap-2">
@@ -32,6 +47,6 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
         })}
       </div>)}
     </div>
-    <Button className="self-start" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save Top 8 standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+    <Button className="self-start" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
   </div>
 }
