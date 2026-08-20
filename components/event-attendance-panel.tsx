@@ -1,6 +1,7 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
+import { capitalizeFirstName } from "@/lib/names"
 
 type Person = { id: string; name: string }
 type DateAttendance = { date: string; attending: Person[]; unavailable: Person[]; awaiting: Person[] }
@@ -21,5 +22,5 @@ export function EventAttendancePanel({ dates, selectedDate }: { dates: DateAtten
 }
 
 function Group({ title, people, variant }: { title: string; people: Person[]; variant: "default" | "outline" | "secondary" }) {
-  return <div className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><h3 className="font-medium">{title}</h3><Badge variant={variant}>{people.length}</Badge></div><ul className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">{people.length ? people.map((person) => <li key={person.id}>{person.name}</li>) : <li>No members</li>}</ul></div>
+  return <div className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><h3 className="font-medium">{title}</h3><Badge variant={variant}>{people.length}</Badge></div><ul className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">{people.length ? people.map((person) => <li key={person.id}>{capitalizeFirstName(person.name)}</li>) : <li>No members</li>}</ul></div>
 }
