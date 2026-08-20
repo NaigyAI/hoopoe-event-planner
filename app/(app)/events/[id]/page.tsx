@@ -6,9 +6,9 @@ import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/eve
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
-import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
+import { type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
-import { EventAttendancePanel } from "@/components/event-attendance-panel"
+import { EventAvailabilityAttendance } from "@/components/event-availability-attendance"
 import { EventAdminActions } from "@/components/event-admin-actions"
 import { ShareEventButton } from "@/components/share-event-button"
 import { RemindAttendeesButton } from "@/components/remind-attendees-button"
@@ -199,40 +199,14 @@ export default async function EventPage({
         />
       ) : null}
 
-      <div className="flex max-w-5xl flex-col gap-8">
-        <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">Availability</h2>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-available" /> Yes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-maybe" /> Maybe
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-unavailable" /> No
-            </span>
-          </div>
-        </div>
-
-        <AvailabilityGrid
-          eventId={event.id}
-          eventEndDate={isMultiDay ? event.endDate : null}
-          tallies={tallies}
-          totalRespondents={totalRespondents}
-          bestDate={bestDate}
-        />
-        </section>
-
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-lg font-medium text-foreground">Attending</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Select a date to see who is attending, unavailable, or awaiting a response.</p>
-          </div>
-          <EventAttendancePanel dates={dateAttendance} />
-        </section>
-      </div>
+      <EventAvailabilityAttendance
+        eventId={event.id}
+        eventEndDate={isMultiDay ? event.endDate : null}
+        tallies={tallies}
+        totalRespondents={totalRespondents}
+        bestDate={bestDate}
+        dates={dateAttendance}
+      />
     </div>
   )
 }

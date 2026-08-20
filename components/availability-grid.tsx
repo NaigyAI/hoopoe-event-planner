@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Check, ChevronDown, HelpCircle, X, Trophy } from "lucide-react"
+import { Check, HelpCircle, X, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { setAvailability, type AvailabilityStatus } from "@/app/actions/events"
@@ -52,6 +52,8 @@ export function AvailabilityGrid({
   bestDate,
   variant = "member",
   token,
+  selectedDate,
+  onDateSelect,
 }: {
   eventId: string
   eventEndDate: string | null | undefined
@@ -60,6 +62,8 @@ export function AvailabilityGrid({
   bestDate: string | null
   variant?: "member" | "guest"
   token?: string
+  selectedDate?: string
+  onDateSelect?: (date: string) => void
 }) {
   const router = useRouter()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
@@ -92,8 +96,10 @@ export function AvailabilityGrid({
           <li
             key={t.date}
             className={cn(
-              "flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:gap-4",
+              "flex cursor-pointer flex-col gap-3 px-4 py-3.5 transition-colors sm:flex-row sm:items-center sm:gap-4",
+              t.date === selectedDate ? "bg-available/15 ring-1 ring-inset ring-available/50" : "hover:bg-muted/40",
             )}
+          onClick={() => onDateSelect?.(t.date)}
           >
             {/* Date */}
             <div className="flex w-28 shrink-0 items-center gap-2">
@@ -124,14 +130,7 @@ export function AvailabilityGrid({
                 </span>
                 <span className="tabular-nums">{t.maybe} maybe</span>
                 <span className="tabular-nums">{t.unavailable} no</span>
-                <details className="ml-auto">
-                  <summary className="flex cursor-pointer list-none items-center gap-1 text-foreground/80 hover:text-foreground">
-                    Attending <ChevronDown className="size-3.5" />
-                  </summary>
-                  <div className="mt-2 rounded-lg border border-border bg-muted/40 p-2 text-xs text-foreground">
-                    {t.responders.length > 0 ? t.responders.map((name) => name.trim().split(/\\s+/)[0]).join(", ") : "No one yet"}
-                  </div>
-                </details>
+
               </div>
             </div>
 
