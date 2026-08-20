@@ -6,7 +6,9 @@ export const idSchema = z.string().uuid()
 export const eventIdSchema = idSchema
 export const inviteTokenSchema = z.string().trim().regex(/^[a-zA-Z0-9_-]{16,128}$/)
 export const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+export const optionalDateSchema = z.preprocess((value) => value === "" ? undefined : value, dateSchema.optional())
 export const timeSchema = z.string().regex(/^\d{2}:\d{2}$/)
+export const optionalTimeSchema = z.preprocess((value) => value === "" ? undefined : value, timeSchema.optional())
 export const emailSchema = z.string().trim().email().max(320)
 export const nameSchema = z.string().trim().min(2).max(80).regex(/^[\p{L}\p{M}.'-]+(?:\s+[\p{L}\p{M}.'-]+)*$/u)
 export const urlSchema = z.string().trim().url().max(2048)
@@ -23,8 +25,8 @@ export const eventInputSchema = z.object({
   eventUrl: optionalUrlSchema,
   travelDetails: z.string().trim().max(2000).optional(),
   startDate: dateSchema,
-  endDate: dateSchema.optional(),
-  startTime: timeSchema.optional(),
+  endDate: optionalDateSchema,
+  startTime: optionalTimeSchema,
   recurrenceType: z.enum(["none", "weekly", "monthly"]).optional(),
   recurrenceWeekday: z.number().int().min(0).max(6).optional(),
   recurrenceOrdinal: z.enum(["first", "second", "third", "fourth", "last"]).optional(),
