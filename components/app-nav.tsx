@@ -93,6 +93,10 @@ export function AppNav({ user }: { user: NavUser }) {
               </span>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/dashboard" />}>
+              <CalendarCheck className="size-4" />
+              Dashboard
+            </DropdownMenuItem>
             {(user.role === "admin" || user.role === "superuser") && (
               <DropdownMenuItem render={<Link href="/members" />}>
                 <Users className="size-4" />
