@@ -72,7 +72,11 @@ export default async function DashboardPage() {
           .map((answer) => answer.date),
       )
       const matchingDates = openDates.filter((date) => availableDates.includes(date) && !answeredDates.has(date))
-      return matchingDates.length > 0 ? [{ event, matchingDates }] : []
+      if (matchingDates.length === 0) return []
+      if (event.recurrenceType !== "none") {
+        return matchingDates.map((date) => ({ event, matchingDates: [date] }))
+      }
+      return [{ event, matchingDates }]
     })
 
   return (
