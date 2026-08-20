@@ -130,8 +130,9 @@ export async function nextScoringRound(eventId: string) {
   ensureToday(target.startDate)
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can start the next round")
-  const matches = await db.select().from(scoringMatch).innerJoin(scoringRound, eq(scoringRound.id, scoringMatch.roundId)).where(eq(scoringRound.sessionId, session[0].id))
-  if (matches.some((match) => match.scoring_match.completedAt === null)) throw new Error("Complete every match before starting the next round")
+  const currentRound = await db.select({ id: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
+  const matches = currentRound[0] ? await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, currentRound[0].id)) : []
+  if (!matches.length || matches.some((match) => !match.playerTwoName.trim() || match.completedAt === null)) throw new Error("Assign every opponent and complete every score before starting the next round")
   if (session[0].currentRound >= session[0].roundCount) {
     await db.update(scoringSession).set({ status: "completed", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
   } else {
