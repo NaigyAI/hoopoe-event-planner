@@ -21,8 +21,7 @@ export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, to
         </div>
         <AvailabilityGrid eventId={eventId} eventEndDate={eventEndDate} tallies={tallies} totalRespondents={totalRespondents} bestDate={bestDate} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
       </section>
-      <section className="space-y-3">
-        <div><h2 className="text-lg font-medium text-foreground">Attending</h2><p className="mt-1 text-sm text-muted-foreground">Select a date above to see who is attending, unavailable, or awaiting a response.</p></div>
+      <section>
         <EventAttendancePanel dates={dates} selectedDate={selectedDate} />
       </section>
     </div>
