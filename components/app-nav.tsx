@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CalendarCheck, ClipboardList, History, LogOut, Swords, User, Users } from "lucide-react"
+import { CalendarCheck, ClipboardCheck, ClipboardList, History, LogOut, User, Users } from "lucide-react"
 import { capitalizeName } from "@/lib/names"
 
 type NavUser = {
@@ -106,7 +106,7 @@ export function AppNav({ user }: { user: NavUser }) {
               Report standings
             </DropdownMenuItem>
             <DropdownMenuItem render={<Link href="/scoring" />}>
-              <Swords className="size-4" />
+              <ClipboardCheck className="size-4" />
               Scoring
             </DropdownMenuItem>
             {(user.role === "admin" || user.role === "superuser") && (
