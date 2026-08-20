@@ -147,6 +147,40 @@ export const eventStandingEntry = pgTable("eventStandingEntry", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })
 
+export const scoringSession = pgTable("scoring_session", {
+  id: text("id").primaryKey(),
+  eventId: text("event_id").notNull().unique(),
+  trackerId: text("tracker_id").notNull(),
+  trackerName: text("tracker_name").notNull(),
+  playerCount: integer("player_count").notNull(),
+  roundCount: integer("round_count").notNull(),
+  currentRound: integer("current_round").notNull().default(0),
+  status: text("status").notNull().default("setup"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const scoringRound = pgTable("scoring_round", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id").notNull(),
+  roundNumber: integer("round_number").notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (t) => ({ uniqueRound: unique().on(t.sessionId, t.roundNumber) }))
+
+export const scoringMatch = pgTable("scoring_match", {
+  id: text("id").primaryKey(),
+  roundId: text("round_id").notNull(),
+  playerOneId: text("player_one_id"),
+  playerOneName: text("player_one_name").notNull(),
+  playerTwoId: text("player_two_id"),
+  playerTwoName: text("player_two_name").notNull(),
+  playerOneScore: integer("player_one_score").notNull().default(0),
+  playerTwoScore: integer("player_two_score").notNull().default(0),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
 export const rsvp = pgTable(
   "rsvp",
   {
