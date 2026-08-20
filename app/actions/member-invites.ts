@@ -8,6 +8,7 @@ import { memberInvite, user as userTable } from "@/lib/db/schema"
 import { requireAdmin } from "@/lib/session"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex")
@@ -27,6 +28,7 @@ export async function getActiveMemberInvite() {
 
 export async function createMemberInvite() {
   const admin = await requireAdmin()
+  await enforceRateLimit("invite", `admin:${admin.id}`)
   const token = randomBytes(32).toString("base64url")
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)

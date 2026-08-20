@@ -9,6 +9,7 @@ import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } fro
 import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
+import { enforceRateLimit } from "@/lib/rate-limit"
 
 export type AvailabilityStatus = "available" | "maybe" | "unavailable"
 export type RsvpStatus = "going" | "maybe" | "not_going"
@@ -25,6 +26,7 @@ async function allRecipients() {
 
 export async function remindAwaitingMembers(eventId: string) {
   const actor = await requireAdmin()
+  await enforceRateLimit("reminder", `admin:${actor.id}:event:${eventId}`)
   const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
   if (!selected[0]) throw new Error("Event not found")
   const responders = await db.select({ userId: availability.userId }).from(availability).where(eq(availability.eventId, eventId))
@@ -263,6 +265,7 @@ export async function setRsvp(input: {
   status: RsvpStatus
 }) {
   const current = await requireEventParticipant(input.eventId)
+  await enforceRateLimit("rsvp", `user:${current.id}:event:${input.eventId}`)
 
   const ev = await requireEvent(input.eventId)
   if (!ev) throw new Error("Event not found")
