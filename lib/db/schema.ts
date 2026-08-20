@@ -143,6 +143,7 @@ export const eventStandingEntry = pgTable("eventStandingEntry", {
   deckName: text("deckName").notNull(),
   decklistPathname: text("decklistPathname"),
   decklistFilename: text("decklistFilename"),
+  decklistUrl: text("decklistUrl"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })
 

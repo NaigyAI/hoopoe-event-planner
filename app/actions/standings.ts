@@ -48,6 +48,24 @@ export async function saveStandings(input: {
   return standingId
 }
 
+export async function saveDecklistUrl(entryId: string, value: string) {
+  const userId = await getUserId()
+  const session = await auth.api.getSession({ headers: await headers() })
+  const role = (session?.user as { role?: string } | undefined)?.role
+  const entry = await db.select({ memberId: eventStandingEntry.memberId }).from(eventStandingEntry).where(eq(eventStandingEntry.id, entryId)).limit(1)
+  if (!entry[0] || (entry[0].memberId !== userId && role !== "admin" && role !== "superuser")) throw new Error("Only the listed member or an admin can manage this decklist")
+  let url: string
+  try {
+    url = new URL(value.trim()).toString()
+    if (!["http:", "https:"].includes(new URL(url).protocol)) throw new Error()
+  } catch {
+    throw new Error("Enter a valid external http or https link")
+  }
+  await db.update(eventStandingEntry).set({ decklistUrl: url }).where(eq(eventStandingEntry.id, entryId))
+  revalidatePath("/past-events")
+  return url
+}
+
 export async function deleteDecklist(entryId: string) {
   const user = await getUserId()
   const entry = await db.select({ memberId: eventStandingEntry.memberId, pathname: eventStandingEntry.decklistPathname }).from(eventStandingEntry).where(eq(eventStandingEntry.id, entryId)).limit(1)
