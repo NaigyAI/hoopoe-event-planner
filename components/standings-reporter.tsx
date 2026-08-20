@@ -21,12 +21,12 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
     setEntries((current) => current.map((entry, i) => i === index ? { ...entry, decklistPathname: result.pathname, decklistFilename: result.filename } : entry))
   }
   function submit() { startTransition(async () => { try { await saveStandings({ eventId, entries }); setMessage("Standings saved") } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save standings") } }) }
-  return <div className="space-y-4">
-    {entries.map((entry, index) => <div key={entry.placement} className="grid gap-2 rounded-xl border border-border p-3 sm:grid-cols-[3rem_1fr_1fr_auto] sm:items-center">
+  return <div className="flex flex-col gap-3">
+    {entries.map((entry, index) => <div key={entry.placement} className="grid gap-2 rounded-xl border border-border p-2.5 sm:grid-cols-[2.5rem_minmax(8rem,0.7fr)_minmax(0,1fr)_auto] sm:items-center">
       <span className="font-bold">#{entry.placement}</span>
-      <select className="h-9 rounded-md border border-input bg-background px-3 text-sm" value={entry.memberId} onChange={(e) => update(index, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
-      <Input placeholder="Player name" value={entry.playerName} onChange={(e) => update(index, "playerName", e.target.value)} />
-      <Input placeholder="Deck name" value={entry.deckName} onChange={(e) => update(index, "deckName", e.target.value)} />
+      <select className="h-9 min-w-0 rounded-md border border-input bg-background px-2 text-sm" value={entry.memberId} onChange={(e) => update(index, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+      <Input className="h-9 max-w-40" placeholder="Player name" value={entry.playerName} onChange={(e) => update(index, "playerName", e.target.value)} />
+      <Input className="h-9 min-w-0" placeholder="Deck name" value={entry.deckName} onChange={(e) => update(index, "deckName", e.target.value)} />
       <label className="cursor-pointer text-xs text-accent">{entry.decklistFilename ?? "Upload decklist"}<input className="sr-only" type="file" accept=".pdf,.txt,.csv" onChange={(e) => upload(index, e.target.files?.[0])} /></label>
     </div>)}
     <Button onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save Top 8 standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
