@@ -89,11 +89,11 @@ export default async function DashboardPage() {
             {isExternalMember ? "Welcome to the Hoopoe Boys Event Planner" : "Hoopoe Boys team command center"}
           </p>
           <h1 className="mt-2 text-4xl leading-none tracking-wide text-balance sm:text-5xl">
-            {isExternalMember ? "Follow our tournaments here and join us in the journey of making it to the Pro Tour." : "Keep the reps, trips, and tournaments organized."}
+            {isExternalMember ? "Follow our tournaments and join us in our journey to the Pro Tour." : "Keep the reps, trips, and tournaments organized."}
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-secondary-foreground/80 sm:text-base">
             {isExternalMember
-              ? "Come to our practice sessions, find weekly and RC Qualifier dates and see when it is time for our next big event!"
+              ? "Come to our practice sessions, find weekly tournaments and RC Qualifier dates and see when it is time for our next big event!"
               : "Plan practice sessions, find the best RC Qualifier date, coordinate travel, and keep everyone aligned when it is time to register for the big event."}
           </p>
           </div>
