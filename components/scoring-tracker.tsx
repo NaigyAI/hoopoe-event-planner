@@ -82,7 +82,7 @@ export function ScoringTracker({ eventId, eventTitle, actorId, actorRole, sessio
         oscillator.stop(now + index * 0.12 + 0.3)
       })
       window.setTimeout(() => void audio.close(), 1200)
-      window.setTimeout(() => window.location.reload(), 5000)
+      window.setTimeout(() => window.location.reload(), 3000)
     }
   }
 
