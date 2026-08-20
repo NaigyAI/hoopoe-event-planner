@@ -4,6 +4,8 @@ import { ArrowLeft, CalendarDays, ExternalLink, Lock, MapPin, Repeat2, Users } f
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
+import { listAttendanceMembers } from "@/app/actions/members"
+import { AttendanceRoster, type AttendanceMember } from "@/components/attendance-roster"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
@@ -18,11 +20,12 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, rsvps, user] = await Promise.all([
+  const [event, votes, rsvps, user, members] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
     getEventRsvps(id),
     getSessionUser(),
+    listAttendanceMembers(),
   ])
 
   if (!event) notFound()
@@ -74,6 +77,17 @@ export default async function EventPage({
     )
     if (ranked[0] && ranked[0].score > 0) bestDate = ranked[0].date
   }
+
+  const attendanceMembers: AttendanceMember[] = members.map((member) => {
+    const memberVotes = votes.filter((vote) => vote.userId === member.id)
+    const hasAttendingVote = memberVotes.some((vote) => vote.status === "available" || vote.status === "maybe")
+    const hasUnavailableVote = memberVotes.some((vote) => vote.status === "unavailable")
+    return {
+      id: member.id,
+      name: member.name,
+      status: hasAttendingVote ? "attending" : hasUnavailableVote ? "unavailable" : "awaiting",
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -181,11 +195,10 @@ export default async function EventPage({
         />
       ) : null}
 
-      <section className="space-y-3">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.7fr)] lg:items-start">
+        <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">
-            {isLocked ? "How the date was chosen" : "Mark your availability"}
-          </h2>
+          <h2 className="text-lg font-medium text-foreground">Availability</h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <span className="size-2.5 rounded-full bg-available" /> Yes
@@ -206,7 +219,16 @@ export default async function EventPage({
           totalRespondents={totalRespondents}
           bestDate={bestDate}
         />
-      </section>
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-lg font-medium text-foreground">Attending</h2>
+            <p className="mt-1 text-sm text-muted-foreground">See who is coming and who still needs to respond.</p>
+          </div>
+          <AttendanceRoster members={attendanceMembers} />
+        </section>
+      </div>
     </div>
   )
 }

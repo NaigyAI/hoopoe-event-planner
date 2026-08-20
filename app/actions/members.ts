@@ -3,7 +3,7 @@
 import { db } from "@/lib/db"
 import { user, availability, personalAvailability, rsvp, event } from "@/lib/db/schema"
 import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
-import { requireAdmin, requireSuperuser } from "@/lib/session"
+import { requireAdmin, requireSuperuser, requireUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 
 export type MemberRole = "member" | "team-member" | "external-member" | "admin" | "superuser"
@@ -51,6 +51,15 @@ export async function listGuests(): Promise<GuestRow[]> {
 }
 
 /** Approved members (admins + approved members), newest first. */
+export async function listAttendanceMembers(): Promise<Pick<MemberRow, "id" | "name">[]> {
+  const sessionUser = await requireUser()
+  return db
+    .select({ id: user.id, name: user.name })
+    .from(user)
+    .where(eq(user.approved, true))
+    .orderBy(user.name)
+}
+
 export async function listMembers(): Promise<MemberRow[]> {
   await requireAdmin()
   return (await db
