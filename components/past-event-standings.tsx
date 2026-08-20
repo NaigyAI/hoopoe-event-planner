@@ -33,7 +33,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
             <span className="block text-muted-foreground">{entry.deckName}</span>
           </div>
           {entry.decklistUrl ? (
-            <div className="flex shrink-0 flex-col items-start gap-1">
+            <div className="flex shrink-0 flex-col items-end gap-1">
               <a className="text-accent hover:underline" href={entry.decklistUrl} target="_blank" rel="noreferrer">
                 View decklist
               </a>
