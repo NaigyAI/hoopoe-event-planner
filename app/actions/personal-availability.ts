@@ -1,9 +1,9 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { personalAvailability, user } from "@/lib/db/schema"
+import { availability, event, personalAvailability, user } from "@/lib/db/schema"
 import { requireApprovedUser, requireUser } from "@/lib/session"
-import { and, eq, gte, lte, lt } from "drizzle-orm"
+import { and, eq, gte, lte, lt, or } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 
@@ -112,5 +112,35 @@ export async function setPersonalAvailability(
     })
   }
 
+  const matchingEvents = await db
+    .select({ id: event.id })
+    .from(event)
+    .where(or(eq(event.startDate, date), and(lte(event.startDate, date), gte(event.endDate, date))))
+
+  if (matchingEvents.length > 0) {
+    const memberName = currentUser.name
+    if (status) {
+      await db
+        .insert(availability)
+        .values(matchingEvents.map((item) => ({
+          id: randomUUID(),
+          eventId: item.id,
+          userId: currentUser.id,
+          userName: memberName,
+          date,
+          status,
+        })))
+        .onConflictDoUpdate({
+          target: [availability.eventId, availability.userId, availability.date],
+          set: { status, userName: memberName, updatedAt: new Date() },
+        })
+    } else {
+      for (const item of matchingEvents) {
+        await db.delete(availability).where(and(eq(availability.eventId, item.id), eq(availability.userId, currentUser.id), eq(availability.date, date)))
+      }
+    }
+  }
+
   revalidatePath("/dashboard")
+  revalidatePath("/events/[id]", "page")
 }

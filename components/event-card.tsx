@@ -60,19 +60,6 @@ export function EventCard({ event }: { event: EventSummary }) {
               <span className="truncate">{event.location}</span>
             </div>
           ) : null}
-          {event.eventUrl ? (
-            <a
-              href={event.eventUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(event) => event.stopPropagation()}
-              className="flex items-center gap-2 text-primary underline-offset-4 hover:underline"
-            >
-              <ExternalLink className="size-4 shrink-0" />
-              <span>Official event details</span>
-              <span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          ) : null}
           <div className="flex items-center gap-2">
             <Users className="size-4 shrink-0" />
             <span>
@@ -82,6 +69,19 @@ export function EventCard({ event }: { event: EventSummary }) {
           </div>
         </dl>
 
+        {event.eventUrl ? (
+          <a
+            href={event.eventUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(event) => event.stopPropagation()}
+            className="mt-4 flex items-center gap-2 text-primary underline-offset-4 hover:underline"
+          >
+            <ExternalLink className="size-4 shrink-0" />
+            <span>Official event details</span>
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        ) : null}
       </Card>
     </div>
   )

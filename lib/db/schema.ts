@@ -126,6 +126,27 @@ export const memberInvite = pgTable("memberInvite", {
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 })
 
+export const eventStanding = pgTable("eventStanding", {
+  id: text("id").primaryKey(),
+  eventId: text("eventId").notNull(),
+  reportedBy: text("reportedBy").notNull(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export const eventStandingEntry = pgTable("eventStandingEntry", {
+  id: text("id").primaryKey(),
+  standingId: text("standingId").notNull(),
+  placement: integer("placement").notNull(),
+  memberId: text("memberId"),
+  playerName: text("playerName").notNull(),
+  deckName: text("deckName").notNull(),
+  decklistPathname: text("decklistPathname"),
+  decklistFilename: text("decklistFilename"),
+  decklistUrl: text("decklistUrl"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+})
+
 export const rsvp = pgTable(
   "rsvp",
   {

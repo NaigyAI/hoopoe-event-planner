@@ -1,15 +1,17 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, MapPin, Lock, Repeat2, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
-import { ConfirmedDateRoster } from "@/components/confirmed-date-roster"
 import { getSessionUser } from "@/lib/session"
+import { listAttendanceMembers } from "@/app/actions/members"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
-import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
+import { type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
+import { EventAvailabilityAttendance } from "@/components/event-availability-attendance"
 import { EventAdminActions } from "@/components/event-admin-actions"
 import { ShareEventButton } from "@/components/share-event-button"
+import { RemindAttendeesButton } from "@/components/remind-attendees-button"
 
 export const dynamic = "force-dynamic"
 
@@ -19,11 +21,12 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, rsvps, user] = await Promise.all([
+  const [event, votes, rsvps, user, members] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
     getEventRsvps(id),
     getSessionUser(),
+    listAttendanceMembers(),
   ])
 
   if (!event) notFound()
@@ -39,11 +42,6 @@ export default async function EventPage({
   const availabilityDates = recurringDates.length > 0
     ? recurringDates
     : dateRange(event.startDate, event.endDate ?? event.startDate)
-  const confirmedPeople = event.lockedDate
-    ? votes
-        .filter((vote) => vote.date === event.lockedDate)
-        .map((vote) => ({ name: vote.userName, status: vote.status }))
-    : []
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
 
@@ -67,7 +65,7 @@ export default async function EventPage({
       maybe,
       unavailable,
       score: available * 2 + maybe,
-      responders: dayVotes.map((v) => v.userName),
+      responders: dayVotes.filter((v) => v.status === "available").map((v) => v.userName),
       myStatus: (mine?.status as DateTally["myStatus"]) ?? null,
     }
   })
@@ -80,6 +78,17 @@ export default async function EventPage({
     )
     if (ranked[0] && ranked[0].score > 0) bestDate = ranked[0].date
   }
+
+  const dateAttendance = days.map((date) => {
+    const dayVotes = votes.filter((vote) => vote.date === date)
+    const voted = new Set(dayVotes.map((vote) => vote.userId))
+    return {
+      date,
+      attending: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && (vote.status === "available" || vote.status === "maybe"))),
+      unavailable: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && vote.status === "unavailable")),
+      awaiting: members.filter((member) => !voted.has(member.id)),
+    }
+  })
 
   return (
     <div className="space-y-6">
@@ -171,14 +180,13 @@ export default async function EventPage({
         <div className="flex items-center gap-2">
           <ShareEventButton token={event.shareToken} />
           {isAdmin ? (
-            <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
+            <>
+              <RemindAttendeesButton eventId={event.id} />
+              <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
+            </>
           ) : null}
         </div>
       </div>
-
-      {isLocked && event.lockedDate ? (
-        <ConfirmedDateRoster people={confirmedPeople} />
-      ) : null}
 
       {/* Attendance / RSVP phase — only once a date is locked */}
       {isLocked && event.lockedDate ? (
@@ -191,35 +199,14 @@ export default async function EventPage({
         />
       ) : null}
 
-      {!isLocked ? <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium text-foreground">
-            {isLocked ? "How the date was chosen" : "Mark your availability"}
-          </h2>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-available" /> Yes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-maybe" /> Maybe
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full bg-unavailable" /> No
-            </span>
-          </div>
-        </div>
-
-        <AvailabilityGrid
-          eventId={event.id}
-          eventEndDate={isMultiDay ? event.endDate : null}
-          tallies={tallies}
-          totalRespondents={totalRespondents}
-          bestDate={bestDate}
-          lockedDate={event.lockedDate}
-          isAdmin={isAdmin}
-          isLocked={isLocked}
-        />
-      </section> : null}
+      <EventAvailabilityAttendance
+        eventId={event.id}
+        eventEndDate={isMultiDay ? event.endDate : null}
+        tallies={tallies}
+        totalRespondents={totalRespondents}
+        bestDate={bestDate}
+        dates={dateAttendance}
+      />
     </div>
   )
 }

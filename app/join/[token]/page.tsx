@@ -325,9 +325,6 @@ function GuestEventView({
           tallies={tallies}
           totalRespondents={totalRespondents}
           bestDate={null}
-          lockedDate={event.lockedDate}
-          isAdmin={false}
-          isLocked={isLocked}
           variant="guest"
           token={token}
         />

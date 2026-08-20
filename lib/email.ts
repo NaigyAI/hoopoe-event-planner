@@ -68,6 +68,16 @@ Hoopoe Event Planner`,
   )
 }
 
+export async function notifyEventResponseReminder(opts: {
+  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  eventTitle: string
+  eventLocation: string
+  eventLink: string
+  creatorName: string
+}) {
+  await notifyEventCreated(opts)
+}
+
 export async function notifyDateLocked(opts: {
   recipients: { email: string; name: string; notifyEnabled: boolean }[]
   eventTitle: string

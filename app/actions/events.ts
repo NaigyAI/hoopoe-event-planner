@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { event, availability, rsvp, user } from "@/lib/db/schema"
 import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
-import { notifyEventCreated, notifyDateLocked } from "@/lib/email"
+import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
 import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
@@ -20,6 +20,19 @@ async function allRecipients() {
       notifyEnabled: user.notifyEnabled,
     })
     .from(user)
+}
+
+export async function remindAwaitingMembers(eventId: string) {
+  const actor = await requireAdmin()
+  const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
+  if (!selected[0]) throw new Error("Event not found")
+  const responders = await db.select({ userId: availability.userId }).from(availability).where(eq(availability.eventId, eventId))
+  const responded = new Set(responders.map((row) => row.userId))
+  const recipients = await db.select({ id: user.id, email: user.email, name: user.name, notifyEnabled: user.notifyEnabled }).from(user).where(and(eq(user.approved, true), ne(user.id, actor.id)))
+  const awaiting = recipients.filter((recipient) => !responded.has(recipient.id))
+  const origin = process.env.BETTER_AUTH_URL ? process.env.BETTER_AUTH_URL : process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.V0_RUNTIME_URL ?? "http://localhost:3000"
+  await notifyEventResponseReminder({ recipients: awaiting, eventTitle: selected[0].title, eventLocation: selected[0].location ?? "", eventLink: `${origin}/join/${selected[0].shareToken}`, creatorName: actor.name })
+  return { count: awaiting.filter((recipient) => recipient.notifyEnabled).length }
 }
 
 /** Dashboard: every event with a small summary. */

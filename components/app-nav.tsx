@@ -16,7 +16,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CalendarCheck, LogOut, User, Users } from "lucide-react"
+import { CalendarCheck, ClipboardList, History, LogOut, User, Users } from "lucide-react"
+import { capitalizeName } from "@/lib/names"
 
 type NavUser = {
   name: string
@@ -54,6 +55,9 @@ export function AppNav({ user }: { user: NavUser }) {
             <CalendarCheck className="size-4" />
           </div>
           <span className="text-lg">Hoopoe Event Planner</span>
+          <span className="rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-accent-foreground">
+            Beta
+          </span>
         </Link>
 
         <DropdownMenu>
@@ -71,13 +75,13 @@ export function AppNav({ user }: { user: NavUser }) {
               </AvatarFallback>
             </Avatar>
             <span className="hidden text-sm font-medium sm:inline">
-              {user.name}
+              {capitalizeName(user.name)}
             </span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <div className="flex flex-col gap-1 px-1.5 py-1">
               <span className="flex items-center gap-2 text-sm font-medium">
-                {user.name}
+                {capitalizeName(user.name)}
                 {user.role === "superuser" ? (
                   <Badge className="text-[10px]">Superuser</Badge>
                 ) : user.role === "admin" ? (
@@ -89,6 +93,18 @@ export function AppNav({ user }: { user: NavUser }) {
               </span>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem render={<Link href="/dashboard" />}>
+              <CalendarCheck className="size-4" />
+              Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/past-events" />}>
+              <History className="size-4" />
+              Past events
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/report-standings" />}>
+              <ClipboardList className="size-4" />
+              Report standings
+            </DropdownMenuItem>
             {(user.role === "admin" || user.role === "superuser") && (
               <DropdownMenuItem render={<Link href="/members" />}>
                 <Users className="size-4" />
