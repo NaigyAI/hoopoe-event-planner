@@ -79,12 +79,16 @@ async function createRound(sessionId: string, eventId: string, eventDate: string
   const round = { id: randomUUID(), sessionId, roundNumber }
   await db.insert(scoringRound).values(round)
   const matches = []
-  for (let index = 0; index < attendees.length; index += 2) {
-    const one = attendees[index]
-    const two = attendees[index + 1]
-    matches.push({ id: randomUUID(), roundId: round.id, playerOneId: one.id, playerOneName: one.name, playerTwoId: two?.id ?? null, playerTwoName: two?.name ?? "Opponent" })
+  for (const one of attendees) {
+    matches.push({ id: randomUUID(), roundId: round.id, playerOneId: one.id, playerOneName: one.name, playerTwoId: null, playerTwoName: "" })
   }
   if (matches.length) await db.insert(scoringMatch).values(matches)
+}
+
+export async function listScoringMembers(eventId: string) {
+  await requireApprovedUser()
+  const rows = await db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"]))).orderBy(asc(rsvp.userName))
+  return Array.from(new Map(rows.map((member) => [member.id, member])).values())
 }
 
 export async function getScoringSession(eventId: string) {
