@@ -87,8 +87,11 @@ async function createRound(sessionId: string, eventId: string, eventDate: string
 
 export async function listScoringMembers(eventId: string) {
   await requireApprovedUser()
-  const rows = await db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"]))).orderBy(asc(rsvp.userName))
-  return Array.from(new Map(rows.map((member) => [member.id, member])).values())
+  const [registered, available] = await Promise.all([
+    db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"]))).orderBy(asc(rsvp.userName)),
+    db.select({ id: availability.userId, name: availability.userName }).from(availability).where(and(eq(availability.eventId, eventId), eq(availability.status, "available"))).orderBy(asc(availability.userName)),
+  ])
+  return Array.from(new Map([...registered, ...available].map((member) => [member.id, member])).values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
 export async function getScoringSession(eventId: string) {
