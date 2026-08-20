@@ -4,7 +4,7 @@ import { randomUUID } from "crypto"
 import { and, asc, eq, inArray } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
-import { event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
+import { availability, event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
 import { requireApprovedUser } from "@/lib/session"
 import { requireEvent } from "@/lib/authorization"
 import { todayISO } from "@/lib/dates"
@@ -49,12 +49,22 @@ export async function setupScoring(eventId: string, playerCount: number, roundCo
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can set up scoring")
   await db.update(scoringSession).set({ playerCount, roundCount, currentRound: 1, status: "active", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
-  await createRound(session[0].id, eventId, 1)
+  await createRound(session[0].id, eventId, target.startDate, 1)
   revalidatePath("/scoring")
 }
 
-async function createRound(sessionId: string, eventId: string, roundNumber: number) {
-  const attendees = await db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(eq(rsvp.eventId, eventId), eq(rsvp.status, "going"))).orderBy(asc(rsvp.userName))
+async function createRound(sessionId: string, eventId: string, eventDate: string, roundNumber: number) {
+  const [rsvpAttendees, availableAttendees] = await Promise.all([
+    db.select({ id: rsvp.userId, name: rsvp.userName })
+      .from(rsvp)
+      .where(and(eq(rsvp.eventId, eventId), eq(rsvp.status, "going")))
+      .orderBy(asc(rsvp.userName)),
+    db.select({ id: availability.userId, name: availability.userName })
+      .from(availability)
+      .where(and(eq(availability.eventId, eventId), eq(availability.date, eventDate), eq(availability.status, "available")))
+      .orderBy(asc(availability.userName)),
+  ])
+  const attendees = Array.from(new Map([...rsvpAttendees, ...availableAttendees].map((attendee) => [attendee.id, attendee])).values())
   const round = { id: randomUUID(), sessionId, roundNumber }
   await db.insert(scoringRound).values(round)
   const matches = []
@@ -88,6 +98,8 @@ export async function saveMatchScore(eventId: string, matchId: string, playerOne
 
 export async function nextScoringRound(eventId: string) {
   const actor = await requireApprovedUser()
+  const target = await requireEvent(eventId)
+  ensureToday(target.startDate)
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can start the next round")
   const matches = await db.select().from(scoringMatch).innerJoin(scoringRound, eq(scoringRound.id, scoringMatch.roundId)).where(eq(scoringRound.sessionId, session[0].id))
@@ -96,7 +108,7 @@ export async function nextScoringRound(eventId: string) {
     await db.update(scoringSession).set({ status: "completed", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
   } else {
     await db.update(scoringSession).set({ currentRound: session[0].currentRound + 1, updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
-    await createRound(session[0].id, eventId, session[0].currentRound + 1)
+    await createRound(session[0].id, eventId, target.startDate, session[0].currentRound + 1)
   }
   revalidatePath("/scoring")
 }
