@@ -9,7 +9,7 @@ type DateAttendance = { date: string; attending: { id: string; name: string }[];
 export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[] }) {
   const [selectedDate, setSelectedDate] = useState(dates[0]?.date ?? "")
   return (
-    <div className="flex max-w-5xl flex-col gap-8">
+    <div className="flex max-w-5xl flex-col gap-8 border-t border-border pt-6">
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium text-foreground">Availability</h2>
