@@ -23,7 +23,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin, scores = [] }
     const url = await saveDecklistUrl(entryId, value)
     setEntries((current) => current.map((entry) => entry.id === entryId ? { ...entry, decklistUrl: url } : entry))
   }
-  if (!entries.length) return <p className="mt-4 text-sm text-muted-foreground">No standings reported yet.</p>
+  if (!entries.length) return <div className="space-y-3"><p className="text-sm text-muted-foreground">No standings reported yet.</p>{scores.length ? <details className="rounded-xl border border-border p-3"><summary className="cursor-pointer text-sm font-medium text-accent">Show match scores</summary><div className="mt-3 space-y-2">{scores.map((score, index) => <div key={`${score.roundNumber}-${index}`} className="flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-sm"><span className="text-xs font-medium text-muted-foreground">R{score.roundNumber}</span><span className="min-w-0 flex-1 truncate text-right">{score.playerOneName}</span><strong className="shrink-0 rounded-md bg-background px-2 py-1">{score.playerOneScore}–{score.playerTwoScore}</strong><span className="min-w-0 flex-1 truncate">{score.playerTwoName || "Opponent"}</span></div>)}</div></details> : null}</div>
   const records = new Map<string, { wins: number; losses: number; draws: number }>()
   for (const score of scores) {
     if (!score.playerTwoName.trim()) continue
