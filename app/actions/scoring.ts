@@ -98,6 +98,16 @@ export async function getScoringSession(eventId: string) {
   return { actor, event: target, session: session[0], round: round[0] ?? null, matches }
 }
 
+export async function assignMatchOpponent(eventId: string, matchId: string, opponentId: string | null, opponentName: string) {
+  const actor = await requireApprovedUser()
+  const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
+  if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can assign opponents")
+  const name = opponentName.trim().slice(0, 120)
+  if (!name) throw new Error("Opponent name is required")
+  await db.update(scoringMatch).set({ playerTwoId: opponentId, playerTwoName: name }).where(eq(scoringMatch.id, matchId))
+  revalidatePath("/scoring")
+}
+
 export async function saveMatchScore(eventId: string, matchId: string, playerOneScore: number, playerTwoScore: number) {
   const actor = await requireApprovedUser()
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
