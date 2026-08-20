@@ -1,0 +1,49 @@
+"use server"
+
+import { auth } from "@/lib/auth"
+import { db } from "@/lib/db"
+import { event, eventStanding, eventStandingEntry, user } from "@/lib/db/schema"
+import { and, asc, eq } from "drizzle-orm"
+import { headers } from "next/headers"
+import { revalidatePath } from "next/cache"
+
+async function getUserId() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error("Unauthorized")
+  return session.user.id
+}
+
+export async function listStandingData(eventId?: string) {
+  await getUserId()
+  const rows = await db.select({ standing: eventStanding, entry: eventStandingEntry })
+    .from(eventStanding)
+    .leftJoin(eventStandingEntry, eq(eventStandingEntry.standingId, eventStanding.id))
+    .where(eventId ? eq(eventStanding.eventId, eventId) : undefined)
+    .orderBy(asc(eventStandingEntry.placement))
+  return rows
+}
+
+export async function listStandingMembers() {
+  await getUserId()
+  return db.select({ id: user.id, name: user.name }).from(user).where(eq(user.approved, true)).orderBy(asc(user.name))
+}
+
+export async function saveStandings(input: {
+  eventId: string
+  entries: Array<{ placement: number; memberId?: string; playerName: string; deckName: string; decklistPathname?: string; decklistFilename?: string }>
+}) {
+  const reporterId = await getUserId()
+  if (input.entries.length !== 8 || input.entries.some((entry) => entry.placement < 1 || entry.placement > 8 || !entry.playerName.trim() || !entry.deckName.trim())) {
+    throw new Error("Please complete all eight Top 8 entries")
+  }
+  const target = await db.select({ id: event.id }).from(event).where(eq(event.id, input.eventId)).limit(1)
+  if (!target[0]) throw new Error("Event not found")
+  const existing = await db.select({ id: eventStanding.id }).from(eventStanding).where(eq(eventStanding.eventId, input.eventId)).limit(1)
+  const standingId = existing[0]?.id ?? crypto.randomUUID()
+  if (!existing[0]) await db.insert(eventStanding).values({ id: standingId, eventId: input.eventId, reportedBy: reporterId })
+  await db.delete(eventStandingEntry).where(eq(eventStandingEntry.standingId, standingId))
+  await db.insert(eventStandingEntry).values(input.entries.map((entry) => ({ ...entry, id: crypto.randomUUID(), standingId, playerName: entry.playerName.trim(), deckName: entry.deckName.trim() })))
+  revalidatePath("/past-events")
+  revalidatePath("/report-standings")
+  return standingId
+}

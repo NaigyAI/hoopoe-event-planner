@@ -53,7 +53,7 @@ export default async function DashboardPage() {
   }))
 
   const active = summaries
-    .filter((e) => e.status !== "cancelled")
+    .filter((e) => e.status !== "cancelled" && e.startDate >= todayISO())
     .sort((a, b) => {
       const dateComparison = a.startDate.localeCompare(b.startDate)
       return dateComparison !== 0 ? dateComparison : a.title.localeCompare(b.title)
