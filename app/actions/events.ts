@@ -4,6 +4,7 @@ import { db } from "@/lib/db"
 import { event, availability, rsvp, user } from "@/lib/db/schema"
 import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
+import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
 import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
@@ -82,7 +83,7 @@ export async function createEvent(input: {
   recurrenceWeekday?: number
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
-  const creator = await requireApprovedUser()
+  const creator = await requireAdmin()
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -162,8 +163,7 @@ export async function createEvent(input: {
 }
 
 export async function confirmEventDate(eventId: string, date: string) {
-  await requireAdmin()
-  const ev = await getEvent(eventId)
+  const { event: ev } = await requireEventAdmin(eventId)
   if (!ev) throw new Error("Event not found")
   await db.update(event).set({ startDate: date, endDate: date, lockedDate: null, status: "planning", updatedAt: new Date() }).where(eq(event.id, eventId))
   revalidatePath(`/events/${eventId}`)
@@ -186,7 +186,7 @@ export async function updateEvent(eventId: string, input: {
   recurrenceWeekday?: number
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
-  await requireAdmin()
+  await requireEventAdmin(eventId)
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -225,7 +225,7 @@ export async function updateEvent(eventId: string, input: {
 }
 
 export async function getEvent(eventId: string) {
-  await requireUser()
+  await requireApprovedUser()
   const rows = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
   return rows[0] ?? null
 }
@@ -262,9 +262,9 @@ export async function setRsvp(input: {
   eventId: string
   status: RsvpStatus
 }) {
-  const current = await requireUser()
+  const current = await requireEventParticipant(input.eventId)
 
-  const ev = await getEvent(input.eventId)
+  const ev = await requireEvent(input.eventId)
   if (!ev) throw new Error("Event not found")
   if (ev.status !== "locked")
     throw new Error("A date must be locked before you can register attendance")
@@ -318,9 +318,9 @@ export async function setAvailability(input: {
   date: string
   status: AvailabilityStatus
 }) {
-  const current = await requireUser()
+  const current = await requireEventParticipant(input.eventId)
 
-  const ev = await getEvent(input.eventId)
+  const ev = await requireEvent(input.eventId)
   if (!ev) throw new Error("Event not found")
   if (ev.status === "locked")
     throw new Error("This event is locked and can no longer be edited")
@@ -377,8 +377,7 @@ export async function setAvailability(input: {
 
 /** Admin locks a winning date. */
 export async function lockDate(input: { eventId: string; date: string }) {
-  const admin = await requireAdmin()
-  const ev = await getEvent(input.eventId)
+  const { actor: admin, event: ev } = await requireEventAdmin(input.eventId)
   if (!ev) throw new Error("Event not found")
 
   await db
@@ -407,7 +406,7 @@ export async function lockDate(input: { eventId: string; date: string }) {
 
 /** Admin re-opens a locked event. */
 export async function unlockEvent(eventId: string) {
-  await requireAdmin()
+  await requireEventAdmin(eventId)
   await db
     .update(event)
     .set({ lockedDate: null, status: "planning", updatedAt: new Date() })
@@ -418,7 +417,7 @@ export async function unlockEvent(eventId: string) {
 }
 
 export async function deleteEvent(eventId: string) {
-  await requireAdmin()
+  await requireEventAdmin(eventId)
   await db.delete(availability).where(eq(availability.eventId, eventId))
   await db.delete(rsvp).where(eq(rsvp.eventId, eventId))
   await db.delete(event).where(eq(event.id, eventId))
