@@ -49,12 +49,15 @@ export function AppNav({ user }: { user: NavUser }) {
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 font-medium tracking-tight"
+          className="relative flex items-center gap-2 font-medium tracking-tight"
         >
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <span className="pointer-events-none absolute -left-2 -top-2 -z-0 rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-accent-foreground">
+            Beta
+          </span>
+          <div className="relative z-10 flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <CalendarCheck className="size-4" />
           </div>
-          <span className="text-lg">Hoopoe Event Planner</span>
+          <span className="relative z-10 text-lg">Hoopoe Event Planner</span>
         </Link>
 
         <DropdownMenu>
