@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ClipboardCheck, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
@@ -170,6 +170,13 @@ export default async function EventPage({
             ) : null}
           </div>
           <div className="flex items-center gap-2 pt-2">
+            <Link
+              href={`/scoring?eventId=${event.id}`}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ClipboardCheck className="size-4" />
+              Submit scoring
+            </Link>
             <ShareEventButton token={event.shareToken} />
             {isAdmin ? (
               <>
