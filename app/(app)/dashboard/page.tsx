@@ -29,6 +29,7 @@ export default async function DashboardPage() {
     personalDates.map((row) => [row.date, row.status as PersonalAvailabilityStatus]),
   )
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
+  const isExternalMember = user?.role === "external-member"
 
   const summaries: EventSummary[] = events.map((e) => ({
     id: e.id,
@@ -85,14 +86,15 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <div className="max-w-2xl">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">
-            Hoopoe Boys team command center
+            {isExternalMember ? "Welcome to the Hoopoe Boys Event Planner" : "Hoopoe Boys team command center"}
           </p>
           <h1 className="mt-2 text-4xl leading-none tracking-wide text-balance sm:text-5xl">
-            Keep the reps, trips, and tournaments organized.
+            {isExternalMember ? "Follow our tournaments here and join us in the journey of making it to the Pro Tour." : "Keep the reps, trips, and tournaments organized."}
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-secondary-foreground/80 sm:text-base">
-            Plan practice sessions, find the best RC Qualifier date, coordinate travel,
-            and keep everyone aligned when it is time to register for the big event.
+            {isExternalMember
+              ? "Come to our practice sessions, find weekly and RC Qualifier dates and see when it is time for our next big event!"
+              : "Plan practice sessions, find the best RC Qualifier date, coordinate travel, and keep everyone aligned when it is time to register for the big event."}
           </p>
           </div>
         </div>
@@ -148,8 +150,8 @@ export default async function DashboardPage() {
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
-          <BestDatesDialog />
-          <CreateEventDialog />
+          {!isExternalMember ? <BestDatesDialog /> : null}
+          {isAdmin ? <CreateEventDialog /> : null}
         </div>
       </div>
 
