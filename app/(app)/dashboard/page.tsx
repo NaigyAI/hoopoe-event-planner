@@ -145,7 +145,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground text-pretty">
             {isAdmin
               ? "Find your next practice, weekly or qualifier here."
-              : "Mark availability, RSVP when locked, and keep the team moving."}
+              : "Mark your availability on the right, you will automatically get RSVP request here, and it will change your status on the events when you're unavailable."}
           </p>
         </div>
         <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">
