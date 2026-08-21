@@ -92,9 +92,13 @@ export function AppNav({ user }: { user: NavUser }) {
                 {user.email}
               </span>
             </div>
+            <DropdownMenuItem render={<Link href="/profile" />}>
+              <User className="size-4" />
+              Profile &amp; settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem render={<Link href="/dashboard" />}>
-<CalendarCheck className="size-4" />
+              <CalendarCheck className="size-4" />
               Dashboard
             </DropdownMenuItem>
             <DropdownMenuItem render={<Link href="/past-events" />}>
@@ -119,10 +123,6 @@ export function AppNav({ user }: { user: NavUser }) {
                 Members
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem render={<Link href="/profile" />}>
-              <User className="size-4" />
-              Profile &amp; settings
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} variant="destructive">
               <LogOut className="size-4" />
