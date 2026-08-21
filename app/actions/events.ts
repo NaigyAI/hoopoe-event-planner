@@ -36,6 +36,12 @@ export async function setAdminAttendance(eventId: string, userId: string, dateVa
   return { actorId: actor.id }
 }
 
+export async function resetAdminAttendance(eventId: string, userId: string, dateValue: string) {
+  await requireAdmin()
+  await db.delete(availability).where(and(eq(availability.eventId, eventId), eq(availability.userId, userId), eq(availability.date, dateValue)))
+  revalidatePath(`/events/${eventId}`)
+}
+
 export async function remindAwaitingMembers(eventId: string) {
   const actor = await requireAdmin()
   await enforceRateLimit("reminder", `admin:${actor.id}:event:${eventId}`)
