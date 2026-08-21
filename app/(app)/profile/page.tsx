@@ -19,7 +19,7 @@ export default async function ProfilePage() {
         Back to Dashboard
       </Link>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-2">
         <h1 className="text-[30px] font-medium leading-[1.5] tracking-normal">Profile & settings</h1>
         {user.role === "superuser" ? <Badge>Superuser</Badge> : user.role === "admin" ? <Badge variant="secondary">Admin</Badge> : null}
       </div>
