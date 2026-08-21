@@ -47,6 +47,6 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
         })}
       </div>)}
     </div>
-    <Button className="h-11 self-start rounded-xl px-5" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+    <Button className="h-10 rounded-xl px-4 text-sm font-medium tracking-normal" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
   </div>
 }
