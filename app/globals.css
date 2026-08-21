@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-display), 'Bebas Neue', Impact, sans-serif;
+  --font-heading: var(--font-oswald), 'Oswald', sans-serif;
   --font-oswald: var(--font-oswald), 'Oswald', sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
@@ -158,7 +158,7 @@
   h3,
   h4,
   .brand-display {
-    font-family: var(--font-display), Impact, sans-serif;
+    font-family: var(--font-oswald), 'Oswald', sans-serif;
     letter-spacing: 0.025em;
   }
 }
