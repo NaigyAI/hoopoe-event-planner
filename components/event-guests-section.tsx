@@ -28,9 +28,9 @@ export function EventGuestsSection({ eventId, guests, isAdmin = false }: { event
         <h2 id="event-guests-heading" className="text-lg font-medium text-foreground">Guests</h2>
         <span className="text-sm text-muted-foreground">{guests.length}</span>
       </div>
-      <div className="divide-y divide-border rounded-xl border border-border">
+      <div className="flex flex-wrap gap-3">
         {guests.map((guest) => (
-          <div key={guest.id} className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4">
+          <div key={guest.id} className="flex min-w-0 flex-[1_1_220px] items-center justify-between gap-3 rounded-xl border border-border px-3 py-3 sm:px-4">
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">{guest.name}</p>
             </div>
