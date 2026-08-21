@@ -146,7 +146,7 @@ export default async function DashboardPage() {
             <p className="mt-1 text-sm text-muted-foreground text-pretty">
               Mark your availability on the right, you will automatically get RSVP request here, and it will change your status on the events when you&apos;re unavailable.
             </p>
-            <div className="mt-3 flex w-full flex-wrap items-center justify-start gap-2">
+            <div className="mt-3 flex w-full flex-wrap items-center justify-end gap-2">
               <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
               {!isExternalMember ? <BestDatesDialog /> : null}
               {isAdmin ? <CreateEventDialog /> : null}
