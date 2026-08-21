@@ -50,7 +50,7 @@ export function EventTypeFilter({ events }: { events: EventSummary[] }) {
             >
               <span className="flex items-center gap-2">
                 <Icon className="size-3.5 shrink-0 text-accent" />
-                <span className="text-sm font-bold leading-tight">{title}</span>
+                <span className="font-heading text-sm font-normal uppercase leading-tight tracking-normal">{title}</span>
               </span>
               <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{copy}</p>
             </button>
