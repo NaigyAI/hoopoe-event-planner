@@ -4,6 +4,7 @@ import { Inter, Geist_Mono, Oswald } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
+
 const oswald = Oswald({
   subsets: ['latin'],
   variable: '--font-oswald',
