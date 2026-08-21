@@ -14,8 +14,8 @@ export function GuestSelfRemoval({ token }: { token: string }) {
         await removeSelfFromGuestEvent(token)
         toast.success("You have been removed from this event")
         window.location.href = `/join/${token}`
-      } catch {
-        toast.error("Could not remove you from this event")
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not remove you from this event")
       }
     })
   }
