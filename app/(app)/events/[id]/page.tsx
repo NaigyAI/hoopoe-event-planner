@@ -172,7 +172,7 @@ export default async function EventPage({
           <div className="flex items-center gap-2 pt-2">
             <Link
               href={`/scoring?eventId=${event.id}`}
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-8 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ClipboardCheck className="size-4" />
               Submit
