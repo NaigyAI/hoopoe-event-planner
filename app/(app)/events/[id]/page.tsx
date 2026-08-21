@@ -12,6 +12,7 @@ import { EventAvailabilityAttendance } from "@/components/event-availability-att
 import { EventAdminActions } from "@/components/event-admin-actions"
 import { ShareEventButton } from "@/components/share-event-button"
 import { RemindAttendeesButton } from "@/components/remind-attendees-button"
+import { EventGuestsSection } from "@/components/event-guests-section"
 
 export const dynamic = "force-dynamic"
 
@@ -48,6 +49,11 @@ export default async function EventPage({
   // Distinct respondents across the whole event
   const respondentIds = new Set(votes.map((v) => v.userId))
   const totalRespondents = respondentIds.size
+  const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
+    const vote = votes.find((item) => item.userId === guestId)
+    const guestRsvp = rsvps.find((item) => item.userId === guestId)
+    return { id: guestId.slice("guest:".length), name: guestRsvp?.userName ?? vote?.userName ?? "Guest", availability: vote?.status ?? "none", rsvp: guestRsvp?.status ?? null }
+  })
 
   const tallies: DateTally[] = days.map((date) => {
     const dayVotes = isMultiDay
@@ -204,6 +210,8 @@ export default async function EventPage({
           myUserId={user?.id ?? null}
         />
       ) : null}
+
+      <EventGuestsSection eventId={event.id} guests={guests} isAdmin={isAdmin} />
 
       <EventAvailabilityAttendance
         eventId={event.id}
