@@ -38,13 +38,13 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
       description: details,
       type: "website",
       url: `/join/${token}`,
-      images: [{ url: `/join/${token}/opengraph-image`, width: 1200, height: 630, alt: `${event.title} event details` }],
+      images: [{ url: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/OpenGraph-H3QBw2IGaD1T6GH6Rj1SMItCUbz7vB.png", width: 1200, height: 630, alt: "Hoopoe Boys Team Command Center" }],
     },
     twitter: {
       card: "summary_large_image",
       title: event.title,
       description: details,
-      images: [`/join/${token}/opengraph-image`],
+      images: ["https://hebbkx1anhila5yf.public.blob.vercel-storage.com/OpenGraph-H3QBw2IGaD1T6GH6Rj1SMItCUbz7vB.png"],
     },
   }
 }

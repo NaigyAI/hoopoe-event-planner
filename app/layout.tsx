@@ -28,7 +28,25 @@ export const metadata: Metadata = {
   title: 'Hoopoe Event Planner',
   description:
     'Find the best date for an mtg event, lock it in, and show up with friends.',
-  images: ['/opengraph-image.png'],
+  openGraph: {
+    title: 'Hoopoe Event Planner',
+    description:
+      'Find the best date for an mtg event, lock it in, and show up with friends.',
+    type: 'website',
+    images: [{
+      url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/OpenGraph-H3QBw2IGaD1T6GH6Rj1SMItCUbz7vB.png',
+      width: 1200,
+      height: 630,
+      alt: 'Hoopoe Boys Team Command Center',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Hoopoe Event Planner',
+    description:
+      'Find the best date for an mtg event, lock it in, and show up with friends.',
+    images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/OpenGraph-H3QBw2IGaD1T6GH6Rj1SMItCUbz7vB.png'],
+  },
   generator: 'v0.app',
 }
 
