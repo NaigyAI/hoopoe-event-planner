@@ -40,7 +40,7 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
             <span className="row-span-2 flex size-9 items-center justify-center self-center rounded-xl bg-muted text-sm font-bold text-muted-foreground">#{entry.placement}</span>
             <select aria-label={`Player ${entry.placement}`} className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm" value={entry.memberId} onChange={(e) => update(entryIndex, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             <div className="grid min-w-0 grid-cols-2 gap-2">
-              <Input className="h-10 min-w-0 rounded-lg px-3 text-sm" placeholder="Player name" value={capitalizeName(entry.playerName)} onChange={(e) => update(entryIndex, "playerName", e.target.value)} />
+              <Input className="h-10 min-w-0 rounded-lg px-3 text-sm" placeholder="Player name" value={entry.playerName} onChange={(e) => update(entryIndex, "playerName", e.target.value)} onBlur={(e) => update(entryIndex, "playerName", capitalizeName(e.target.value))} />
               <Input className="h-10 min-w-0 rounded-lg px-3 text-sm" placeholder="Deck name" value={entry.deckName} onChange={(e) => update(entryIndex, "deckName", e.target.value)} />
             </div>
           </div>
