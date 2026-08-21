@@ -21,8 +21,8 @@ export function EventAttendancePanel({ eventId, dates, selectedDate, isAdmin = f
   return (
     <section className="flex flex-col gap-3">
       <div key={selected.date} className="grid animate-in gap-3 fade-in slide-in-from-bottom-1 duration-200 sm:grid-cols-3">
-        <Group title="Attending" people={selected.attending} variant="default" duplicateNames={duplicateNames(selected)} />
-        <Group title="Unavailable" people={selected.unavailable} variant="outline" duplicateNames={duplicateNames(selected)} />
+        <Group title="Attending" people={selected.attending} variant="default" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onSetStatus={(userId, status) => startTransition(async () => { await setAdminAttendance(eventId, userId, selected.date, status); router.refresh() })} />
+        <Group title="Unavailable" people={selected.unavailable} variant="outline" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onSetStatus={(userId, status) => startTransition(async () => { await setAdminAttendance(eventId, userId, selected.date, status); router.refresh() })} />
         <Group title="Awaiting response" people={selected.awaiting} variant="secondary" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onSetStatus={(userId, status) => startTransition(async () => { await setAdminAttendance(eventId, userId, selected.date, status); router.refresh() })} />
       </div>
     </section>
