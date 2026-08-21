@@ -171,6 +171,7 @@ export async function removeGuestFromEvent(input: { eventId: string; guestId: st
 }
 
 export async function removeSelfFromGuestEvent(token: string) {
+  token = inviteTokenSchema.parse(token)
   const ev = await getEventByToken(token)
   if (!ev) throw new Error("This event link is invalid or has expired")
   const session = await getGuestSession()
@@ -181,7 +182,6 @@ export async function removeSelfFromGuestEvent(token: string) {
     await tx.delete(rsvp).where(and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, scopedId)))
   })
   revalidatePath(`/join/${token}`)
-  revalidatePath("/members")
   return { ok: true }
 }
 
