@@ -34,7 +34,7 @@ export const eventInputSchema = z.object({
 
 export const standingsEntrySchema = z.object({
   placement: z.number().int().min(1).max(8),
-  memberId: idSchema.optional(),
+  memberId: z.string().trim().min(1).max(200).optional(),
   playerName: nameSchema,
   deckName: trimmedText(120),
 }).strict()
