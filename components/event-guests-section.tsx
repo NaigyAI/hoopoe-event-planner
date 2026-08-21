@@ -33,9 +33,6 @@ export function EventGuestsSection({ eventId, guests, isAdmin = false }: { event
           <div key={guest.id} className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4">
             <div className="min-w-0">
               <p className="truncate font-medium text-foreground">{guest.name}</p>
-              <p className="text-xs capitalize text-muted-foreground">
-                {guest.rsvp ? `RSVP: ${guest.rsvp}` : guest.availability !== "none" ? `Availability: ${guest.availability}` : "Registered guest"}
-              </p>
             </div>
             {isAdmin ? (
               <Button type="button" variant="ghost" size="icon" className="size-7 shrink-0 text-muted-foreground hover:bg-transparent hover:text-destructive" aria-label={`Remove ${guest.name} from event`} title="Remove guest" disabled={pending} onClick={() => removeGuest(guest.id)}>

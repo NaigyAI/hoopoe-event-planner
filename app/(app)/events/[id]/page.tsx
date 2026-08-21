@@ -211,8 +211,6 @@ export default async function EventPage({
         />
       ) : null}
 
-      <EventGuestsSection eventId={event.id} guests={guests} isAdmin={isAdmin} />
-
       <EventAvailabilityAttendance
         eventId={event.id}
         eventEndDate={isMultiDay ? event.endDate : null}
@@ -222,6 +220,8 @@ bestDate={bestDate}
   dates={dateAttendance}
   isAdmin={isAdmin}
       />
+
+      <EventGuestsSection eventId={event.id} guests={guests} isAdmin={isAdmin} />
     </div>
   )
 }
