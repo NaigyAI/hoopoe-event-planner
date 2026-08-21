@@ -27,7 +27,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Hoopoe Event Planner',
   description:
-    'One link finds the best date for an event, locks it in, and rallies everyone to show up.',
+    'Find the best date for an mtg event, lock it in, and show up with friends.',
   images: ['/opengraph-image.png'],
   generator: 'v0.app',
 }
