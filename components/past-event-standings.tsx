@@ -51,7 +51,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
             ) : null}
           </div>
           {entry.decklistUrl ? (
-            <div className="ml-auto flex shrink-0 items-center gap-3">
+            <div className="ml-auto flex shrink-0 items-center gap-3 pr-2">
               <a className="text-accent hover:underline" href={entry.decklistUrl} target="_blank" rel="noreferrer">
                 View decklist
               </a>
