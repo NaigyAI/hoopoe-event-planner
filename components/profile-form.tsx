@@ -14,15 +14,18 @@ import { updateProfile, updateNotificationPreference } from "@/app/actions/accou
 export function ProfileForm({
   initialName,
   email,
-  initialNotify,
+  initialNotifyNewEvent,
+  initialNotifyEventReminder,
 }: {
   initialName: string
   email: string
-  initialNotify: boolean
+  initialNotifyNewEvent: boolean
+  initialNotifyEventReminder: boolean
 }) {
   const router = useRouter()
   const [name, setName] = useState(initialName)
-  const [notify, setNotify] = useState(initialNotify)
+  const [notifyNewEvent, setNotifyNewEvent] = useState(initialNotifyNewEvent)
+  const [notifyEventReminder, setNotifyEventReminder] = useState(initialNotifyEventReminder)
   const [isPending, startTransition] = useTransition()
 
   function saveName(e: React.FormEvent) {
@@ -38,14 +41,15 @@ export function ProfileForm({
     })
   }
 
-  function toggleNotify(value: boolean) {
-    setNotify(value)
+  function toggleNotify(preference: "newEvent" | "eventReminder", value: boolean) {
+    const setValue = preference === "newEvent" ? setNotifyNewEvent : setNotifyEventReminder
+    setValue(value)
     startTransition(async () => {
       try {
-        await updateNotificationPreference(value)
-        toast.success(value ? "Email notifications on" : "Email notifications off")
+        await updateNotificationPreference(preference, value)
+        toast.success(value ? "Email preference on" : "Email preference off")
       } catch (err) {
-        setNotify(!value)
+        setValue(!value)
         toast.error(err instanceof Error ? err.message : "Could not update preference")
       }
     })
@@ -79,17 +83,22 @@ export function ProfileForm({
         </form>
       </Card>
 
-      <Card className="flex flex-row items-center justify-between gap-4 p-6">
-        <div className="space-y-1">
-          <Label htmlFor="notify" className="text-base">
-            Email notifications
-          </Label>
-          <p className="text-sm text-muted-foreground text-pretty">
-            Get an email when a new event is created or a date is locked in.
-          </p>
-        </div>
-        <Switch id="notify" checked={notify} onCheckedChange={toggleNotify} />
-      </Card>
+      <div className="flex flex-col gap-4">
+        <Card className="flex flex-row items-center justify-between gap-4 p-6">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="notify-new-event" className="text-base">Get email new event</Label>
+            <p className="text-sm text-muted-foreground text-pretty">Receive an email when a new event is created.</p>
+          </div>
+          <Switch id="notify-new-event" checked={notifyNewEvent} onCheckedChange={(value) => toggleNotify("newEvent", value)} />
+        </Card>
+        <Card className="flex flex-row items-center justify-between gap-4 p-6">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="notify-event-reminder" className="text-base">Get email as reminder for event</Label>
+            <p className="text-sm text-muted-foreground text-pretty">Receive reminders when you still need to respond to an event.</p>
+          </div>
+          <Switch id="notify-event-reminder" checked={notifyEventReminder} onCheckedChange={(value) => toggleNotify("eventReminder", value)} />
+        </Card>
+      </div>
     </div>
   )
 }

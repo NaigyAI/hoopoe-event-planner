@@ -27,7 +27,8 @@ export default async function ProfilePage() {
       <ProfileForm
         initialName={user.name}
         email={user.email}
-        initialNotify={user.notifyEnabled}
+        initialNotifyNewEvent={user.notifyNewEvent}
+        initialNotifyEventReminder={user.notifyEventReminder}
       />
     </div>
   )

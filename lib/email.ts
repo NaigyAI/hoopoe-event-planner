@@ -36,13 +36,13 @@ export async function sendEmail({ to, subject, body }: EmailPayload) {
 }
 
 export async function notifyEventCreated(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   eventLocation: string
   eventLink: string
   creatorName: string
 }) {
-  const targets = opts.recipients.filter((r) => r.notifyEnabled)
+  const targets = opts.recipients.filter((r) => r.notifyEnabled && (r.notifyNewEvent ?? true))
   await Promise.all(
     targets.map((r) => {
       const firstName = r.name.trim().split(/\s+/)[0] || "there"
@@ -69,17 +69,18 @@ Hoopoe Event Planner`,
 }
 
 export async function notifyEventResponseReminder(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   eventLocation: string
   eventLink: string
   creatorName: string
 }) {
-  await notifyEventCreated(opts)
+  const targets = opts.recipients.filter((r) => r.notifyEnabled && (r.notifyEventReminder ?? true))
+  await notifyEventCreated({ ...opts, recipients: targets })
 }
 
 export async function notifyDateLocked(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   lockedDate: string
 }) {
