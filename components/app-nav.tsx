@@ -101,14 +101,18 @@ export function AppNav({ user }: { user: NavUser }) {
               <History className="size-4" />
               Past events
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href="/report-standings" />}>
-              <ClipboardList className="size-4" />
-              Report standings
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href="/scoring" />}>
-              <ClipboardCheck className="size-4" />
-              Scoring
-            </DropdownMenuItem>
+            {user.role !== "external-member" && (
+              <>
+                <DropdownMenuItem render={<Link href="/report-standings" />}>
+                  <ClipboardList className="size-4" />
+                  Report standings
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<Link href="/scoring" />}>
+                  <ClipboardCheck className="size-4" />
+                  Scoring
+                </DropdownMenuItem>
+              </>
+            )}
             {(user.role === "admin" || user.role === "superuser") && (
               <DropdownMenuItem render={<Link href="/members" />}>
                 <Users className="size-4" />

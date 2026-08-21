@@ -27,7 +27,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
 
     return (
       <li key={entry.id} className="flex flex-col gap-1 rounded-lg bg-muted/40 p-3 text-sm">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
           <div className="min-w-0">
             <strong className="block truncate">#{entry.placement} {capitalizeName(entry.playerName)}</strong>
             <span className="block text-muted-foreground">{entry.deckName}</span>
@@ -51,7 +51,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
             ) : null}
           </div>
           {entry.decklistUrl ? (
-            <div className="ml-auto flex shrink-0 items-center gap-3">
+            <div className="ml-auto flex shrink-0 items-center gap-3 pr-2">
               <a className="text-accent hover:underline" href={entry.decklistUrl} target="_blank" rel="noreferrer">
                 View decklist
               </a>

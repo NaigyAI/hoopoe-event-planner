@@ -11,9 +11,9 @@ export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, to
   const [selectedDate, setSelectedDate] = useState(dates[0]?.date ?? "")
   const router = useRouter()
   return (
-    <div className="flex max-w-5xl flex-col gap-8 border-t border-border pt-6">
+    <div className="flex min-w-0 max-w-5xl flex-col gap-5 border-t border-border pt-4 sm:gap-8 sm:pt-6">
       <section className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-medium text-foreground">Availability</h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-available" /> Yes</span>

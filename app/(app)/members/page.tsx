@@ -21,9 +21,9 @@ export default async function MembersPage() {
   ])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-3 py-4 sm:px-0 sm:py-0">
       <div>
-        <h1 className="text-2xl tracking-wide text-balance">Members</h1>
+        <h1 className="text-[30px] leading-[1.5] tracking-wide text-balance">Members</h1>
         <p className="mt-1 text-sm text-muted-foreground text-pretty">
           Approve prospects who want to join the Hoopoe Boys and manage the roster.
         </p>

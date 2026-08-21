@@ -1,5 +1,6 @@
 "use server"
 
+import { z } from "zod"
 import { db } from "@/lib/db"
 import { user, availability, personalAvailability, rsvp, event } from "@/lib/db/schema"
 import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
@@ -131,7 +132,7 @@ export async function approveMember(userId: string, role: "team-member" | "exter
 
 /** Admin removes an approved member and all member-owned records. */
 export async function deleteMember(userId: string) {
-  userId = idSchema.parse(userId)
+  userId = z.string().trim().min(1).max(200).parse(userId)
   const admin = await requireAdmin()
   if (admin.id === userId) throw new Error("You cannot remove your own account")
 

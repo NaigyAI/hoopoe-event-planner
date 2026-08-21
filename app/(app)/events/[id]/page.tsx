@@ -91,7 +91,7 @@ export default async function EventPage({
   })
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-4 sm:space-y-6">
       <Link
         href="/dashboard"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -101,9 +101,9 @@ export default async function EventPage({
       </Link>
 
       {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h1 className="text-2xl font-medium tracking-normal text-balance">
               {event.title}
             </h1>
@@ -131,7 +131,7 @@ export default async function EventPage({
                             : "Team event"}
             </Badge>
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          <div className="flex min-w-0 flex-col items-start gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1 sm:text-sm">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" />
               {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
@@ -162,20 +162,20 @@ export default async function EventPage({
                 href={event.eventUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary/30 px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex min-h-10 max-w-full items-center gap-2 rounded-lg border border-primary/30 px-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ExternalLink className="size-4" />
                 Official event details
               </a>
             ) : null}
           </div>
-          <div className="flex items-center gap-2 pt-2">
+          <div className="flex min-w-0 flex-wrap gap-2 pt-2">
             <Link
               href={`/scoring?eventId=${event.id}`}
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="inline-flex h-8 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ClipboardCheck className="size-4" />
-              Submit scoring
+              Submit
             </Link>
             <ShareEventButton token={event.shareToken} />
             {isAdmin ? (
@@ -186,7 +186,7 @@ export default async function EventPage({
             ) : null}
           </div>
           {event.travelDetails ? (
-            <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm leading-6">
+            <div className="max-w-full rounded-xl border border-border bg-muted/40 p-3 text-sm leading-6 sm:p-4">
               <p className="font-bold text-foreground">Travel notes</p>
               <p className="mt-1 whitespace-pre-line text-muted-foreground">{event.travelDetails}</p>
             </div>

@@ -96,13 +96,13 @@ export function AvailabilityGrid({
           <li
             key={t.date}
             className={cn(
-              "flex cursor-pointer flex-col gap-3 px-4 py-3.5 transition-colors sm:flex-row sm:items-center sm:gap-4",
+              "flex min-w-0 cursor-pointer flex-col gap-2 px-3 py-3 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3.5",
               t.date === selectedDate ? "bg-available/15 ring-1 ring-inset ring-available/50" : "hover:bg-muted/40",
             )}
           onClick={() => onDateSelect?.(t.date)}
           >
             {/* Date */}
-            <div className="flex w-28 shrink-0 items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2 sm:w-28 sm:shrink-0">
               <div className="flex flex-col leading-tight">
                 <span
                   className={cn(
@@ -112,7 +112,7 @@ export function AvailabilityGrid({
                 >
                   {formatWeekday(t.date)}
                 </span>
-                <span className="font-medium tabular-nums text-foreground">
+                <span className="break-words font-medium tabular-nums text-foreground">
                   {eventEndDate ? formatDateRange(t.date, eventEndDate) : formatDayMonth(t.date)}
                 </span>
               </div>
