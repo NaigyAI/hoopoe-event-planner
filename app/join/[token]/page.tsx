@@ -18,7 +18,6 @@ import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/da
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { GuestJoinForm } from "@/components/guest-join-form"
-import { GuestSelfRemoval } from "@/components/guest-self-removal"
 
 export const dynamic = "force-dynamic"
 
@@ -277,7 +276,6 @@ function GuestEventView({
           >
             Change name
           </Link>
-          <GuestSelfRemoval token={token} />
         </div>
       </div>
 

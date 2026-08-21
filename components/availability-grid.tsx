@@ -6,7 +6,7 @@ import { Check, HelpCircle, X, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { setAvailability, type AvailabilityStatus } from "@/app/actions/events"
-import { setGuestAvailability } from "@/app/actions/guest"
+import { removeSelfFromGuestEvent, setGuestAvailability } from "@/app/actions/guest"
 import { formatWeekday, formatDayMonth, formatDateRange, isWeekend } from "@/lib/dates"
 
 export type DateTally = {
@@ -74,6 +74,11 @@ export function AvailabilityGrid({
     startTransition(async () => {
       try {
         if (variant === "guest" && token) {
+          if (status === "unavailable") {
+            await removeSelfFromGuestEvent(token)
+            window.location.href = `/join/${token}`
+            return
+          }
           await setGuestAvailability({ token, date, status })
         } else {
           await setAvailability({ eventId, date, status })
@@ -96,7 +101,8 @@ export function AvailabilityGrid({
           <li
             key={t.date}
             className={cn(
-              "flex min-w-0 cursor-pointer flex-col gap-2 px-3 py-3 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:px-4 sm:py-3.5",
+              "flex min-w-0 cursor-pointer flex-col gap-2 px-3 py-3 transition-colors sm:items-center sm:gap-4 sm:px-4 sm:py-3.5",
+              variant !== "guest" && "sm:flex-row",
               t.date === selectedDate ? "bg-available/15 ring-1 ring-inset ring-available/50" : "hover:bg-muted/40",
             )}
           onClick={() => onDateSelect?.(t.date)}
@@ -122,22 +128,23 @@ export function AvailabilityGrid({
             </div>
 
             {/* Heat */}
-            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-              <HeatBar tally={t} total={totalRespondents} />
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="tabular-nums">
-                  <span className="font-medium text-foreground">{t.available}</span> yes
-                </span>
-                <span className="tabular-nums">{t.maybe} maybe</span>
-                <span className="tabular-nums">{t.unavailable} no</span>
-
+            {variant !== "guest" ? (
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <HeatBar tally={t} total={totalRespondents} />
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="tabular-nums">
+                    <span className="font-medium text-foreground">{t.available}</span> yes
+                  </span>
+                  <span className="tabular-nums">{t.maybe} maybe</span>
+                  <span className="tabular-nums">{t.unavailable} no</span>
+                </div>
               </div>
-            </div>
+            ) : null}
 
             {/* Your vote */}
-            <div className="flex shrink-0 items-center gap-1.5">
-              <div className="inline-flex rounded-lg border border-border p-0.5">
-                  {OPTIONS.filter((opt) => variant !== "guest" || opt.value === "available").map((opt) => {
+            <div className={cn("flex shrink-0 items-center gap-1.5", variant === "guest" && "w-full") }>
+              <div className={cn("inline-flex rounded-lg border border-border p-0.5", variant === "guest" && "w-full") }>
+                  {OPTIONS.filter((opt) => variant !== "guest" || opt.value === "available" || opt.value === "unavailable").map((opt) => {
                     const Icon = opt.icon
                     const selected = t.myStatus === opt.value
                     const loading = pendingDate === t.date && isPending
@@ -150,7 +157,7 @@ export function AvailabilityGrid({
                         aria-pressed={selected}
                         aria-label={`Mark ${formatDayMonth(t.date)} as ${opt.label}`}
                         className={cn(
-                          "flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
+                          "flex flex-1 items-center justify-center gap-1 rounded-md px-2.5 py-2 text-xs font-medium transition-colors",
                           "border border-transparent",
                           selected
                             ? opt.active
@@ -158,7 +165,7 @@ export function AvailabilityGrid({
                         )}
                       >
                         <Icon className="size-3.5" />
-                        <span className="hidden sm:inline">{opt.label}</span>
+                        <span>{variant === "guest" ? (opt.value === "available" ? "Yes, I will be there" : "No, I can't make it") : opt.label}</span>
                       </button>
                     )
                   })}
