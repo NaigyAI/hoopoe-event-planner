@@ -25,6 +25,17 @@ async function allRecipients() {
     .from(user)
 }
 
+export async function setAdminAttendance(eventId: string, userId: string, dateValue: string, status: "available" | "unavailable") {
+  const actor = await requireAdmin()
+  const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
+  if (!selected[0]) throw new Error("Event not found")
+  const target = await db.select({ id: user.id, name: user.name }).from(user).where(and(eq(user.id, userId), eq(user.approved, true))).limit(1)
+  if (!target[0]) throw new Error("Member not found")
+  await db.insert(availability).values({ id: randomUUID(), eventId, userId: target[0].id, userName: target[0].name, date: dateValue, status, updatedAt: new Date() }).onConflictDoUpdate({ target: [availability.eventId, availability.userId, availability.date], set: { userName: target[0].name, status, updatedAt: new Date() } })
+  revalidatePath(`/events/${eventId}`)
+  return { actorId: actor.id }
+}
+
 export async function remindAwaitingMembers(eventId: string) {
   const actor = await requireAdmin()
   await enforceRateLimit("reminder", `admin:${actor.id}:event:${eventId}`)

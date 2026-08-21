@@ -1,12 +1,19 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { useTransition } from "react"
+import { Button } from "@/components/ui/button"
+import { setAdminAttendance } from "@/app/actions/events"
+
 import { Badge } from "@/components/ui/badge"
 import { capitalizeFirstName } from "@/lib/names"
 
 type Person = { id: string; name: string }
 type DateAttendance = { date: string; attending: Person[]; unavailable: Person[]; awaiting: Person[] }
 
-export function EventAttendancePanel({ dates, selectedDate }: { dates: DateAttendance[]; selectedDate: string }) {
+export function EventAttendancePanel({ eventId, dates, selectedDate, isAdmin = false }: { eventId: string; dates: DateAttendance[]; selectedDate: string; isAdmin?: boolean }) {
+  const [pending, startTransition] = useTransition()
+  const router = useRouter()
   const selected = dates.find((item) => item.date === selectedDate) ?? dates[0]
   if (!selected) return null
 
@@ -15,7 +22,7 @@ export function EventAttendancePanel({ dates, selectedDate }: { dates: DateAtten
       <div key={selected.date} className="grid animate-in gap-3 fade-in slide-in-from-bottom-1 duration-200 sm:grid-cols-3">
         <Group title="Attending" people={selected.attending} variant="default" duplicateNames={duplicateNames(selected)} />
         <Group title="Unavailable" people={selected.unavailable} variant="outline" duplicateNames={duplicateNames(selected)} />
-        <Group title="Awaiting response" people={selected.awaiting} variant="secondary" duplicateNames={duplicateNames(selected)} />
+        <Group title="Awaiting response" people={selected.awaiting} variant="secondary" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onSetStatus={(userId, status) => startTransition(async () => { await setAdminAttendance(eventId, userId, selected.date, status); router.refresh() })} />
       </div>
     </section>
   )
@@ -38,6 +45,6 @@ function displayName(name: string, duplicates: Set<string>) {
   return `${firstName} ${words[words.length - 1].charAt(0).toLocaleUpperCase()}.`
 }
 
-function Group({ title, people, variant, duplicateNames }: { title: string; people: Person[]; variant: "default" | "outline" | "secondary"; duplicateNames: Set<string> }) {
-  return <div className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><h3 className="font-medium">{title}</h3><Badge variant={variant}>{people.length}</Badge></div><ul className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">{people.length ? people.map((person) => <li key={person.id}>{displayName(person.name, duplicateNames)}</li>) : <li>No members</li>}</ul></div>
+function Group({ title, people, variant, duplicateNames, isAdmin = false, pending = false, onSetStatus }: { title: string; people: Person[]; variant: "default" | "outline" | "secondary"; duplicateNames: Set<string>; isAdmin?: boolean; pending?: boolean; onSetStatus?: (userId: string, status: "available" | "unavailable") => void }) {
+  return <div className="rounded-xl border border-border p-3"><div className="flex items-center justify-between gap-2"><h3 className="font-medium">{title}</h3><Badge variant={variant}>{people.length}</Badge></div><ul className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">{people.length ? people.map((person) => <li key={person.id} className="flex items-center justify-between gap-2"><span>{displayName(person.name, duplicateNames)}</span>{isAdmin && onSetStatus ? <span className="flex shrink-0 gap-1"><Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => onSetStatus(person.id, "available")}>Attending</Button><Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => onSetStatus(person.id, "unavailable")}>Unavailable</Button></span> : null}</li>) : <li>No members</li>}</ul></div>
 }

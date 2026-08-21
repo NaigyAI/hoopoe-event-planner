@@ -210,8 +210,9 @@ export default async function EventPage({
         eventEndDate={isMultiDay ? event.endDate : null}
         tallies={tallies}
         totalRespondents={totalRespondents}
-        bestDate={bestDate}
-        dates={dateAttendance}
+bestDate={bestDate}
+  dates={dateAttendance}
+  isAdmin={isAdmin}
       />
     </div>
   )

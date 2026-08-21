@@ -1,13 +1,15 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { EventAttendancePanel } from "@/components/event-attendance-panel"
 
 type DateAttendance = { date: string; attending: { id: string; name: string }[]; unavailable: { id: string; name: string }[]; awaiting: { id: string; name: string }[] }
 
-export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[] }) {
+export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates, isAdmin = false }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[]; isAdmin?: boolean }) {
   const [selectedDate, setSelectedDate] = useState(dates[0]?.date ?? "")
+  const router = useRouter()
   return (
     <div className="flex max-w-5xl flex-col gap-8 border-t border-border pt-6">
       <section className="space-y-3">
@@ -22,7 +24,7 @@ export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, to
         <AvailabilityGrid eventId={eventId} eventEndDate={eventEndDate} tallies={tallies} totalRespondents={totalRespondents} bestDate={bestDate} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
       </section>
       <section>
-        <EventAttendancePanel dates={dates} selectedDate={selectedDate} />
+        <EventAttendancePanel eventId={eventId} dates={dates} selectedDate={selectedDate} isAdmin={isAdmin} />
       </section>
     </div>
   )
