@@ -31,7 +31,7 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
       }
     })
   }
-  return <div className="flex flex-col gap-5">
+  return <div id="standings-form" className="flex flex-col gap-5">
     <div className="grid gap-3 md:grid-cols-2">
       {[entries.slice(0, 4), entries.slice(4)].map((group, groupIndex) => <div key={groupIndex} className="flex flex-col gap-2">
         {group.map((entry, index) => {
