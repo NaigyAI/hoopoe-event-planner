@@ -9,6 +9,7 @@ import { requireAdmin } from "@/lib/session"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { inviteTokenSchema } from "@/lib/validation"
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex")
@@ -46,7 +47,9 @@ export async function revokeMemberInvite() {
 
 export async function approveCurrentUserWithInvite(token: string) {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user || !token || token.length > 200) return false
+  if (!session?.user) return false
+  const parsedToken = inviteTokenSchema.safeParse(token)
+  if (!parsedToken.success) return false
   const [invite] = await db.select({ id: memberInvite.id, expiresAt: memberInvite.expiresAt }).from(memberInvite).where(and(eq(memberInvite.tokenHash, hashToken(token)), isNull(memberInvite.revokedAt), isNull(memberInvite.usedAt))).limit(1)
   if (!invite || invite.expiresAt <= new Date()) return false
   const now = new Date()

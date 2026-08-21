@@ -217,8 +217,9 @@ export function CreateEventDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <input
+                id="multiDay"
                 type="checkbox"
                 checked={multiDay}
                 onChange={(e) => {
@@ -228,8 +229,8 @@ export function CreateEventDialog({
                 }}
                 className="size-4 rounded border-input accent-primary"
               />
-              This event spans multiple days
-            </label>
+              <span>This event spans multiple days</span>
+            </div>
             {multiDay ? <p id="start-time-hint" className="text-xs text-muted-foreground">Start time is disabled for multi-day events.</p> : null}
             {multiDay && (
               <div className="space-y-2">

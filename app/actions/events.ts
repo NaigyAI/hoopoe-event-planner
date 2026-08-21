@@ -10,6 +10,7 @@ import { dateRange } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { enforceRateLimit } from "@/lib/rate-limit"
+import { dateSchema, eventIdSchema, eventInputSchema, rsvpStatusSchema } from "@/lib/validation"
 
 export type AvailabilityStatus = "available" | "maybe" | "unavailable"
 export type RsvpStatus = "going" | "maybe" | "not_going"
@@ -22,6 +23,17 @@ async function allRecipients() {
       notifyEnabled: user.notifyEnabled,
     })
     .from(user)
+}
+
+export async function setAdminAttendance(eventId: string, userId: string, dateValue: string, status: "available" | "unavailable") {
+  const actor = await requireAdmin()
+  const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
+  if (!selected[0]) throw new Error("Event not found")
+  const target = await db.select({ id: user.id, name: user.name }).from(user).where(and(eq(user.id, userId), eq(user.approved, true))).limit(1)
+  if (!target[0]) throw new Error("Member not found")
+  await db.insert(availability).values({ id: randomUUID(), eventId, userId: target[0].id, userName: target[0].name, date: dateValue, status, updatedAt: new Date() }).onConflictDoUpdate({ target: [availability.eventId, availability.userId, availability.date], set: { userName: target[0].name, status, updatedAt: new Date() } })
+  revalidatePath(`/events/${eventId}`)
+  return { actorId: actor.id }
 }
 
 export async function remindAwaitingMembers(eventId: string) {
@@ -86,6 +98,7 @@ export async function createEvent(input: {
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
   const creator = await requireAdmin()
+  input = eventInputSchema.parse(input)
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -165,6 +178,8 @@ export async function createEvent(input: {
 }
 
 export async function confirmEventDate(eventId: string, date: string) {
+  eventId = eventIdSchema.parse(eventId)
+  date = dateSchema.parse(date)
   const { event: ev } = await requireEventAdmin(eventId)
   if (!ev) throw new Error("Event not found")
   await db.update(event).set({ startDate: date, endDate: date, lockedDate: null, status: "planning", updatedAt: new Date() }).where(eq(event.id, eventId))
@@ -188,7 +203,9 @@ export async function updateEvent(eventId: string, input: {
   recurrenceWeekday?: number
   recurrenceOrdinal?: "first" | "second" | "third" | "fourth" | "last"
 }) {
+  eventId = eventIdSchema.parse(eventId)
   await requireEventAdmin(eventId)
+  input = eventInputSchema.parse(input)
   const formats = input.formats.map((format) => format.trim()).filter(Boolean)
   const eventType = input.eventType.trim()
   const location = input.location.trim()
@@ -264,6 +281,7 @@ export async function setRsvp(input: {
   eventId: string
   status: RsvpStatus
 }) {
+  input = { eventId: eventIdSchema.parse(input.eventId), status: rsvpStatusSchema.parse(input.status) }
   const current = await requireEventParticipant(input.eventId)
   await enforceRateLimit("rsvp", `user:${current.id}:event:${input.eventId}`)
 

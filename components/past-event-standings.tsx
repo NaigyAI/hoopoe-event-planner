@@ -7,7 +7,6 @@ import { capitalizeName } from "@/lib/names"
 import { Button } from "@/components/ui/button"
 
 type Entry = { id: string; standingId: string; placement: number; memberId: string | null; playerName: string; deckName: string; decklistPathname: string | null; decklistFilename: string | null; decklistUrl: string | null }
-
 export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Entry[]; currentUserId: string; isAdmin: boolean }) {
   const [entries, setEntries] = useState(rows)
   async function remove(entryId: string) {
@@ -22,7 +21,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
     const url = await saveDecklistUrl(entryId, value)
     setEntries((current) => current.map((entry) => entry.id === entryId ? { ...entry, decklistUrl: url } : entry))
   }
-  if (!entries.length) return <p className="mt-4 text-sm text-muted-foreground">No standings reported yet.</p>
+  if (!entries.length) return <p className="text-sm text-muted-foreground">No standings reported yet.</p>
   const render = (entry: Entry) => {
     const canManage = entry.memberId === currentUserId || isAdmin
 
@@ -88,6 +87,7 @@ export function PastEventStandings({ rows, currentUserId, isAdmin }: { rows: Ent
         <ol className="flex flex-col gap-2">{entries.filter((entry) => entry.placement <= 4).map(render)}</ol>
         <ol className="flex flex-col gap-2">{entries.filter((entry) => entry.placement >= 5).map(render)}</ol>
       </div>
+
     </div>
   )
 }

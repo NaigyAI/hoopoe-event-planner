@@ -31,22 +31,22 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
       }
     })
   }
-  return <div className="flex max-w-3xl flex-col gap-3">
-    <div className="grid gap-2 md:grid-cols-2">
+  return <div id="standings-form" className="flex flex-col gap-5">
+    <div className="grid gap-3 md:grid-cols-2">
       {[entries.slice(0, 4), entries.slice(4)].map((group, groupIndex) => <div key={groupIndex} className="flex flex-col gap-2">
         {group.map((entry, index) => {
           const entryIndex = groupIndex * 4 + index
-          return <div key={entry.placement} className="grid grid-cols-[2rem_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-lg border border-border p-2">
-            <span className="row-span-2 self-center text-sm font-bold text-muted-foreground">#{entry.placement}</span>
-            <select aria-label={`Player ${entry.placement}`} className="h-8 min-w-0 rounded-md border border-input bg-background px-2 text-sm" value={entry.memberId} onChange={(e) => update(entryIndex, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+          return <div key={entry.placement} className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-2xl border border-border bg-card p-3 shadow-sm">
+            <span className="row-span-2 flex size-9 items-center justify-center self-center rounded-xl bg-muted text-sm font-bold text-muted-foreground">#{entry.placement}</span>
+            <select aria-label={`Player ${entry.placement}`} className="h-10 min-w-0 rounded-lg border border-input bg-background px-3 text-sm" value={entry.memberId} onChange={(e) => update(entryIndex, "memberId", e.target.value)}><option value="">External player</option>{members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             <div className="grid min-w-0 grid-cols-2 gap-2">
-              <Input className="h-8 min-w-0 px-2 text-sm" placeholder="Player name" value={capitalizeName(entry.playerName)} onChange={(e) => update(entryIndex, "playerName", e.target.value)} />
-              <Input className="h-8 min-w-0 px-2 text-sm" placeholder="Deck name" value={entry.deckName} onChange={(e) => update(entryIndex, "deckName", e.target.value)} />
+              <Input className="h-10 min-w-0 rounded-lg px-3 text-sm" placeholder="Player name" value={capitalizeName(entry.playerName)} onChange={(e) => update(entryIndex, "playerName", e.target.value)} />
+              <Input className="h-10 min-w-0 rounded-lg px-3 text-sm" placeholder="Deck name" value={entry.deckName} onChange={(e) => update(entryIndex, "deckName", e.target.value)} />
             </div>
           </div>
         })}
       </div>)}
     </div>
-    <Button className="self-start" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+    <Button className="h-10 rounded-xl px-4 text-sm font-medium tracking-normal" onClick={submit} disabled={pending}>{pending ? "Saving..." : "Save standings"}</Button>{message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
   </div>
 }

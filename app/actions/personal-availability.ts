@@ -7,6 +7,7 @@ import { requireTeamMember } from "@/lib/authorization"
 import { and, eq, gte, lte, lt, or } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
+import { dateSchema, statusSchema } from "@/lib/validation"
 
 export type PersonalAvailabilityStatus = "available" | "unavailable" | "maybe"
 
@@ -74,6 +75,8 @@ export async function setPersonalAvailabilityForDates(
   dates: string[],
   status: PersonalAvailabilityStatus,
 ) {
+  dates = dates.map((date) => dateSchema.parse(date))
+  status = statusSchema.parse(status) as PersonalAvailabilityStatus
   await requireUser()
   for (const date of dates) {
     await setPersonalAvailability(date, status)
@@ -85,6 +88,8 @@ export async function setPersonalAvailability(
   date: string,
   status: PersonalAvailabilityStatus | null,
 ) {
+  date = dateSchema.parse(date)
+  if (status !== null) status = statusSchema.parse(status) as PersonalAvailabilityStatus
   const currentUser = await requireUser()
   const existing = await db
     .select({ id: personalAvailability.id })

@@ -10,6 +10,7 @@ import { cookies } from "next/headers"
 import { randomUUID } from "crypto"
 import type { AvailabilityStatus, RsvpStatus } from "@/app/actions/events"
 import { enforceRateLimit, requestKey } from "@/lib/rate-limit"
+import { dateSchema, guestInputSchema, inviteTokenSchema, rsvpStatusSchema, statusSchema } from "@/lib/validation"
 
 const GUEST_ID_COOKIE = "rcq_guest_id"
 const GUEST_NAME_COOKIE = "rcq_guest_name"
@@ -74,6 +75,7 @@ export async function getGuestContext(token: string) {
 
 /** Guest enters (or updates) their display name. */
 export async function joinAsGuest(input: { token: string; name: string }) {
+  input = guestInputSchema.parse(input)
   await enforceRateLimit("join", await requestKey(`token:${input.token}`))
   const name = input.name.trim()
   if (name.length < 2) throw new Error("Please enter your name (at least 2 characters)")
@@ -117,6 +119,7 @@ export async function setGuestRsvp(input: {
   token: string
   status: RsvpStatus
 }) {
+  input = { token: inviteTokenSchema.parse(input.token), status: rsvpStatusSchema.parse(input.status) }
   await enforceRateLimit("rsvp", await requestKey(`guest:${input.token}`))
   const ev = await getEventByToken(input.token)
   if (!ev) throw new Error("This event link is invalid or has expired")
@@ -187,6 +190,7 @@ export async function setGuestAvailability(input: {
   date: string
   status: AvailabilityStatus
 }) {
+  input = { token: inviteTokenSchema.parse(input.token), date: dateSchema.parse(input.date), status: statusSchema.parse(input.status) }
   await enforceRateLimit("join", await requestKey(`guest:${input.token}`))
   const ev = await getEventByToken(input.token)
   if (!ev) throw new Error("This event link is invalid or has expired")
