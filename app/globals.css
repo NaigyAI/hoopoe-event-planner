@@ -160,5 +160,6 @@
   .brand-display {
     font-family: var(--font-oswald), 'Oswald', sans-serif;
     letter-spacing: 0.025em;
+    text-transform: uppercase;
   }
 }
