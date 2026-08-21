@@ -23,6 +23,7 @@ export type EventSummary = {
   recurrenceType: string
   recurrenceWeekday: number | null
   recurrenceOrdinal: string | null
+  nextOccurrence: string
 }
 
 export function EventCard({ event }: { event: EventSummary }) {
@@ -47,7 +48,7 @@ export function EventCard({ event }: { event: EventSummary }) {
           <div className="flex items-center gap-2">
             <CalendarDays className="size-4 shrink-0" />
             <span>
-              {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
+              {formatDateRange(event.nextOccurrence, event.recurrenceType !== "none" ? event.nextOccurrence : event.endDate ?? event.startDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
             </span>
             {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (

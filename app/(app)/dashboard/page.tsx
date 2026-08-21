@@ -51,12 +51,15 @@ export default async function DashboardPage() {
     recurrenceType: e.recurrenceType,
     recurrenceWeekday: e.recurrenceWeekday,
     recurrenceOrdinal: e.recurrenceOrdinal,
+    nextOccurrence: e.recurrenceType !== "none"
+      ? getRecurringDates(e.recurrenceType, e.startDate, e.recurrenceWeekday, e.recurrenceOrdinal, 1)[0] ?? e.startDate
+      : e.startDate,
   }))
 
   const active = summaries
-    .filter((e) => e.status !== "cancelled" && e.startDate >= todayISO())
+    .filter((e) => e.status !== "cancelled" && e.nextOccurrence >= todayISO())
     .sort((a, b) => {
-      const dateComparison = a.startDate.localeCompare(b.startDate)
+      const dateComparison = a.nextOccurrence.localeCompare(b.nextOccurrence)
       return dateComparison !== 0 ? dateComparison : a.title.localeCompare(b.title)
     })
   const availableDates = futurePersonalDates.filter((row) => row.status === "available").map((row) => row.date)
