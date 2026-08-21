@@ -19,6 +19,7 @@ export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, to
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-available" /> Yes</span>
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-maybe" /> Maybe</span>
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-unavailable" /> No</span>
+            <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-muted-foreground" /> Guest</span>
           </div>
         </div>
         <AvailabilityGrid eventId={eventId} eventEndDate={eventEndDate} tallies={tallies} totalRespondents={totalRespondents} bestDate={bestDate} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
