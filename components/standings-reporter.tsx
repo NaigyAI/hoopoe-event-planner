@@ -24,7 +24,15 @@ export function StandingsReporter({ eventId, members }: { eventId: string; membe
     if (completedEntries.length < 8 && !window.confirm(`You have entered only the Top ${completedEntries.length}. Are you sure you want to submit fewer than Top 8 standings?`)) return
     startTransition(async () => {
       try {
-        await saveStandings({ eventId, entries: completedEntries })
+        await saveStandings({
+          eventId,
+          entries: completedEntries.map(({ placement, memberId, playerName, deckName }) => ({
+            placement,
+            memberId: memberId || undefined,
+            playerName,
+            deckName,
+          })),
+        })
         router.push("/report-standings?saved=1")
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Could not save standings")
