@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Roboto, Geist_Mono, Oswald } from 'next/font/google'
+import { Inter, Geist_Mono, Oswald } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -11,9 +11,9 @@ const oswald = Oswald({
   display: 'swap',
 })
 
-const roboto = Roboto({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-roboto',
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`bg-background ${oswald.variable} ${roboto.variable} ${geistMono.variable}`}
+      className={`bg-background ${oswald.variable} ${inter.variable} ${geistMono.variable}`}
     >
       <body className="font-sans antialiased">
         {children}
