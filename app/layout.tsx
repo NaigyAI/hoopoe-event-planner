@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter, Geist_Mono, Oswald } from 'next/font/google'
+import { Inter as InterFont, Geist_Mono, Oswald } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -12,7 +12,7 @@ const oswald = Oswald({
   display: 'swap',
 })
 
-const inter = Inter({
+const inter = InterFont({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
