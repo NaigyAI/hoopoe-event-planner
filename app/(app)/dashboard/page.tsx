@@ -140,16 +140,18 @@ export default async function DashboardPage() {
       ) : null}
 
       <div className="flex flex-col gap-4">
-        <div className="min-w-0">
-          <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
-          <p className="mt-1 text-sm text-muted-foreground text-pretty">
-            Mark your availability on the right, you will automatically get RSVP request here, and it will change your status on the events when you&apos;re unavailable.
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h2 className="text-2xl tracking-wide text-balance">Team events</h2>
+            <p className="mt-1 text-sm text-muted-foreground text-pretty">
+              Mark your availability on the right, you will automatically get RSVP request here, and it will change your status on the events when you&apos;re unavailable.
+            </p>
+          </div>
+          <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto">
           <PersonalAvailabilityDialog initialStatuses={initialStatuses} events={active} />
           {!isExternalMember ? <BestDatesDialog /> : null}
-          {isAdmin ? <CreateEventDialog /> : null}
+            {isAdmin ? <CreateEventDialog /> : null}
+          </div>
         </div>
         <div className="border-t border-border" aria-hidden="true" />
       </div>
