@@ -9,8 +9,11 @@ import { requireApprovedUser } from "@/lib/session"
 import { requireEvent } from "@/lib/authorization"
 import { todayISO } from "@/lib/dates"
 
-function ensureToday(target: string) {
-  if (target !== todayISO()) throw new Error("Only events scheduled for today can be tracked")
+function ensureScoringWindow(target: { startDate: string; startTime: string | null }) {
+  const today = todayISO()
+  if (target.startDate === today && !target.startTime) return
+  const start = new Date(`${target.startDate}T${target.startTime || "00:00"}:00`)
+  if (Number.isNaN(start.getTime()) || Date.now() < start.getTime() || Date.now() > start.getTime() + 12 * 60 * 60 * 1000) throw new Error("Scoring is available from the event start until 12 hours afterward")
 }
 
 export async function listCompletedScoringMatches(eventId: string) {
@@ -27,7 +30,16 @@ export async function listCompletedScoringMatches(eventId: string) {
 export async function listScoringEvents() {
   const actor = await requireApprovedUser()
   const today = todayISO()
-  const events = await db.select().from(event).where(eq(event.startDate, today)).orderBy(asc(event.startTime))
+  const yesterday = new Date(`${today}T12:00:00`)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const yesterdayISO = yesterday.toISOString().slice(0, 10)
+  const candidates = await db.select().from(event).where(inArray(event.startDate, [yesterdayISO, today])).orderBy(asc(event.startDate), asc(event.startTime))
+  const now = Date.now()
+  const events = candidates.filter((item) => {
+    if (item.startDate === today && !item.startTime) return true
+    const start = new Date(`${item.startDate}T${item.startTime || "00:00"}:00`)
+    return now >= start.getTime() && now <= start.getTime() + 12 * 60 * 60 * 1000
+  })
   const sessions = events.length ? await db.select().from(scoringSession).where(inArray(scoringSession.eventId, events.map((item) => item.id))) : []
   return { actor, events, sessions }
 }
@@ -35,7 +47,7 @@ export async function listScoringEvents() {
 export async function claimScoring(eventId: string) {
   const actor = await requireApprovedUser()
   const target = await requireEvent(eventId)
-  ensureToday(target.startDate)
+  ensureScoringWindow(target)
   const existing = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (existing[0]) throw new Error(`This event is currently tracked by ${existing[0].trackerName}. Ask them to transfer tracking.`)
   const session = { id: randomUUID(), eventId, trackerId: actor.id, trackerName: actor.name, playerCount: 0, roundCount: 0, currentRound: 0, status: "claimed" }
@@ -66,7 +78,7 @@ export async function transferScoring(eventId: string, userId: string, userName:
 export async function setupScoring(eventId: string, playerCount: number, roundCount: number) {
   const actor = await requireApprovedUser()
   const target = await requireEvent(eventId)
-  ensureToday(target.startDate)
+  ensureScoringWindow(target)
   if (playerCount < 1 || playerCount > 256 || roundCount < 1 || roundCount > 32) throw new Error("Invalid player or round count")
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can set up scoring")
@@ -109,7 +121,7 @@ export async function listScoringMembers(eventId: string) {
 export async function getScoringSession(eventId: string) {
   const actor = await requireApprovedUser()
   const target = await requireEvent(eventId)
-  ensureToday(target.startDate)
+  ensureScoringWindow(target)
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0]) return { actor, event: target, session: null, round: null, matches: [] }
   const round = await db.select().from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
@@ -159,7 +171,7 @@ export async function saveMatchScore(eventId: string, matchId: string, playerOne
 export async function nextScoringRound(eventId: string) {
   const actor = await requireApprovedUser()
   const target = await requireEvent(eventId)
-  ensureToday(target.startDate)
+  ensureScoringWindow(target)
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can start the next round")
   const currentRound = await db.select({ id: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
