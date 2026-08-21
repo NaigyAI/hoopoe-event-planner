@@ -175,7 +175,7 @@ export default async function EventPage({
               className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ClipboardCheck className="size-4" />
-              Submit scoring
+              Submit
             </Link>
             <ShareEventButton token={event.shareToken} />
             {isAdmin ? (
