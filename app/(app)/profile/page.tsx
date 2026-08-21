@@ -10,7 +10,7 @@ export default async function ProfilePage() {
   const user = await requireUser()
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6 px-3 py-4 sm:px-0 sm:py-0">
       <Link
         href="/dashboard"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
