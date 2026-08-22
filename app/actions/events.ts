@@ -54,8 +54,14 @@ export async function remindAwaitingMembers(eventId: string) {
   const recipients = await db.select({ id: user.id, email: user.email, name: user.name, notifyEnabled: user.notifyEnabled, notifyNewEvent: user.notifyNewEvent, notifyEventReminder: user.notifyEventReminder }).from(user).where(and(eq(user.approved, true), ne(user.id, actor.id)))
   const awaiting = recipients.filter((recipient) => !responded.has(recipient.id))
   const origin = process.env.BETTER_AUTH_URL ? process.env.BETTER_AUTH_URL : process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.V0_RUNTIME_URL ?? "http://localhost:3000"
-  await notifyEventResponseReminder({ recipients: awaiting, eventTitle: selected[0].title, eventLocation: selected[0].location ?? "", eventLink: `${origin}/join/${selected[0].shareToken}`, creatorName: actor.name })
-  return { count: awaiting.filter((recipient) => recipient.notifyEnabled).length }
+  const eligibleCount = awaiting.filter((recipient) => recipient.notifyEnabled && recipient.notifyEventReminder).length
+  try {
+    await notifyEventResponseReminder({ recipients: awaiting, eventTitle: selected[0].title, eventLocation: selected[0].location ?? "", eventLink: `${origin}/join/${selected[0].shareToken}`, creatorName: actor.name })
+    return { count: eligibleCount }
+  } catch (error) {
+    console.log("[v0] reminder email failed:", error instanceof Error ? error.message : error)
+    return { count: 0, error: "The reminder could not be sent. Check your email configuration and try again." }
+  }
 }
 
 /** Dashboard: every event with a small summary. */
