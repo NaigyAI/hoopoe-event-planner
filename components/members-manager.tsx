@@ -185,8 +185,8 @@ function PendingRow({ member }: { member: MemberRow }) {
       try {
         await approveMember(member.id, role)
         toast.success(`${capitalizeFirstName(member.name)} approved`)
-      } catch {
-        toast.error("Could not approve this member")
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Could not approve this member")
       }
     })
   }

@@ -92,6 +92,18 @@ export const auth = betterAuth({
         defaultValue: true,
         input: false,
       },
+      notifyNewEvent: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+        input: false,
+      },
+      notifyEventReminder: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+        input: false,
+      },
     },
   },
   ...(isDev
