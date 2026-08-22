@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { nextCookies } from "better-auth/next-js"
 import { Pool } from "pg"
+import { sendEmail } from "@/lib/email"
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
@@ -54,6 +55,25 @@ export const auth = betterAuth({
   database: pool,
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      const firstName = user.name?.trim().split(/\s+/)[0] || "there"
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your Hoopoe Event Planner password",
+        body: `Hey ${firstName},
+
+We received a request to reset your Hoopoe Event Planner password.
+
+Reset your password here:
+${url}
+
+This link expires in one hour. If you did not request a password reset, you can ignore this email.
+
+Cheers,
+Hoopoe Event Planner`,
+        html: `<p>Hey ${firstName},</p><p>We received a request to reset your Hoopoe Event Planner password.</p><p><a href="${url}">Reset your password</a></p><p>This link expires in one hour. If you did not request a password reset, you can ignore this email.</p><p>Cheers,<br>Hoopoe Event Planner</p>`,
+      })
+    },
   },
   databaseHooks: {
     user: {

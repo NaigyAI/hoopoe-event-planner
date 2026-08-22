@@ -56,7 +56,7 @@ export function AppNav({ user }: { user: NavUser }) {
             alt="Hoopoe Event Planner logo"
             className="size-12 shrink-0 object-contain"
           />
-          <span className="ml-2 text-lg">Hoopoe Event Planner</span>
+          <span className="ml-[5px] font-oswald text-lg font-normal uppercase">Hoopoe Event Planner</span>
           <span className="rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-accent-foreground">
             Beta
           </span>
