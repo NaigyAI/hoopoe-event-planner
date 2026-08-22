@@ -46,7 +46,7 @@ export function AppNav({ user }: { user: NavUser }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-24 max-w-none items-center justify-between gap-4 px-9">
+      <div className="mx-auto flex h-24 w-full max-w-5xl items-center justify-between gap-4 px-3 sm:px-6">
         <Link
           href="/dashboard"
           className="flex items-center gap-3 font-medium tracking-normal"
