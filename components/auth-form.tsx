@@ -119,11 +119,11 @@ export function AuthForm({
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center text-center">
-  <img
-  src="/favicon-hoopoe.png"
-  alt="Hoopoe Event Planner"
-  className="mb-4 size-11 object-contain"
-  />
+        <img
+          src="/favicon-hoopoe.png"
+          alt="Hoopoe Event Planner"
+          className="mb-4 size-20 object-contain"
+        />
         <h1 className="text-2xl font-semibold tracking-[0.04em] text-balance">
           {isSignUp ? "Create your account" : "Welcome back"}
         </h1>
