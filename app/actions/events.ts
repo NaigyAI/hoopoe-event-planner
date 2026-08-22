@@ -56,8 +56,11 @@ export async function remindAwaitingMembers(eventId: string) {
   const origin = process.env.BETTER_AUTH_URL ? process.env.BETTER_AUTH_URL : process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : process.env.V0_RUNTIME_URL ?? "http://localhost:3000"
   const eligibleCount = awaiting.filter((recipient) => recipient.notifyEnabled && recipient.notifyEventReminder).length
   try {
-    await notifyEventResponseReminder({ recipients: awaiting, eventTitle: selected[0].title, eventLocation: selected[0].location ?? "", eventLink: `${origin}/join/${selected[0].shareToken}`, creatorName: actor.name })
-    return { count: eligibleCount }
+    const result = await notifyEventResponseReminder({ recipients: awaiting, eventTitle: selected[0].title, eventLocation: selected[0].location ?? "", eventLink: `${origin}/join/${selected[0].shareToken}`, creatorName: actor.name })
+    if (result.failed > 0 && result.sent === 0) {
+      return { count: 0, error: "No reminder emails were accepted. Check that RESEND_FROM_EMAIL uses your verified domain." }
+    }
+    return { count: result.sent, failed: result.failed }
   } catch (error) {
     console.log("[v0] reminder email failed:", error instanceof Error ? error.message : error)
     return { count: 0, error: "The reminder could not be sent. Check your email configuration and try again." }
