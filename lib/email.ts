@@ -36,13 +36,13 @@ export async function sendEmail({ to, subject, body }: EmailPayload) {
 }
 
 export async function notifyEventCreated(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   eventLocation: string
   eventLink: string
   creatorName: string
 }) {
-  const targets = opts.recipients.filter((r) => r.notifyEnabled)
+  const targets = opts.recipients.filter((r) => r.notifyEnabled && (r.notifyNewEvent ?? true))
   await Promise.all(
     targets.map((r) => {
       const firstName = r.name.trim().split(/\s+/)[0] || "there"
@@ -69,17 +69,69 @@ Hoopoe Event Planner`,
 }
 
 export async function notifyEventResponseReminder(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   eventLocation: string
   eventLink: string
   creatorName: string
 }) {
-  await notifyEventCreated(opts)
+  const targets = opts.recipients.filter((r) => r.notifyEnabled && (r.notifyEventReminder ?? true))
+  await notifyEventCreated({ ...opts, recipients: targets })
+}
+
+/**
+ * One-time welcome email sent when an admin approves a pending sign-up.
+ * Intentionally ignores the new-event / reminder toggles: this is an account
+ * email, not an event notification. External members get a version without the
+ * Report standings and Scoring sections, which they cannot access.
+ */
+export async function notifyMemberApproved(opts: {
+  recipient: { email: string; name: string }
+  role: "team-member" | "external-member"
+  appLink: string
+}) {
+  const firstName = opts.recipient.name.trim().split(/\s+/)[0] || "there"
+  const standingsSection =
+    opts.role === "team-member"
+      ? `Report standings & Scoring - after an event, log your results so
+the team keeps track of how everyone is doing.
+
+Past events - look back at previous events and their standings.
+
+`
+      : ""
+
+  return sendEmail({
+    to: opts.recipient.email,
+    subject: "You're in - welcome to Hoopoe Event Planner",
+    body: `Hey ${firstName},
+
+Your account has been approved. Welcome to the Hoopoe Event Planner.
+
+Here is how it works:
+
+Dashboard - every upcoming event lives here. Open one to see the
+date, time and location, and mark whether you are in.
+
+Availability - add the dates you can play, and the team uses that
+to find the date that works for the most people. Your status
+updates automatically on events you cannot make.
+
+${standingsSection}Profile & settings - update your name and choose which emails you
+want: new events, reminders, or both.
+
+Open the app here:
+${opts.appLink}
+
+Good luck out there. May your draws be kind!
+
+Cheers,
+Hoopoe Event Planner`,
+  })
 }
 
 export async function notifyDateLocked(opts: {
-  recipients: { email: string; name: string; notifyEnabled: boolean }[]
+  recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   lockedDate: string
 }) {

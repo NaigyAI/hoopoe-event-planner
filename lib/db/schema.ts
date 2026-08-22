@@ -19,6 +19,8 @@ export const user = pgTable("user", {
   role: text("role").notNull().default("member"),
   approved: boolean("approved").notNull().default(false),
   notifyEnabled: boolean("notifyEnabled").notNull().default(true),
+  notifyNewEvent: boolean("notifyNewEvent").notNull().default(true),
+  notifyEventReminder: boolean("notifyEventReminder").notNull().default(true),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 })

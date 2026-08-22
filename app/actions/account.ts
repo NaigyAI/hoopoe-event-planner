@@ -20,12 +20,17 @@ export async function updateProfile(input: { name: string }) {
   return { ok: true }
 }
 
-export async function updateNotificationPreference(enabled: boolean) {
+export async function updateNotificationPreference(
+  preference: "newEvent" | "eventReminder" | "all",
+  enabled: boolean,
+) {
   const current = await requireUser()
-  await db
-    .update(user)
-    .set({ notifyEnabled: enabled, updatedAt: new Date() })
-    .where(eq(user.id, current.id))
+  const values = preference === "newEvent"
+    ? { notifyNewEvent: enabled, updatedAt: new Date() }
+    : preference === "eventReminder"
+      ? { notifyEventReminder: enabled, updatedAt: new Date() }
+      : { notifyEnabled: enabled, notifyNewEvent: enabled, notifyEventReminder: enabled, updatedAt: new Date() }
+  await db.update(user).set(values).where(eq(user.id, current.id))
   revalidatePath("/profile")
   return { ok: true }
 }

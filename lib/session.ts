@@ -9,6 +9,8 @@ export type SessionUser = {
   role: string
   approved: boolean
   notifyEnabled: boolean
+  notifyNewEvent: boolean
+  notifyEventReminder: boolean
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -22,6 +24,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     role: u.role ?? "member",
     approved: u.approved ?? false,
     notifyEnabled: u.notifyEnabled ?? true,
+    notifyNewEvent: u.notifyNewEvent ?? true,
+    notifyEventReminder: u.notifyEventReminder ?? true,
   }
 }
 
