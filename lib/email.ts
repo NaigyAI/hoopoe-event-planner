@@ -2,9 +2,10 @@ type EmailPayload = {
   to: string
   subject: string
   body: string
+  html?: string
 }
 
-export async function sendEmail({ to, subject, body }: EmailPayload) {
+export async function sendEmail({ to, subject, body, html }: EmailPayload) {
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.RESEND_FROM_EMAIL
 
@@ -23,6 +24,7 @@ export async function sendEmail({ to, subject, body }: EmailPayload) {
       to: [to],
       subject,
       text: body,
+      ...(html ? { html } : {}),
     }),
     cache: "no-store",
   })
@@ -72,6 +74,7 @@ export async function notifyEventResponseReminder(opts: {
   recipients: { email: string; name: string; notifyEnabled: boolean; notifyNewEvent?: boolean; notifyEventReminder?: boolean }[]
   eventTitle: string
   eventLocation: string
+  eventTime?: string
   eventLink: string
   creatorName: string
 }) {
@@ -88,13 +91,15 @@ Just a reminder to let us know if you are joining us for:
 
 ${opts.eventTitle}
 Where: ${opts.eventLocation}
+Time: ${opts.eventTime || "TBC"}
 
 ${opts.eventLink}
 
-Hope to see you there. May your draws be kind!
+Hope to see you there. The reps you put in today are the reason you're ready at your next event!
 
 Cheers,
 Hoopoe Event Planner`,
+        html: `<p>Hey ${firstName},</p><p>Just a reminder to let us know if you are joining us for:</p><p><strong>${opts.eventTitle}</strong><br>Where: ${opts.eventLocation}<br>Time: ${opts.eventTime || "TBC"}</p><p><a href="${opts.eventLink}">${opts.eventLink}</a></p><p>Hope to see you there. The reps you put in today are the reason you're ready at your next event!</p><p>Cheers,<br>Hoopoe Event Planner</p>`,
       })
     }),
   )

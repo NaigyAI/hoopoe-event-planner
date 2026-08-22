@@ -24,7 +24,14 @@ const geistMono = Geist_Mono({
   display: 'swap',
 })
 
+const siteUrl =
+  process.env.BETTER_AUTH_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://eventplanner.hoopoeboys.com')
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Hoopoe Event Planner',
   description:
     'Find the best date for an mtg event, lock it in, and show up with friends.',
