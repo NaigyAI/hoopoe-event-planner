@@ -47,6 +47,11 @@ export const metadata: Metadata = {
       'Find the best date for an mtg event, lock it in, and show up with friends.',
     images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/OpenGraph-H3QBw2IGaD1T6GH6Rj1SMItCUbz7vB.png'],
   },
+  icons: {
+    icon: '/favicon-hoopoe.png',
+    shortcut: '/favicon-hoopoe.png',
+    apple: '/favicon-hoopoe.png',
+  },
   generator: 'v0.app',
 }
 
