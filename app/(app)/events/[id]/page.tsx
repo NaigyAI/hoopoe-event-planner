@@ -47,7 +47,10 @@ export default async function EventPage({
   const days = isMultiDay ? [event.startDate] : availabilityDates
 
   // Distinct respondents across the whole event
-  const respondentIds = new Set(votes.map((v) => v.userId))
+  const respondentIds = new Set([
+    ...votes.map((v) => v.userId),
+    ...rsvps.map((rsvp) => rsvp.userId),
+  ])
   const totalRespondents = respondentIds.size
   const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
     const vote = votes.find((item) => item.userId === guestId)
@@ -90,7 +93,8 @@ export default async function EventPage({
     const voted = new Set(dayVotes.map((vote) => vote.userId))
     return {
       date,
-      attending: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && (vote.status === "available" || vote.status === "maybe"))),
+      attending: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && vote.status === "available")),
+      maybe: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && vote.status === "maybe")),
       unavailable: members.filter((member) => dayVotes.some((vote) => vote.userId === member.id && vote.status === "unavailable")),
       awaiting: members.filter((member) => !voted.has(member.id)),
     }
