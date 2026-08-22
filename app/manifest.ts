@@ -15,7 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: '/favicon-hoopoe.png',
         sizes: '1024x1024',
         type: 'image/png',
-        purpose: 'maskable',
+        purpose: 'any',
       },
     ],
   }
