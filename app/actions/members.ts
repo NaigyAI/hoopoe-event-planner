@@ -7,6 +7,18 @@ import { and, desc, eq, inArray, like, sql } from "drizzle-orm"
 import { requireAdmin, requireSuperuser, requireUser } from "@/lib/session"
 import { revalidatePath } from "next/cache"
 import { userIdSchema } from "@/lib/validation"
+import { notifyMemberApproved } from "@/lib/email"
+
+function getAppOrigin() {
+  const base = process.env.BETTER_AUTH_URL
+    ? process.env.BETTER_AUTH_URL
+    : process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.V0_RUNTIME_URL ?? "http://localhost:3000"
+  return base.replace(/\/$/, "")
+}
 
 export type MemberRole = "member" | "team-member" | "external-member" | "admin" | "superuser"
 
@@ -124,9 +136,23 @@ export async function setMemberAdmin(userId: string, isAdmin: boolean) {
 export async function approveMember(userId: string, role: "team-member" | "external-member") {
   userId = userIdSchema.parse(userId)
   await requireAdmin()
-  await db.update(user).set({ approved: true, role, updatedAt: new Date() }).where(and(eq(user.id, userId), eq(user.approved, false)))
+  const approved = await db
+    .update(user)
+    .set({ approved: true, role, updatedAt: new Date() })
+    .where(and(eq(user.id, userId), eq(user.approved, false)))
+    .returning({ email: user.email, name: user.name })
   revalidatePath("/members")
   revalidatePath("/dashboard")
+
+  // Welcome email must never block or fail the approval itself.
+  if (approved[0]) {
+    try {
+      await notifyMemberApproved({ recipient: approved[0], role, appLink: `${getAppOrigin()}/dashboard` })
+    } catch (err) {
+      console.log("[v0] welcome email failed:", err instanceof Error ? err.message : err)
+    }
+  }
+
   return { ok: true }
 }
 
