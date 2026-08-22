@@ -16,9 +16,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex w-full max-w-md flex-col justify-center text-center">
           <div className="mx-auto mb-8 w-full max-w-[260px]">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Hoopoe%20Miami%20logo%20merged-YSRoHnDO8YM00dNhspve0WHTNhjTm6.png"
-              alt="Hoopoe Boys Miami team logo"
-              className="h-auto w-full pt-[35px] text-center"
+              src="/favicon-hoopoe.png"
+              alt="Hoopoe Event Planner"
+              className="h-auto w-full object-contain pt-[35px] text-center"
             />
           </div>
           <p className="text-2xl font-semibold leading-snug tracking-tight text-balance">
