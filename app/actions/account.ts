@@ -4,7 +4,8 @@ import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import { requireUser } from "@/lib/session"
-import { sendEmail } from "@/lib/email"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 import { revalidatePath } from "next/cache"
 
 export async function updateProfile(input: { name: string }) {
@@ -35,24 +36,23 @@ export async function updateNotificationPreference(
   return { ok: true }
 }
 
-/**
- * Stubbed password reset. Looks up the account and (would) email a reset link.
- * Always resolves without revealing whether the email is registered.
- */
 export async function requestPasswordReset(email: string) {
   const normalized = email.trim().toLowerCase()
-  const rows = await db
-    .select({ email: user.email, name: user.name })
-    .from(user)
-    .where(eq(user.email, normalized))
-    .limit(1)
-
-  if (rows[0]) {
-    await sendEmail({
-      to: rows[0].email,
-      subject: "Reset your Hoopoe Event Planner password",
-      body: `Hi ${rows[0].name}, use this link to reset your password: [reset link stub].`,
-    })
-  }
+  await auth.api.requestPasswordReset({
+    body: {
+      email: normalized,
+      redirectTo: `${getAppOrigin()}/reset-password`,
+    },
+    headers: await headers(),
+  })
   return { ok: true }
+}
+
+function getAppOrigin() {
+  const origin = process.env.BETTER_AUTH_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null) ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ??
+    process.env.V0_RUNTIME_URL ??
+    "https://eventplanner.hoopoeboys.com"
+  return origin.replace(/\/$/, "")
 }
