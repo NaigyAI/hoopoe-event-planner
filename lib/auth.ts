@@ -16,7 +16,7 @@ function getBaseURL() {
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL)
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return process.env.V0_RUNTIME_URL
+  return process.env.V0_RUNTIME_URL ?? "https://eventplanner.hoopoeboys.com"
 }
 
 const isDev = process.env.NODE_ENV === "development"
@@ -44,6 +44,7 @@ function getTrustedOrigins() {
     asOrigin(process.env.BETTER_AUTH_URL),
     asOrigin(process.env.VERCEL_URL),
     asOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL),
+    "https://eventplanner.hoopoeboys.com",
   ].filter((origin): origin is string => Boolean(origin))
 }
 
