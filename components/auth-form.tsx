@@ -8,7 +8,7 @@ import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { CalendarCheck, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { approveCurrentUserWithInvite } from "@/app/actions/member-invites"
 
 type Mode = "sign-in" | "sign-up"
@@ -119,9 +119,11 @@ export function AuthForm({
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center text-center">
-        <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <CalendarCheck className="size-6" />
-        </div>
+  <img
+  src="/favicon-hoopoe.png"
+  alt="Hoopoe Event Planner"
+  className="mb-4 size-11 object-contain"
+  />
         <h1 className="text-2xl font-semibold tracking-[0.04em] text-balance">
           {isSignUp ? "Create your account" : "Welcome back"}
         </h1>
