@@ -51,9 +51,11 @@ export function AppNav({ user }: { user: NavUser }) {
           href="/dashboard"
           className="flex items-center gap-3 font-medium tracking-normal"
         >
-          <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-            <CalendarCheck className="size-6" />
-          </div>
+          <img
+            src="/favicon-hoopoe.png"
+            alt="Hoopoe Event Planner logo"
+            className="size-12 rounded-2xl object-contain"
+          />
           <span className="text-lg">Hoopoe Event Planner</span>
           <span className="rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-accent-foreground">
             Beta
