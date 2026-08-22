@@ -12,6 +12,10 @@ export function RemindAttendeesButton({ eventId }: { eventId: string }) {
     startTransition(async () => {
       try {
         const result = await remindAwaitingMembers(eventId)
+        if (result.error) {
+          toast.error(result.error)
+          return
+        }
         toast.success(result.count === 1 ? "Reminder sent to 1 member" : `Reminders sent to ${result.count} members`)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Could not send reminders")
