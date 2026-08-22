@@ -40,7 +40,9 @@ export async function setAdminAttendance(eventId: string, userId: string, dateVa
 
 export async function resetAdminAttendance(eventId: string, userId: string, dateValue: string) {
   await requireAdmin()
-  await db.delete(availability).where(and(eq(availability.eventId, eventId), eq(availability.userId, userId), eq(availability.date, dateValue)))
+  // Resetting a member from the attendance roster means they are awaiting
+  // a response for this event again, across all dates.
+  await db.delete(availability).where(and(eq(availability.eventId, eventId), eq(availability.userId, userId)))
   revalidatePath(`/events/${eventId}`)
 }
 
