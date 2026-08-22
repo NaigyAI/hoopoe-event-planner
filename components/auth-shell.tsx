@@ -1,5 +1,4 @@
 import type React from "react"
-import { CalendarCheck } from "lucide-react"
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
@@ -7,20 +6,15 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       {/* Brand panel */}
       <div className="relative hidden grid-rows-[auto_1fr_auto] overflow-hidden bg-primary p-10 text-primary-foreground lg:grid">
         <div className="flex items-center gap-2 font-semibold">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
-            <CalendarCheck className="size-4" />
-          </div>
+          <img
+            src="/favicon-hoopoe.png"
+            alt="Hoopoe Event Planner"
+            className="size-8 object-contain"
+          />
           <span className="text-lg tracking-tight">Hoopoe Event Planner</span>
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-col justify-center text-center">
-          <div className="mx-auto mb-8 w-full max-w-[260px]">
-            <img
-              src="/favicon-hoopoe.png"
-              alt="Hoopoe Event Planner"
-              className="h-auto w-full object-contain pt-[35px] text-center"
-            />
-          </div>
           <p className="text-2xl font-semibold leading-snug tracking-tight text-balance">
             Stop holding priority on your plans. Pull up the grid, see who&apos;s
             untapped, and lock in the day.
