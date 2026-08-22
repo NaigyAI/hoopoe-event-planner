@@ -76,7 +76,32 @@ export async function notifyEventResponseReminder(opts: {
   creatorName: string
 }) {
   const targets = opts.recipients.filter((r) => r.notifyEnabled && (r.notifyEventReminder ?? true))
-  await notifyEventCreated({ ...opts, recipients: targets })
+  const results = await Promise.allSettled(
+    targets.map((r) => {
+      const firstName = r.name.trim().split(/\s+/)[0] || "there"
+      return sendEmail({
+        to: r.email,
+        subject: `Reminder - ${opts.eventTitle} @ ${opts.eventLocation}`,
+        body: `Hey ${firstName},
+
+Just a reminder to let us know if you are joining us for:
+
+${opts.eventTitle}
+Where: ${opts.eventLocation}
+
+${opts.eventLink}
+
+Hope to see you there. May your draws be kind!
+
+Cheers,
+Hoopoe Event Planner`,
+      })
+    }),
+  )
+  return {
+    sent: results.filter((result) => result.status === "fulfilled").length,
+    failed: results.filter((result) => result.status === "rejected").length,
+  }
 }
 
 /**

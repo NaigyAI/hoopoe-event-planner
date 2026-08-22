@@ -16,7 +16,7 @@ export function RemindAttendeesButton({ eventId }: { eventId: string }) {
           toast.error(result.error)
           return
         }
-        toast.success(result.count === 1 ? "Reminder sent to 1 member" : `Reminders sent to ${result.count} members`)
+        toast.success(result.failed ? `${result.count} reminder${result.count === 1 ? "" : "s"} sent; ${result.failed} failed` : result.count === 1 ? "Reminder sent to 1 member" : `Reminders sent to ${result.count} members`)
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Could not send reminders")
       }
