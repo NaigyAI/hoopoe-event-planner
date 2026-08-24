@@ -161,12 +161,18 @@ export async function setGuestRsvp(input: {
 
   const scopedId = `guest:${session.id}`
 
-  // Declining the event removes this guest from availability while preserving
-  // a red "Can't make it" RSVP in the attendance roster.
+  // A guest who cannot attend should not appear anywhere in the event roster.
   if (input.status === "not_going") {
-    await db
-      .delete(availability)
-      .where(and(eq(availability.eventId, ev.id), eq(availability.userId, scopedId)))
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(availability)
+        .where(and(eq(availability.eventId, ev.id), eq(availability.userId, scopedId)))
+      await tx
+        .delete(rsvp)
+        .where(and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, scopedId)))
+    })
+    revalidatePath(`/join/${input.token}`)
+    return { ok: true }
   }
 
   const existing = await db
