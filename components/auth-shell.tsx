@@ -11,7 +11,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             alt="Hoopoe Event Planner"
             className="size-8 object-contain"
           />
-          <span className="text-lg tracking-tight">Hoopoe Event Planner</span>
+          <span className="font-oswald text-lg font-normal uppercase tracking-normal leading-[1.5]">Hoopoe Event Planner</span>
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-col justify-center text-center">
