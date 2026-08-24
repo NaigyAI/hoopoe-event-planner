@@ -110,6 +110,36 @@ export async function joinAsGuest(input: { token: string; name: string }) {
       and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, `guest:${guestId}`)),
     )
 
+  // Entering a name means the guest is available for the event date by default.
+  const scopedId = `guest:${guestId}`
+  const existingAvailability = await db
+    .select({ id: availability.id })
+    .from(availability)
+    .where(
+      and(
+        eq(availability.eventId, ev.id),
+        eq(availability.userId, scopedId),
+        eq(availability.date, ev.startDate),
+      ),
+    )
+    .limit(1)
+
+  if (existingAvailability[0]) {
+    await db
+      .update(availability)
+      .set({ status: "available", userName: name, updatedAt: new Date() })
+      .where(eq(availability.id, existingAvailability[0].id))
+  } else {
+    await db.insert(availability).values({
+      id: randomUUID(),
+      eventId: ev.id,
+      userId: scopedId,
+      userName: name,
+      date: ev.startDate,
+      status: "available",
+    })
+  }
+
   revalidatePath(`/join/${input.token}`)
   return { ok: true }
 }
@@ -130,6 +160,20 @@ export async function setGuestRsvp(input: {
   if (!session?.name) throw new Error("Please enter your name first")
 
   const scopedId = `guest:${session.id}`
+
+  // A guest who cannot attend should not appear anywhere in the event roster.
+  if (input.status === "not_going") {
+    await db.transaction(async (tx) => {
+      await tx
+        .delete(availability)
+        .where(and(eq(availability.eventId, ev.id), eq(availability.userId, scopedId)))
+      await tx
+        .delete(rsvp)
+        .where(and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, scopedId)))
+    })
+    revalidatePath(`/join/${input.token}`)
+    return { ok: true }
+  }
 
   const existing = await db
     .select({ id: rsvp.id })
