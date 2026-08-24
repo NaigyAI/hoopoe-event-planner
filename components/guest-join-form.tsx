@@ -12,10 +12,12 @@ import { joinAsGuest } from "@/app/actions/guest"
 export function GuestJoinForm({
   token,
   eventTitle,
+  eventDate,
   defaultName = "",
 }: {
   token: string
   eventTitle: string
+  eventDate: string
   defaultName?: string
 }) {
   const router = useRouter()
@@ -41,8 +43,9 @@ export function GuestJoinForm({
           You&apos;re invited to respond
         </h1>
         <p className="text-pretty text-sm text-muted-foreground">
-          Add your name to mark which days you&apos;re available for{" "}
-          <span className="font-medium text-foreground">{eventTitle}</span>.
+          Add your name to let us know if you&apos;re available for{" "}
+          <span className="font-medium text-foreground">{eventTitle}</span> on{" "}
+          <span className="font-medium text-foreground">{eventDate}</span>.
         </p>
       </div>
       <div className="space-y-2">

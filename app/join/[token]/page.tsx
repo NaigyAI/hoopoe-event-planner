@@ -95,6 +95,7 @@ export default async function JoinPage({
             <GuestJoinForm
               token={token}
               eventTitle={event.title}
+              eventDate={formatEventDate(event.startDate, event.endDate)}
               defaultName={guest?.name ?? ""}
             />
           </Card>
@@ -111,6 +112,13 @@ export default async function JoinPage({
       </div>
     </main>
   )
+}
+
+function formatEventDate(startDate: string, endDate: string | null) {
+  const start = new Date(`${startDate}T12:00:00`)
+  const end = endDate ? new Date(`${endDate}T12:00:00`) : null
+  const formatter = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" })
+  return end && endDate !== startDate ? `${formatter.format(start)}–${formatter.format(end)}` : formatter.format(start)
 }
 
 function JoinChoiceCard({
