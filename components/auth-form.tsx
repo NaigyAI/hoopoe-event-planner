@@ -124,7 +124,7 @@ export function AuthForm({
           alt="Hoopoe Event Planner"
           className="mb-4 size-20 object-contain"
         />
-        <h1 className="text-2xl font-semibold tracking-[0.04em] text-balance">
+        <h1 className="text-2xl font-normal tracking-[0.04em] text-balance">
           {isSignUp ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground text-pretty">

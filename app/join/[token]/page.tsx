@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import {
   CalendarCheck,
   CalendarDays,
@@ -18,6 +18,7 @@ import { dateRange, formatDateRange, formatFullDate, formatTime } from "@/lib/da
 import { AvailabilityGrid, type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { GuestJoinForm } from "@/components/guest-join-form"
+import { getSessionUser } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
 
@@ -57,9 +58,18 @@ export default async function JoinPage({
 }) {
   const { token } = await params
   const { edit, continue: continueMode } = await searchParams
-  const { event, votes, rsvps, guest } = await getGuestContext(token)
+  const [{ event, votes, rsvps, guest }, sessionUser] = await Promise.all([
+    getGuestContext(token),
+    getSessionUser(),
+  ])
 
   if (!event) notFound()
+
+  // Approved members should go straight to the authenticated event page.
+  // Pending accounts remain on the choice screen and can continue as guests.
+  if (sessionUser && (sessionUser.approved || sessionUser.role === "admin" || sessionUser.role === "superuser")) {
+    redirect(`/events/${event.id}`)
+  }
 
   const needsName = !guest?.name || edit === "1"
 
