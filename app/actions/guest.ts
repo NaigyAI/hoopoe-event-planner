@@ -110,6 +110,36 @@ export async function joinAsGuest(input: { token: string; name: string }) {
       and(eq(rsvp.eventId, ev.id), eq(rsvp.userId, `guest:${guestId}`)),
     )
 
+  // Entering a name means the guest is available for the event date by default.
+  const scopedId = `guest:${guestId}`
+  const existingAvailability = await db
+    .select({ id: availability.id })
+    .from(availability)
+    .where(
+      and(
+        eq(availability.eventId, ev.id),
+        eq(availability.userId, scopedId),
+        eq(availability.date, ev.startDate),
+      ),
+    )
+    .limit(1)
+
+  if (existingAvailability[0]) {
+    await db
+      .update(availability)
+      .set({ status: "available", userName: name, updatedAt: new Date() })
+      .where(eq(availability.id, existingAvailability[0].id))
+  } else {
+    await db.insert(availability).values({
+      id: randomUUID(),
+      eventId: ev.id,
+      userId: scopedId,
+      userName: name,
+      date: ev.startDate,
+      status: "available",
+    })
+  }
+
   revalidatePath(`/join/${input.token}`)
   return { ok: true }
 }
