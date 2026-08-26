@@ -6,7 +6,7 @@ import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
-import { dateRange } from "@/lib/dates"
+import { dateRange, getRecurringDates } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { enforceRateLimit } from "@/lib/rate-limit"
@@ -162,29 +162,35 @@ export async function createEvent(input: {
   if (days.length > 60) throw new Error("Date range cannot exceed 60 days")
 
   const id = randomUUID()
+  const seriesId = recurrenceType === "none" ? null : id
   const shareToken = randomUUID().replace(/-/g, "")
-  await db.insert(event).values({
-    id,
+  const occurrenceDates = recurrenceType === "none"
+    ? [input.startDate]
+    : getRecurringDates(recurrenceType, input.startDate, input.recurrenceWeekday ?? null, input.recurrenceOrdinal ?? null, 3)
+  const occurrences = occurrenceDates.length ? occurrenceDates : [input.startDate]
+  await db.insert(event).values(occurrences.map((occurrenceDate, index) => ({
+    id: index === 0 ? id : randomUUID(),
     title,
     format: formatLabel,
     description: input.description?.trim() || null,
     location,
+    nextOccurrenceLocation: index === 0 ? input.nextOccurrenceLocation?.trim() || null : null,
+    seriesId,
     eventType,
-
     eventUrl: input.eventUrl?.trim() || null,
     travelDetails: input.travelDetails?.trim() || null,
     createdBy: creator.id,
     createdByName: creator.name,
-    shareToken,
-    startDate: input.startDate,
-    endDate,
+    shareToken: index === 0 ? shareToken : randomUUID().replace(/-/g, ""),
+    startDate: occurrenceDate,
+    endDate: occurrenceDate,
     startTime: input.startTime?.trim() || null,
     endTime: null,
     status: "planning",
-    recurrenceType,
-    recurrenceWeekday: recurrenceType === "none" ? null : input.recurrenceWeekday,
-    recurrenceOrdinal: recurrenceType === "monthly" ? input.recurrenceOrdinal : null,
-  })
+    recurrenceType: index === 0 ? recurrenceType : "none",
+    recurrenceWeekday: index === 0 && recurrenceType !== "none" ? input.recurrenceWeekday : null,
+    recurrenceOrdinal: index === 0 && recurrenceType === "monthly" ? input.recurrenceOrdinal : null,
+  })))
 
   try {
     await notifyEventCreated({
