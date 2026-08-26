@@ -11,6 +11,7 @@ export type EventSummary = {
   eventUrl: string | null
   travelDetails: string | null
   location: string | null
+  nextOccurrenceLocation: string | null
   startDate: string
   endDate: string | null
   startTime: string | null
@@ -55,10 +56,10 @@ export function EventCard({ event }: { event: EventSummary }) {
               <Repeat2 className="size-4 shrink-0" aria-label="Recurring event" />
             ) : null}
           </div>
-          {event.location ? (
+          {(event.nextOccurrenceLocation ?? event.location) ? (
             <div className="flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />
-              <span className="truncate">{event.location}</span>
+              <span className="truncate">{event.nextOccurrenceLocation ?? event.location}</span>
             </div>
           ) : null}
           <div className="flex items-center gap-2">
