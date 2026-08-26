@@ -45,6 +45,7 @@ export default async function EventPage({
     : dateRange(event.startDate, event.endDate ?? event.startDate)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
+  const displayDate = recurringDates[0] ?? event.startDate
 
   // Distinct respondents across the whole event
   const respondentIds = new Set([
@@ -144,7 +145,7 @@ export default async function EventPage({
           <div className="flex min-w-0 flex-col items-start gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1 sm:text-sm">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" />
-              {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
+              {formatDateRange(displayDate, displayDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
               {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
                 <Repeat2 className="ml-1 inline-block size-4 align-text-bottom" aria-label="Recurring event" />
@@ -153,8 +154,11 @@ export default async function EventPage({
             {event.location ? (
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-4" />
-                {event.location}
+                {event.nextOccurrenceLocation ?? event.location}
               </span>
+            ) : null}
+            {event.nextOccurrenceLocation ? (
+              <p className="basis-full text-sm font-medium text-destructive">Attention: This week&apos;s {event.title} will be hosted at a different location this week.</p>
             ) : null}
             <span className="flex items-center gap-1.5">
               <Users className="size-4" />

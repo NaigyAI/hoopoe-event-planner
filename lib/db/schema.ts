@@ -82,6 +82,7 @@ export const event = pgTable("event", {
   format: text("format").notNull().default("standard"),
   description: text("description"),
   location: text("location").notNull(),
+  nextOccurrenceLocation: text("nextOccurrenceLocation"),
   createdBy: text("createdBy").notNull(),
   createdByName: text("createdByName").notNull(),
   shareToken: text("shareToken").notNull(),

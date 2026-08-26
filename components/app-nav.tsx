@@ -120,10 +120,16 @@ export function AppNav({ user }: { user: NavUser }) {
               </>
             )}
             {(user.role === "admin" || user.role === "superuser") && (
-              <DropdownMenuItem render={<Link href="/members" />}>
-                <Users className="size-4" />
-                Members
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem render={<Link href="/calendars" />}>
+                  <CalendarCheck className="size-4" />
+                  Member calendars
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<Link href="/members" />}>
+                  <Users className="size-4" />
+                  Members
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} variant="destructive">

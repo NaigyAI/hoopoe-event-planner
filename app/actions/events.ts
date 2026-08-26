@@ -80,6 +80,10 @@ export async function listEvents() {
       responders: sql<number>`count(distinct ${availability.userId})`,
     })
     .from(availability)
+    .innerJoin(event, eq(event.id, availability.eventId))
+    .where(
+      sql`${availability.date} between ${event.startDate} and coalesce(${event.endDate}, ${event.startDate})`,
+    )
     .groupBy(availability.eventId)
 
   const goingCounts = await db
@@ -88,6 +92,7 @@ export async function listEvents() {
       going: sql<number>`count(*) filter (where ${rsvp.status} = 'going')`,
     })
     .from(rsvp)
+    .innerJoin(event, eq(event.id, rsvp.eventId))
     .groupBy(rsvp.eventId)
 
   const countMap = new Map(counts.map((c) => [c.eventId, Number(c.responders)]))
@@ -107,6 +112,7 @@ export async function createEvent(input: {
   eventTypeDetail?: string
   description?: string
   location: string
+  nextOccurrenceLocation?: string
   eventUrl?: string
   travelDetails?: string
   startDate: string
@@ -213,6 +219,7 @@ export async function updateEvent(eventId: string, input: {
   eventTypeDetail?: string
   description?: string
   location: string
+  nextOccurrenceLocation?: string
   eventUrl?: string
   travelDetails?: string
   startDate: string
@@ -249,6 +256,7 @@ export async function updateEvent(eventId: string, input: {
   await db.update(event).set({
     title, format: formats.join("/"), eventType: normalizedEventType,
     description: input.description?.trim() || null, location,
+    nextOccurrenceLocation: recurrenceType === "none" ? null : input.nextOccurrenceLocation?.trim() || null,
     eventUrl: input.eventUrl?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
     startDate: input.startDate, endDate, startTime: input.startTime?.trim() || null,
     endTime: null,
