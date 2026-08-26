@@ -39,6 +39,7 @@ export default async function DashboardPage() {
     eventUrl: e.eventUrl,
     travelDetails: e.travelDetails,
     location: e.location,
+    nextOccurrenceLocation: e.nextOccurrenceLocation,
     startDate: e.startDate,
     endDate: e.endDate,
     startTime: e.startTime,
