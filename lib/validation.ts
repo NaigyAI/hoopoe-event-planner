@@ -24,6 +24,7 @@ export const eventInputSchema = z.object({
   eventTypeDetail: z.string().trim().max(80).optional(),
   description: z.string().trim().max(2000).optional(),
   location: trimmedText(160),
+  nextOccurrenceLocation: z.string().trim().max(160).optional(),
   eventUrl: optionalUrlSchema,
   travelDetails: z.string().trim().max(2000).optional(),
   startDate: dateSchema,

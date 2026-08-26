@@ -107,6 +107,7 @@ export async function createEvent(input: {
   eventTypeDetail?: string
   description?: string
   location: string
+  nextOccurrenceLocation?: string
   eventUrl?: string
   travelDetails?: string
   startDate: string
@@ -213,6 +214,7 @@ export async function updateEvent(eventId: string, input: {
   eventTypeDetail?: string
   description?: string
   location: string
+  nextOccurrenceLocation?: string
   eventUrl?: string
   travelDetails?: string
   startDate: string
@@ -249,6 +251,7 @@ export async function updateEvent(eventId: string, input: {
   await db.update(event).set({
     title, format: formats.join("/"), eventType: normalizedEventType,
     description: input.description?.trim() || null, location,
+    nextOccurrenceLocation: recurrenceType === "none" ? null : input.nextOccurrenceLocation?.trim() || null,
     eventUrl: input.eventUrl?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
     startDate: input.startDate, endDate, startTime: input.startTime?.trim() || null,
     endTime: null,

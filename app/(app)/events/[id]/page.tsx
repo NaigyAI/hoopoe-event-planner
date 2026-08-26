@@ -153,8 +153,11 @@ export default async function EventPage({
             {event.location ? (
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-4" />
-                {event.location}
+                {event.nextOccurrenceLocation ?? event.location}
               </span>
+            ) : null}
+            {event.nextOccurrenceLocation ? (
+              <p className="basis-full text-sm font-medium text-destructive">Attention: This week&apos;s {event.title} will be hosted at a different location this week.</p>
             ) : null}
             <span className="flex items-center gap-1.5">
               <Users className="size-4" />
