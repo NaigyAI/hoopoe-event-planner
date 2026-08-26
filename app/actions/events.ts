@@ -80,6 +80,10 @@ export async function listEvents() {
       responders: sql<number>`count(distinct ${availability.userId})`,
     })
     .from(availability)
+    .innerJoin(event, eq(event.id, availability.eventId))
+    .where(
+      sql`${availability.date} between ${event.startDate} and coalesce(${event.endDate}, ${event.startDate})`,
+    )
     .groupBy(availability.eventId)
 
   const goingCounts = await db
@@ -88,6 +92,7 @@ export async function listEvents() {
       going: sql<number>`count(*) filter (where ${rsvp.status} = 'going')`,
     })
     .from(rsvp)
+    .innerJoin(event, eq(event.id, rsvp.eventId))
     .groupBy(rsvp.eventId)
 
   const countMap = new Map(counts.map((c) => [c.eventId, Number(c.responders)]))
