@@ -45,6 +45,8 @@ export default async function EventPage({
     : dateRange(event.startDate, event.endDate ?? event.startDate)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
+  const displayStartDate = recurringDates[0] ?? event.startDate
+  const displayEndDate = recurringDates.at(-1) ?? event.endDate ?? event.startDate
 
   // Distinct respondents across the whole event
   const respondentIds = new Set([
@@ -144,7 +146,7 @@ export default async function EventPage({
           <div className="flex min-w-0 flex-col items-start gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1 sm:text-sm">
             <span className="flex items-center gap-1.5">
               <CalendarDays className="size-4" />
-              {formatDateRange(event.startDate, event.endDate ?? event.startDate)}
+              {formatDateRange(displayStartDate, displayEndDate)}
               {event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
               {formatRecurrence(event.recurrenceType, event.recurrenceWeekday, event.recurrenceOrdinal) ? (
                 <Repeat2 className="ml-1 inline-block size-4 align-text-bottom" aria-label="Recurring event" />
