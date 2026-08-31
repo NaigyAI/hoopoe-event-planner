@@ -309,17 +309,24 @@ export async function getEventAvailability(eventId: string) {
     .select({ userId: personalAvailability.userId, userName: user.name, date: personalAvailability.date, status: personalAvailability.status })
     .from(personalAvailability)
     .innerJoin(user, eq(user.id, personalAvailability.userId))
-    .where(and(gte(personalAvailability.date, eventRow.startDate), lte(personalAvailability.date, eventRow.endDate ?? eventRow.startDate)))
+    .where(
+      and(
+        gte(personalAvailability.date, eventRow.startDate),
+        lte(personalAvailability.date, eventRow.endDate ?? eventRow.startDate),
+      ),
+    )
 
-  const personalByUserDate = new Map(personalRows.map((row) => [`${row.userId}:${row.date}`, row]))
-  const merged = votes.map((vote) => {
+  const normalizedVotes = votes.map((vote) => ({ ...vote, date: String(vote.date).slice(0, 10) }))
+  const normalizedPersonalRows = personalRows.map((row) => ({ ...row, date: String(row.date).slice(0, 10) }))
+  const personalByUserDate = new Map(normalizedPersonalRows.map((row) => [`${row.userId}:${row.date}`, row]))
+  const merged = normalizedVotes.map((vote) => {
     const personalStatus = personalByUserDate.get(`${vote.userId}:${vote.date}`)
     return personalStatus ? { ...vote, status: personalStatus.status, userName: personalStatus.userName } : vote
   })
-  const existingKeys = new Set(votes.map((vote) => `${vote.userId}:${vote.date}`))
+  const existingKeys = new Set(normalizedVotes.map((vote) => `${vote.userId}:${vote.date}`))
   return [
     ...merged,
-    ...personalRows
+    ...normalizedPersonalRows
       .filter((row) => !existingKeys.has(`${row.userId}:${row.date}`))
       .map((row) => ({ id: randomUUID(), eventId, userId: row.userId, userName: row.userName, date: row.date, status: row.status, createdAt: new Date(), updatedAt: new Date() })),
   ]
