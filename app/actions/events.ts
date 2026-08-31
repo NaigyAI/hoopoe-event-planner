@@ -441,6 +441,16 @@ export async function setRsvp(input: {
   if (ev.status !== "locked")
     throw new Error("A date must be locked before you can register attendance")
 
+  const lockedAvailability = ev.lockedDate
+    ? await db
+        .select({ status: availability.status })
+        .from(availability)
+        .where(and(eq(availability.eventId, input.eventId), eq(availability.userId, current.id), eq(availability.date, ev.lockedDate)))
+        .limit(1)
+    : []
+  if (lockedAvailability[0]?.status === "unavailable")
+    throw new Error("You cannot mark yourself as attending while unavailable for the locked date")
+
   const existing = await db
     .select({ id: rsvp.id })
     .from(rsvp)
@@ -518,6 +528,10 @@ export async function setAvailability(input: {
   if (competing.length > 0) {
     await db.delete(availability).where(inArray(availability.id, competing.map((row) => row.id)))
     for (const row of competing) revalidatePath(`/events/${row.eventId}`)
+  }
+
+  if (input.status === "unavailable") {
+    await db.delete(rsvp).where(and(eq(rsvp.eventId, input.eventId), eq(rsvp.userId, current.id)))
   }
 
   const existing = await db
