@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { event, availability, personalAvailability, rsvp, user } from "@/lib/db/schema"
-import { and, desc, eq, gte, inArray, lte, ne, sql } from "drizzle-orm"
+import { and, desc, eq, gte, inArray, lte, ne, or, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
@@ -296,9 +296,12 @@ export async function getEvent(eventId: string) {
 export async function getEventOccurrences(eventId: string) {
   await requireApprovedUser()
   const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
-  if (!current?.seriesId) return []
+  const seriesId = current?.seriesId ?? eventId
+  if (!current) return []
   return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken })
-    .from(event).where(eq(event.seriesId, current.seriesId)).orderBy(event.startDate)
+    .from(event)
+    .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+    .orderBy(event.startDate)
 }
 
 /** All availability votes for an event. */
