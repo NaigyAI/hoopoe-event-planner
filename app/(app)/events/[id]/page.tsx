@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
-import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
+import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates, todayISO } from "@/lib/dates"
 import { type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAvailabilityAttendance } from "@/components/event-availability-attendance"
@@ -42,14 +42,16 @@ export default async function EventPage({
     event.recurrenceWeekday,
     event.recurrenceOrdinal,
   )
-  const occurrenceDates = occurrences.length > 0 ? occurrences.map((occurrence) => occurrence.startDate) : []
+  const today = todayISO()
+  const occurrenceDates = occurrences.map((occurrence) => occurrence.startDate.slice(0, 10)).filter((date) => date >= today)
   const availabilityDates = occurrenceDates.length > 0
     ? occurrenceDates
-    : recurringDates.length > 0
-      ? recurringDates
-      : dateRange(event.startDate, event.endDate ?? event.startDate)
+    : recurringDates.filter((date) => date >= today)
+  const fallbackDates = availabilityDates.length > 0
+    ? availabilityDates
+    : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
-  const days = isMultiDay ? [event.startDate] : availabilityDates
+  const days = isMultiDay ? [event.startDate] : fallbackDates
   const displayDate = event.startDate
 
   // Count distinct availability responses for the date currently displayed.
