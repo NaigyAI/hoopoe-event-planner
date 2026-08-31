@@ -42,12 +42,15 @@ export default async function EventPage({
     event.recurrenceWeekday,
     event.recurrenceOrdinal,
   )
-  const availabilityDates = recurringDates.length > 0
-    ? recurringDates
-    : dateRange(event.startDate, event.endDate ?? event.startDate)
+  const occurrenceDates = occurrences.length > 0 ? occurrences.map((occurrence) => occurrence.startDate) : []
+  const availabilityDates = occurrenceDates.length > 0
+    ? occurrenceDates
+    : recurringDates.length > 0
+      ? recurringDates
+      : dateRange(event.startDate, event.endDate ?? event.startDate)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
-  const displayDate = recurringDates[0] ?? event.startDate
+  const displayDate = event.startDate
 
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
