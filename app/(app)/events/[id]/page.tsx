@@ -47,11 +47,11 @@ export default async function EventPage({
   const days = isMultiDay ? [event.startDate] : availabilityDates
   const displayDate = recurringDates[0] ?? event.startDate
 
-  // Distinct respondents across the whole event
-  const respondentIds = new Set([
-    ...votes.map((v) => v.userId),
-    ...rsvps.map((rsvp) => rsvp.userId),
-  ])
+  // Count distinct availability responses for the date currently displayed.
+  // RSVP records are separate from availability votes and must not inflate this count.
+  const respondentIds = new Set(
+    votes.filter((vote) => vote.date === displayDate).map((vote) => vote.userId),
+  )
   const totalRespondents = respondentIds.size
   const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
     const vote = votes.find((item) => item.userId === guestId)
