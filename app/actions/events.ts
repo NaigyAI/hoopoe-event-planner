@@ -298,7 +298,7 @@ export async function getEventOccurrences(eventId: string) {
   const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
   const seriesId = current?.seriesId ?? eventId
   if (!current) return []
-  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken })
+  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken, recurrenceType: event.recurrenceType, recurrenceWeekday: event.recurrenceWeekday, recurrenceOrdinal: event.recurrenceOrdinal })
     .from(event)
     .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
     .orderBy(event.startDate)

@@ -33,14 +33,15 @@ export default async function EventPage({
 
   if (!event) notFound()
 
-  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate, `/events/${occurrence.id}`]))
+  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate.slice(0, 10), `/events/${occurrence.id}`]))
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
+  const seriesEvent = occurrences.find((occurrence) => occurrence.id === event.seriesId) ?? event
   const recurringDates = getRecurringDates(
-    event.recurrenceType,
-    event.startDate,
-    event.recurrenceWeekday,
-    event.recurrenceOrdinal,
+    seriesEvent.recurrenceType,
+    seriesEvent.startDate,
+    seriesEvent.recurrenceWeekday,
+    seriesEvent.recurrenceOrdinal,
     3,
   )
   const today = todayISO()
