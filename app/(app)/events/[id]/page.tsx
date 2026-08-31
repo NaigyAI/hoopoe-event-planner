@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, ClipboardCheck, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
+import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
@@ -22,16 +22,18 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, rsvps, user, members] = await Promise.all([
+  const [event, votes, rsvps, user, members, occurrences] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
     getEventRsvps(id),
     getSessionUser(),
     listAttendanceMembers(),
+    getEventOccurrences(id),
   ])
 
   if (!event) notFound()
 
+  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate, `/events/${occurrence.id}`]))
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
   const recurringDates = getRecurringDates(
@@ -232,7 +234,8 @@ export default async function EventPage({
 bestDate={bestDate}
   dates={dateAttendance}
   isAdmin={isAdmin}
-      />
+  occurrenceLinks={occurrenceLinks}
+  />
 
       <EventGuestsSection eventId={event.id} guests={guests} isAdmin={isAdmin} />
     </div>

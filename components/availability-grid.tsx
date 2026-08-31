@@ -54,6 +54,7 @@ export function AvailabilityGrid({
   token,
   selectedDate,
   onDateSelect,
+  occurrenceLinks,
 }: {
   eventId: string
   eventEndDate: string | null | undefined
@@ -64,6 +65,7 @@ export function AvailabilityGrid({
   token?: string
   selectedDate?: string
   onDateSelect?: (date: string) => void
+  occurrenceLinks?: Record<string, string>
 }) {
   const router = useRouter()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
@@ -105,7 +107,14 @@ export function AvailabilityGrid({
               variant !== "guest" && "sm:flex-row",
               t.date === selectedDate ? "bg-available/15 ring-1 ring-inset ring-available/50" : "hover:bg-muted/40",
             )}
-          onClick={() => onDateSelect?.(t.date)}
+          onClick={() => {
+            const occurrencePath = occurrenceLinks?.[t.date]
+            if (occurrencePath) {
+              window.location.href = occurrencePath
+              return
+            }
+            onDateSelect?.(t.date)
+          }}
           >
             {/* Date */}
             <div className="flex min-w-0 items-center gap-2 sm:w-28 sm:shrink-0">

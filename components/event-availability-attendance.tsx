@@ -7,7 +7,7 @@ import { EventAttendancePanel } from "@/components/event-attendance-panel"
 
 type DateAttendance = { date: string; attending: { id: string; name: string }[]; maybe: { id: string; name: string }[]; unavailable: { id: string; name: string }[]; awaiting: { id: string; name: string }[] }
 
-export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates, isAdmin = false }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[]; isAdmin?: boolean }) {
+export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates, isAdmin = false, occurrenceLinks }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[]; isAdmin?: boolean; occurrenceLinks?: Record<string, string> }) {
   const [selectedDate, setSelectedDate] = useState(dates[0]?.date ?? "")
   const router = useRouter()
   return (
@@ -22,7 +22,7 @@ export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, to
             <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-muted-foreground/30" /> Guest</span>
           </div>
         </div>
-        <AvailabilityGrid eventId={eventId} eventEndDate={eventEndDate} tallies={tallies} totalRespondents={totalRespondents} bestDate={bestDate} selectedDate={selectedDate} onDateSelect={setSelectedDate} />
+        <AvailabilityGrid eventId={eventId} eventEndDate={eventEndDate} tallies={tallies} totalRespondents={totalRespondents} bestDate={bestDate} selectedDate={selectedDate} onDateSelect={setSelectedDate} occurrenceLinks={occurrenceLinks} />
       </section>
       <section>
         <EventAttendancePanel eventId={eventId} dates={dates} selectedDate={selectedDate} isAdmin={isAdmin} />
