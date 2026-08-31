@@ -52,7 +52,11 @@ export default async function EventPage({
     : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : fallbackDates
-  const displayDate = event.startDate
+  const normalizedStart = event.startDate.slice(0, 10)
+  // If this event's own date is in the visible list use it, otherwise fall back to the
+  // earliest upcoming date so a past parent record still highlights a valid green date.
+  const selectedEventDate = days.includes(normalizedStart) ? normalizedStart : days[0] ?? normalizedStart
+  const displayDate = selectedEventDate
 
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
@@ -234,7 +238,7 @@ export default async function EventPage({
       <EventAvailabilityAttendance
         eventId={event.id}
   eventEndDate={isMultiDay ? event.endDate : null}
-  selectedEventDate={event.startDate.slice(0, 10)}
+  selectedEventDate={selectedEventDate}
   tallies={tallies}
         totalRespondents={totalRespondents}
 bestDate={bestDate}
