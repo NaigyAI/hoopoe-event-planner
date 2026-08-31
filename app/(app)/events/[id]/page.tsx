@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, ClipboardCheck, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
+import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
@@ -22,16 +22,18 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, rsvps, user, members] = await Promise.all([
+  const [event, votes, rsvps, user, members, occurrences] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
     getEventRsvps(id),
     getSessionUser(),
     listAttendanceMembers(),
+    getEventOccurrences(id),
   ])
 
   if (!event) notFound()
 
+  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate, `/events/${occurrence.id}`]))
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
   const recurringDates = getRecurringDates(
@@ -40,12 +42,15 @@ export default async function EventPage({
     event.recurrenceWeekday,
     event.recurrenceOrdinal,
   )
-  const availabilityDates = recurringDates.length > 0
-    ? recurringDates
-    : dateRange(event.startDate, event.endDate ?? event.startDate)
+  const occurrenceDates = occurrences.length > 0 ? occurrences.map((occurrence) => occurrence.startDate) : []
+  const availabilityDates = occurrenceDates.length > 0
+    ? occurrenceDates
+    : recurringDates.length > 0
+      ? recurringDates
+      : dateRange(event.startDate, event.endDate ?? event.startDate)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
   const days = isMultiDay ? [event.startDate] : availabilityDates
-  const displayDate = recurringDates[0] ?? event.startDate
+  const displayDate = event.startDate
 
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
@@ -115,9 +120,9 @@ export default async function EventPage({
       <div className="flex min-w-0 flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-medium tracking-normal text-balance">
-              {event.title}
-            </h1>
+  <h1 className="text-2xl font-medium tracking-normal text-balance">
+  {event.title}
+  </h1>
             {isLocked ? (
               <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
                 <Lock className="size-3" />
@@ -232,7 +237,8 @@ export default async function EventPage({
 bestDate={bestDate}
   dates={dateAttendance}
   isAdmin={isAdmin}
-      />
+  occurrenceLinks={occurrenceLinks}
+  />
 
       <EventGuestsSection eventId={event.id} guests={guests} isAdmin={isAdmin} />
     </div>

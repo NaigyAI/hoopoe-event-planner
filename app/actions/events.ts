@@ -1,8 +1,8 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { event, availability, rsvp, user } from "@/lib/db/schema"
-import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
+import { event, availability, personalAvailability, rsvp, user } from "@/lib/db/schema"
+import { and, desc, eq, gte, inArray, lte, ne, or, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
@@ -76,13 +76,17 @@ export async function remindAwaitingMembers(eventId: string) {
 /** Dashboard: every event with a small summary. */
 export async function listEvents() {
   await requireUser()
-  const events = await db.select().from(event).orderBy(desc(event.createdAt))
+  const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
+
+  const dashboardEvents = events.filter(
+    (candidate) => !candidate.seriesId || candidate.seriesId === candidate.id,
+  )
 
   const availabilityRows = await db
     .select({ eventId: availability.eventId, userId: availability.userId, date: availability.date })
     .from(availability)
   const countMap = new Map<string, number>()
-  for (const currentEvent of events) {
+  for (const currentEvent of dashboardEvents) {
     const displayedDate = currentEvent.recurrenceType !== "none"
       ? getRecurringDates(currentEvent.recurrenceType, currentEvent.startDate, currentEvent.recurrenceWeekday, currentEvent.recurrenceOrdinal, 1)[0] ?? currentEvent.startDate
       : currentEvent.startDate
@@ -106,7 +110,7 @@ export async function listEvents() {
   const goingMap = new Map(
     goingCounts.map((c) => [c.eventId, Number(c.going)]),
   )
-  return events.map((e) => ({
+  return dashboardEvents.map((e) => ({
     ...e,
     responderCount: countMap.get(e.id) ?? 0,
     goingCount: goingMap.get(e.id) ?? 0,
@@ -289,6 +293,17 @@ export async function getEvent(eventId: string) {
   return rows[0] ?? null
 }
 
+export async function getEventOccurrences(eventId: string) {
+  await requireApprovedUser()
+  const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  const seriesId = current?.seriesId ?? eventId
+  if (!current) return []
+  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken })
+    .from(event)
+    .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+    .orderBy(event.startDate)
+}
+
 /** All availability votes for an event. */
 export async function getMyEventAvailability(eventIds: string[]) {
   const current = await requireUser()
@@ -301,10 +316,35 @@ export async function getMyEventAvailability(eventIds: string[]) {
 
 export async function getEventAvailability(eventId: string) {
   await requireUser()
-  return db
-    .select()
-    .from(availability)
-    .where(eq(availability.eventId, eventId))
+  const [eventRow] = await db.select({ startDate: event.startDate, endDate: event.endDate }).from(event).where(eq(event.id, eventId)).limit(1)
+  const votes = await db.select().from(availability).where(eq(availability.eventId, eventId))
+  if (!eventRow) return votes
+
+  const personalRows = await db
+    .select({ userId: personalAvailability.userId, userName: user.name, date: personalAvailability.date, status: personalAvailability.status })
+    .from(personalAvailability)
+    .innerJoin(user, eq(user.id, personalAvailability.userId))
+    .where(
+      and(
+        gte(personalAvailability.date, eventRow.startDate),
+        lte(personalAvailability.date, eventRow.endDate ?? eventRow.startDate),
+      ),
+    )
+
+  const normalizedVotes = votes.map((vote) => ({ ...vote, date: String(vote.date).slice(0, 10) }))
+  const normalizedPersonalRows = personalRows.map((row) => ({ ...row, date: String(row.date).slice(0, 10) }))
+  const personalByUserDate = new Map(normalizedPersonalRows.map((row) => [`${row.userId}:${row.date}`, row]))
+  const merged = normalizedVotes.map((vote) => {
+    const personalStatus = personalByUserDate.get(`${vote.userId}:${vote.date}`)
+    return personalStatus ? { ...vote, status: personalStatus.status, userName: personalStatus.userName } : vote
+  })
+  const existingKeys = new Set(normalizedVotes.map((vote) => `${vote.userId}:${vote.date}`))
+  return [
+    ...merged,
+    ...normalizedPersonalRows
+      .filter((row) => !existingKeys.has(`${row.userId}:${row.date}`))
+      .map((row) => ({ id: randomUUID(), eventId, userId: row.userId, userName: row.userName, date: row.date, status: row.status, createdAt: new Date(), updatedAt: new Date() })),
+  ]
 }
 
 /** All attendance RSVPs for an event (used once a date is locked). */
