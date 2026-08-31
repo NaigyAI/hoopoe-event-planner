@@ -1,8 +1,8 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { event, availability, rsvp, user } from "@/lib/db/schema"
-import { and, desc, eq, inArray, ne, sql } from "drizzle-orm"
+import { event, availability, personalAvailability, rsvp, user } from "@/lib/db/schema"
+import { and, desc, eq, gte, inArray, lte, ne, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
@@ -301,10 +301,20 @@ export async function getMyEventAvailability(eventIds: string[]) {
 
 export async function getEventAvailability(eventId: string) {
   await requireUser()
-  return db
-    .select()
-    .from(availability)
-    .where(eq(availability.eventId, eventId))
+  const [eventRow] = await db.select({ startDate: event.startDate, endDate: event.endDate }).from(event).where(eq(event.id, eventId)).limit(1)
+  const votes = await db.select().from(availability).where(eq(availability.eventId, eventId))
+  if (!eventRow) return votes
+
+  const personalRows = await db
+    .select({ userId: personalAvailability.userId, date: personalAvailability.date, status: personalAvailability.status })
+    .from(personalAvailability)
+    .where(and(gte(personalAvailability.date, eventRow.startDate), lte(personalAvailability.date, eventRow.endDate ?? eventRow.startDate)))
+
+  const personalByUserDate = new Map(personalRows.map((row) => [`${row.userId}:${row.date}`, row.status]))
+  return votes.map((vote) => {
+    const personalStatus = personalByUserDate.get(`${vote.userId}:${vote.date}`)
+    return personalStatus ? { ...vote, status: personalStatus } : vote
+  })
 }
 
 /** All attendance RSVPs for an event (used once a date is locked). */
