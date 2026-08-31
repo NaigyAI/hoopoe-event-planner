@@ -76,7 +76,7 @@ export async function remindAwaitingMembers(eventId: string) {
 /** Dashboard: every event with a small summary. */
 export async function listEvents() {
   await requireUser()
-  const events = await db.select().from(event).orderBy(desc(event.createdAt))
+  const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
   const availabilityRows = await db
     .select({ eventId: availability.eventId, userId: availability.userId, date: availability.date })
@@ -287,6 +287,14 @@ export async function getEvent(eventId: string) {
   await requireApprovedUser()
   const rows = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
   return rows[0] ?? null
+}
+
+export async function getEventOccurrences(eventId: string) {
+  await requireApprovedUser()
+  const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  if (!current?.seriesId) return []
+  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken })
+    .from(event).where(eq(event.seriesId, current.seriesId)).orderBy(event.startDate)
 }
 
 /** All availability votes for an event. */

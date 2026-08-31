@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, CalendarDays, ClipboardCheck, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { getEvent, getEventAvailability, getEventRsvps } from "@/app/actions/events"
+import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
 import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
@@ -22,24 +22,22 @@ export default async function EventPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [event, votes, rsvps, user, members] = await Promise.all([
+  const [event, votes, rsvps, user, members, occurrences] = await Promise.all([
     getEvent(id),
     getEventAvailability(id),
     getEventRsvps(id),
     getSessionUser(),
     listAttendanceMembers(),
+    getEventOccurrences(id),
   ])
 
   if (!event) notFound()
 
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
-  const recurringDates = getRecurringDates(
-    event.recurrenceType,
-    event.startDate,
-    event.recurrenceWeekday,
-    event.recurrenceOrdinal,
-  )
+  const recurringDates = occurrences.length > 1
+    ? [event.startDate]
+    : getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal)
   const availabilityDates = recurringDates.length > 0
     ? recurringDates
     : dateRange(event.startDate, event.endDate ?? event.startDate)
@@ -115,9 +113,12 @@ export default async function EventPage({
       <div className="flex min-w-0 flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-medium tracking-normal text-balance">
-              {event.title}
-            </h1>
+  <h1 className="text-2xl font-medium tracking-normal text-balance">
+  {event.title}
+  </h1>
+  {occurrences.length > 1 ? <nav aria-label="Event occurrences" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+    {occurrences.map((occurrence, index) => <Link key={occurrence.id} href={`/events/${occurrence.id}`} className={occurrence.id === event.id ? "rounded-md bg-primary/15 px-2 py-1 font-medium text-primary" : "rounded-md px-2 py-1 hover:bg-muted hover:text-foreground"}>{formatDateRange(occurrence.startDate, occurrence.startDate)}{index < occurrences.length - 1 ? "" : ""}</Link>)}
+  </nav> : null}
             {isLocked ? (
               <Badge className="gap-1 bg-accent text-accent-foreground hover:bg-accent">
                 <Lock className="size-3" />
