@@ -27,7 +27,7 @@ async function allRecipients() {
     .from(user)
 }
 
-export async function setAdminAttendance(eventId: string, userId: string, dateValue: string, status: "available" | "unavailable") {
+export async function setAdminAttendance(eventId: string, userId: string, dateValue: string, status: "available" | "maybe" | "unavailable") {
   const actor = await requireAdmin()
   const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
   if (!selected[0]) throw new Error("Event not found")
