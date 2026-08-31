@@ -441,11 +441,16 @@ export async function setRsvp(input: {
   if (ev.status !== "locked")
     throw new Error("A date must be locked before you can register attendance")
 
+  const seriesId = ev.seriesId ?? ev.id
+  const seriesEventRows = await db
+    .select({ id: event.id })
+    .from(event)
+    .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
   const lockedAvailability = ev.lockedDate
     ? await db
         .select({ status: availability.status })
         .from(availability)
-        .where(and(eq(availability.eventId, input.eventId), eq(availability.userId, current.id), eq(availability.date, ev.lockedDate)))
+        .where(and(inArray(availability.eventId, seriesEventRows.map((row) => row.id)), eq(availability.userId, current.id), eq(availability.date, ev.lockedDate)))
         .limit(1)
     : []
   if (lockedAvailability[0]?.status === "unavailable")
@@ -531,7 +536,12 @@ export async function setAvailability(input: {
   }
 
   if (input.status === "unavailable") {
-    await db.delete(rsvp).where(and(eq(rsvp.eventId, input.eventId), eq(rsvp.userId, current.id)))
+    const seriesId = ev.seriesId ?? ev.id
+    const seriesEventRows = await db
+      .select({ id: event.id })
+      .from(event)
+      .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+    await db.delete(rsvp).where(and(inArray(rsvp.eventId, seriesEventRows.map((row) => row.id)), eq(rsvp.userId, current.id)))
   }
 
   const existing = await db

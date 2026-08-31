@@ -56,18 +56,27 @@ export default async function EventPage({
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
   const normalizedVoteDate = (date: string | Date) => String(date).slice(0, 10)
+  // A migration can leave one user/date in more than one occurrence row. Keep
+  // one effective status per user/date, preferring this event's explicit vote.
+  const effectiveVotes = Array.from(
+    votes.reduce((map, vote) => {
+      const key = `${vote.userId}:${normalizedVoteDate(vote.date)}`
+      if (!map.has(key) || vote.eventId === event.id) map.set(key, vote)
+      return map
+    }, new Map<string, (typeof votes)[number]>()).values(),
+  )
   const respondentIds = new Set(
-    votes.filter((vote) => normalizedVoteDate(vote.date) === displayDate).map((vote) => vote.userId),
+    effectiveVotes.filter((vote) => normalizedVoteDate(vote.date) === displayDate).map((vote) => vote.userId),
   )
   const totalRespondents = respondentIds.size
-  const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
-    const vote = votes.find((item) => item.userId === guestId)
+  const guests = Array.from(new Set([...effectiveVotes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
+    const vote = effectiveVotes.find((item) => item.userId === guestId)
     const guestRsvp = rsvps.find((item) => item.userId === guestId)
     return { id: guestId.slice("guest:".length), name: guestRsvp?.userName ?? vote?.userName ?? "Guest", availability: vote?.status ?? "none", rsvp: guestRsvp?.status ?? null }
   })
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = votes.filter((v) => normalizedVoteDate(v.date) === date)
+    const dayVotes = effectiveVotes.filter((v) => normalizedVoteDate(v.date) === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const guestAvailable = dayVotes.filter((v) => v.status === "available" && v.userId.startsWith("guest:")).length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
@@ -95,7 +104,7 @@ export default async function EventPage({
   }
 
   const dateAttendance = days.map((date) => {
-    const dayVotes = votes.filter((vote) => normalizedVoteDate(vote.date) === date)
+    const dayVotes = effectiveVotes.filter((vote) => normalizedVoteDate(vote.date) === date)
     const voted = new Set(dayVotes.map((vote) => vote.userId))
     return {
       date,
