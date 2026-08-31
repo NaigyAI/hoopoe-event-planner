@@ -55,8 +55,9 @@ export default async function EventPage({
 
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
+  const normalizedVoteDate = (date: string | Date) => String(date).slice(0, 10)
   const respondentIds = new Set(
-    votes.filter((vote) => vote.date === displayDate).map((vote) => vote.userId),
+    votes.filter((vote) => normalizedVoteDate(vote.date) === displayDate).map((vote) => vote.userId),
   )
   const totalRespondents = respondentIds.size
   const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
@@ -66,9 +67,7 @@ export default async function EventPage({
   })
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = isMultiDay
-      ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
-      : votes.filter((v) => v.date === date)
+    const dayVotes = votes.filter((v) => normalizedVoteDate(v.date) === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const guestAvailable = dayVotes.filter((v) => v.status === "available" && v.userId.startsWith("guest:")).length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
@@ -96,7 +95,7 @@ export default async function EventPage({
   }
 
   const dateAttendance = days.map((date) => {
-    const dayVotes = votes.filter((vote) => vote.date === date)
+    const dayVotes = votes.filter((vote) => normalizedVoteDate(vote.date) === date)
     const voted = new Set(dayVotes.map((vote) => vote.userId))
     return {
       date,
