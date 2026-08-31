@@ -78,11 +78,18 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
+  const occurrenceSeriesIds = new Set(
+    events.filter((candidate) => candidate.seriesId && candidate.seriesId !== candidate.id).map((candidate) => candidate.seriesId),
+  )
+  const dashboardEvents = events.filter(
+    (candidate) => !(candidate.recurrenceType !== "none" && occurrenceSeriesIds.has(candidate.id)),
+  )
+
   const availabilityRows = await db
     .select({ eventId: availability.eventId, userId: availability.userId, date: availability.date })
     .from(availability)
   const countMap = new Map<string, number>()
-  for (const currentEvent of events) {
+  for (const currentEvent of dashboardEvents) {
     const displayedDate = currentEvent.recurrenceType !== "none"
       ? getRecurringDates(currentEvent.recurrenceType, currentEvent.startDate, currentEvent.recurrenceWeekday, currentEvent.recurrenceOrdinal, 1)[0] ?? currentEvent.startDate
       : currentEvent.startDate
@@ -106,7 +113,7 @@ export async function listEvents() {
   const goingMap = new Map(
     goingCounts.map((c) => [c.eventId, Number(c.going)]),
   )
-  return events.map((e) => ({
+  return dashboardEvents.map((e) => ({
     ...e,
     responderCount: countMap.get(e.id) ?? 0,
     goingCount: goingMap.get(e.id) ?? 0,
