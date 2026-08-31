@@ -162,9 +162,11 @@ export function AvailabilityGrid({
                         key={opt.value}
                         type="button"
                         onClick={(event) => {
+                          event.preventDefault()
                           event.stopPropagation()
                           vote(t.date, opt.value)
                         }}
+                        onPointerDown={(event) => event.stopPropagation()}
                         disabled={loading}
                         aria-pressed={selected}
                         aria-label={`Mark ${formatDayMonth(t.date)} as ${opt.label}`}
