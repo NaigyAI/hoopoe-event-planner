@@ -194,7 +194,7 @@ export default async function EventPage({
             <ShareEventButton token={event.shareToken} />
             {isAdmin ? (
               <>
-                <RemindAttendeesButton eventId={event.id} />
+                <RemindAttendeesButton eventId={event.id} eventDate={event.startDate} />
                 <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
               </>
             ) : null}

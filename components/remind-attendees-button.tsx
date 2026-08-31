@@ -6,7 +6,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { remindAwaitingMembers } from "@/app/actions/events"
 
-export function RemindAttendeesButton({ eventId }: { eventId: string }) {
+export function RemindAttendeesButton({ eventId, eventDate }: { eventId: string; eventDate: string }) {
+  if (eventDate < new Date().toISOString().slice(0, 10)) return null
   const [pending, startTransition] = useTransition()
   function sendReminder() {
     startTransition(async () => {

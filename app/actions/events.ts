@@ -51,6 +51,10 @@ export async function remindAwaitingMembers(eventId: string) {
   await enforceRateLimit("reminder", `admin:${actor.id}:event:${eventId}`)
   const selected = await db.select().from(event).where(eq(event.id, eventId)).limit(1)
   if (!selected[0]) throw new Error("Event not found")
+  const today = new Date().toISOString().slice(0, 10)
+  if (selected[0].startDate < today) {
+    return { count: 0, failed: 0, error: "Reminders cannot be sent for events that have already passed." }
+  }
   const responders = await db.select({ userId: availability.userId }).from(availability).where(eq(availability.eventId, eventId))
   const responded = new Set(responders.map((row) => row.userId))
   const recipients = await db.select({ id: user.id, email: user.email, name: user.name, notifyEnabled: user.notifyEnabled, notifyNewEvent: user.notifyNewEvent, notifyEventReminder: user.notifyEventReminder }).from(user).where(and(eq(user.approved, true), ne(user.id, actor.id)))
