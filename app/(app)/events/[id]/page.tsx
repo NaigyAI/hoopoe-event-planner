@@ -41,12 +41,11 @@ export default async function EventPage({
     event.startDate,
     event.recurrenceWeekday,
     event.recurrenceOrdinal,
+    5,
   )
   const today = todayISO()
   const occurrenceDates = occurrences.map((occurrence) => occurrence.startDate.slice(0, 10)).filter((date) => date >= today)
-  const availabilityDates = occurrenceDates.length > 0
-    ? occurrenceDates
-    : recurringDates.filter((date) => date >= today)
+  const availabilityDates = Array.from(new Set([...occurrenceDates, ...recurringDates.filter((date) => date >= today)])).sort()
   const fallbackDates = availabilityDates.length > 0
     ? availabilityDates
     : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)
