@@ -405,11 +405,10 @@ export async function getEventAvailability(eventId: string) {
 
   const normalizedVotes = votes.map((vote) => ({ ...vote, date: String(vote.date).slice(0, 10) }))
   const normalizedPersonalRows = personalRows.map((row) => ({ ...row, date: String(row.date).slice(0, 10) }))
-  const personalByUserDate = new Map(normalizedPersonalRows.map((row) => [`${row.userId}:${row.date}`, row]))
-  const merged = normalizedVotes.map((vote) => {
-    const personalStatus = personalByUserDate.get(`${vote.userId}:${vote.date}`)
-    return personalStatus ? { ...vote, status: personalStatus.status, userName: personalStatus.userName } : vote
-  })
+  // An explicit event vote must take precedence over the member calendar default.
+  // Otherwise clicking No/Maybe/Yes appears to save briefly, then the personal
+  // calendar status overwrites it on refresh.
+  const merged = normalizedVotes.map((vote) => vote)
   const existingKeys = new Set(normalizedVotes.map((vote) => `${vote.userId}:${vote.date}`))
   return [
     ...merged,
