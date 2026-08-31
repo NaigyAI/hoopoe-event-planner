@@ -3,7 +3,7 @@
 import { and, eq, gte, lte } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
-import { availability, event, user } from "@/lib/db/schema"
+import { personalAvailability, event, user } from "@/lib/db/schema"
 import { requireAdmin } from "@/lib/session"
 import { notifyEventResponseReminder } from "@/lib/email"
 
@@ -15,7 +15,7 @@ export async function getAdminCalendars(start: string, end: string): Promise<Mem
   await requireAdmin()
   const days = datesBetween(start, end)
   const members = await db.select({ id: user.id, name: user.name, email: user.email }).from(user).where(eq(user.approved, true)).orderBy(user.name)
-  const rows = await db.select({ userId: availability.userId, date: availability.date, status: availability.status }).from(availability).where(and(gte(availability.date, start), lte(availability.date, end)))
+  const rows = await db.select({ userId: personalAvailability.userId, date: personalAvailability.date, status: personalAvailability.status }).from(personalAvailability).where(and(gte(personalAvailability.date, start), lte(personalAvailability.date, end)))
   return members.map((member) => { const own = rows.filter((row) => row.userId === member.id); const dates = own.map((row) => ({ date: String(row.date), status: row.status })); return { ...member, dates, missingDates: days.filter((day) => !own.some((row) => String(row.date) === day)) } })
 }
 
