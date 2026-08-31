@@ -31,7 +31,9 @@ export default async function DashboardPage() {
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isExternalMember = user?.role === "external-member"
 
-  const summaries: EventSummary[] = events.map((e) => ({
+  const occurrenceIds = new Set(events.filter((candidate) => candidate.seriesId && candidate.seriesId !== candidate.id).map((candidate) => candidate.seriesId))
+  const dashboardEvents = events.filter((candidate) => !(candidate.recurrenceType !== "none" && occurrenceIds.has(candidate.id)))
+  const summaries: EventSummary[] = dashboardEvents.map((e) => ({
     id: e.id,
     title: e.title,
     format: e.format,

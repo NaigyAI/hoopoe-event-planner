@@ -78,11 +78,8 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
-  const occurrenceSeriesIds = new Set(
-    events.filter((candidate) => candidate.seriesId && candidate.seriesId !== candidate.id).map((candidate) => candidate.seriesId),
-  )
   const dashboardEvents = events.filter(
-    (candidate) => !(candidate.recurrenceType !== "none" && occurrenceSeriesIds.has(candidate.id)),
+    (candidate) => !candidate.seriesId || candidate.seriesId === candidate.id,
   )
 
   const availabilityRows = await db
