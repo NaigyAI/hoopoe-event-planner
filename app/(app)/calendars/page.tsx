@@ -7,7 +7,7 @@ export default async function CalendarsPage() {
   const member = await getSessionUser()
   if (!member || !member.approved || !["admin", "superuser"].includes(member.role)) redirect("/dashboard")
   const start = new Date().toISOString().slice(0, 10)
-  const endDate = new Date(); endDate.setDate(endDate.getDate() + 14)
+  const endDate = new Date(); endDate.setDate(endDate.getDate() + 30)
   const calendars = await getAdminCalendars(start, endDate.toISOString().slice(0, 10))
   return <AdminCalendars initialCalendars={calendars} />
 }
