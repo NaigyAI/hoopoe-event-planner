@@ -231,8 +231,9 @@ export default async function EventPage({
 
       <EventAvailabilityAttendance
         eventId={event.id}
-        eventEndDate={isMultiDay ? event.endDate : null}
-        tallies={tallies}
+  eventEndDate={isMultiDay ? event.endDate : null}
+  selectedEventDate={event.startDate}
+  tallies={tallies}
         totalRespondents={totalRespondents}
 bestDate={bestDate}
   dates={dateAttendance}

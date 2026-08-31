@@ -7,8 +7,8 @@ import { EventAttendancePanel } from "@/components/event-attendance-panel"
 
 type DateAttendance = { date: string; attending: { id: string; name: string }[]; maybe: { id: string; name: string }[]; unavailable: { id: string; name: string }[]; awaiting: { id: string; name: string }[] }
 
-export function EventAvailabilityAttendance({ eventId, eventEndDate, tallies, totalRespondents, bestDate, dates, isAdmin = false, occurrenceLinks }: { eventId: string; eventEndDate: string | null | undefined; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[]; isAdmin?: boolean; occurrenceLinks?: Record<string, string> }) {
-  const [selectedDate, setSelectedDate] = useState(dates[0]?.date ?? "")
+export function EventAvailabilityAttendance({ eventId, eventEndDate, selectedEventDate, tallies, totalRespondents, bestDate, dates, isAdmin = false, occurrenceLinks }: { eventId: string; eventEndDate: string | null | undefined; selectedEventDate: string; tallies: DateTally[]; totalRespondents: number; bestDate: string | null; dates: DateAttendance[]; isAdmin?: boolean; occurrenceLinks?: Record<string, string> }) {
+  const [selectedDate, setSelectedDate] = useState(selectedEventDate)
   const router = useRouter()
   return (
     <div className="flex min-w-0 max-w-5xl flex-col gap-5 border-t border-border pt-4 sm:gap-8 sm:pt-6">
