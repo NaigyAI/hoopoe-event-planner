@@ -55,8 +55,8 @@ export default async function DashboardPage() {
     recurrenceWeekday: e.recurrenceWeekday,
     recurrenceOrdinal: e.recurrenceOrdinal,
     nextOccurrence: e.recurrenceType !== "none"
-      ? getRecurringDates(e.recurrenceType, e.startDate, e.recurrenceWeekday, e.recurrenceOrdinal, 1)[0] ?? e.startDate
-      : e.startDate,
+      ? getRecurringDates(e.recurrenceType, e.startDate, e.recurrenceWeekday, e.recurrenceOrdinal, 1)[0] ?? e.startDate.slice(0, 10)
+      : e.startDate.slice(0, 10),
   }))
 
   const active = summaries

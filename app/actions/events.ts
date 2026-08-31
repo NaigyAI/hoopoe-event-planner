@@ -293,12 +293,82 @@ export async function getEvent(eventId: string) {
   return rows[0] ?? null
 }
 
+/**
+ * Make sure a recurring series has a dedicated event record for each of its
+ * upcoming occurrence dates. Without this, some visible dates have their own
+ * page (so a click navigates) while others don't (so a click does nothing),
+ * which reads as a bug. Creating the missing records makes every date behave
+ * identically and carries over matching personal-calendar responses.
+ */
+async function ensureUpcomingOccurrences(seriesId: string) {
+  const [parent] = await db.select().from(event).where(eq(event.id, seriesId)).limit(1)
+  if (!parent || parent.recurrenceType === "none") return
+
+  const upcoming = getRecurringDates(
+    parent.recurrenceType,
+    parent.startDate.slice(0, 10),
+    parent.recurrenceWeekday,
+    parent.recurrenceOrdinal,
+    3,
+  )
+  if (upcoming.length === 0) return
+
+  const existing = await db.select({ startDate: event.startDate }).from(event).where(eq(event.seriesId, seriesId))
+  const existingDates = new Set([parent.startDate.slice(0, 10), ...existing.map((row) => row.startDate.slice(0, 10))])
+  const missing = upcoming.filter((date) => !existingDates.has(date))
+  if (missing.length === 0) return
+
+  const newRecords = missing.map((date) => ({
+    id: randomUUID(),
+    title: parent.title,
+    format: parent.format,
+    description: parent.description,
+    location: parent.location,
+    nextOccurrenceLocation: null,
+    seriesId,
+    eventType: parent.eventType,
+    eventUrl: parent.eventUrl,
+    travelDetails: parent.travelDetails,
+    createdBy: parent.createdBy,
+    createdByName: parent.createdByName,
+    shareToken: randomUUID().replace(/-/g, ""),
+    startDate: date,
+    endDate: date,
+    startTime: parent.startTime,
+    endTime: parent.endTime,
+    status: parent.status,
+    recurrenceType: "none" as const,
+    recurrenceWeekday: null,
+    recurrenceOrdinal: null,
+  }))
+  await db.insert(event).values(newRecords)
+
+  // Carry over any matching personal-calendar responses for the new dates.
+  for (const record of newRecords) {
+    const personalRows = await db
+      .select({ userId: personalAvailability.userId, userName: user.name, status: personalAvailability.status })
+      .from(personalAvailability)
+      .innerJoin(user, eq(user.id, personalAvailability.userId))
+      .where(eq(personalAvailability.date, record.startDate))
+    if (personalRows.length === 0) continue
+    await db.insert(availability).values(personalRows.map((row) => ({
+      id: randomUUID(),
+      eventId: record.id,
+      userId: row.userId,
+      userName: row.userName,
+      date: record.startDate,
+      status: row.status,
+    }))).onConflictDoNothing()
+  }
+}
+
 export async function getEventOccurrences(eventId: string) {
   await requireApprovedUser()
   const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
   const seriesId = current?.seriesId ?? eventId
   if (!current) return []
-  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken })
+  if (current.seriesId) await ensureUpcomingOccurrences(current.seriesId)
+  return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken, recurrenceType: event.recurrenceType, recurrenceWeekday: event.recurrenceWeekday, recurrenceOrdinal: event.recurrenceOrdinal })
     .from(event)
     .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
     .orderBy(event.startDate)
@@ -316,9 +386,11 @@ export async function getMyEventAvailability(eventIds: string[]) {
 
 export async function getEventAvailability(eventId: string) {
   await requireUser()
-  const [eventRow] = await db.select({ startDate: event.startDate, endDate: event.endDate }).from(event).where(eq(event.id, eventId)).limit(1)
-  const votes = await db.select().from(availability).where(eq(availability.eventId, eventId))
-  if (!eventRow) return votes
+  const [eventRow] = await db.select({ id: event.id, startDate: event.startDate, endDate: event.endDate, seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  if (!eventRow) return []
+  const seriesId = eventRow.seriesId ?? eventRow.id
+  const seriesEvents = await db.select({ id: event.id, startDate: event.startDate }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  const votes = await db.select().from(availability).where(inArray(availability.eventId, seriesEvents.map((item) => item.id)))
 
   const personalRows = await db
     .select({ userId: personalAvailability.userId, userName: user.name, date: personalAvailability.date, status: personalAvailability.status })
@@ -333,11 +405,10 @@ export async function getEventAvailability(eventId: string) {
 
   const normalizedVotes = votes.map((vote) => ({ ...vote, date: String(vote.date).slice(0, 10) }))
   const normalizedPersonalRows = personalRows.map((row) => ({ ...row, date: String(row.date).slice(0, 10) }))
-  const personalByUserDate = new Map(normalizedPersonalRows.map((row) => [`${row.userId}:${row.date}`, row]))
-  const merged = normalizedVotes.map((vote) => {
-    const personalStatus = personalByUserDate.get(`${vote.userId}:${vote.date}`)
-    return personalStatus ? { ...vote, status: personalStatus.status, userName: personalStatus.userName } : vote
-  })
+  // An explicit event vote must take precedence over the member calendar default.
+  // Otherwise clicking No/Maybe/Yes appears to save briefly, then the personal
+  // calendar status overwrites it on refresh.
+  const merged = normalizedVotes.map((vote) => vote)
   const existingKeys = new Set(normalizedVotes.map((vote) => `${vote.userId}:${vote.date}`))
   return [
     ...merged,
@@ -369,6 +440,21 @@ export async function setRsvp(input: {
   if (!ev) throw new Error("Event not found")
   if (ev.status !== "locked")
     throw new Error("A date must be locked before you can register attendance")
+
+  const seriesId = ev.seriesId ?? ev.id
+  const seriesEventRows = await db
+    .select({ id: event.id })
+    .from(event)
+    .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  const lockedAvailability = ev.lockedDate
+    ? await db
+        .select({ status: availability.status })
+        .from(availability)
+        .where(and(inArray(availability.eventId, seriesEventRows.map((row) => row.id)), eq(availability.userId, current.id), eq(availability.date, ev.lockedDate)))
+        .limit(1)
+    : []
+  if (lockedAvailability[0]?.status === "unavailable")
+    throw new Error("You cannot mark yourself as attending while unavailable for the locked date")
 
   const existing = await db
     .select({ id: rsvp.id })
@@ -419,6 +505,11 @@ export async function setAvailability(input: {
   date: string
   status: AvailabilityStatus
 }) {
+  input = {
+    eventId: eventIdSchema.parse(input.eventId),
+    date: dateSchema.parse(input.date).slice(0, 10),
+    status: input.status,
+  }
   const current = await requireEventParticipant(input.eventId)
 
   const ev = await requireEvent(input.eventId)
@@ -442,6 +533,15 @@ export async function setAvailability(input: {
   if (competing.length > 0) {
     await db.delete(availability).where(inArray(availability.id, competing.map((row) => row.id)))
     for (const row of competing) revalidatePath(`/events/${row.eventId}`)
+  }
+
+  if (input.status === "unavailable") {
+    const seriesId = ev.seriesId ?? ev.id
+    const seriesEventRows = await db
+      .select({ id: event.id })
+      .from(event)
+      .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+    await db.delete(rsvp).where(and(inArray(rsvp.eventId, seriesEventRows.map((row) => row.id)), eq(rsvp.userId, current.id)))
   }
 
   const existing = await db
@@ -473,6 +573,7 @@ export async function setAvailability(input: {
   }
 
   revalidatePath(`/events/${input.eventId}`)
+  revalidatePath("/dashboard")
   return { ok: true, clearedEvents: competing.map((row) => row.title) }
 }
 

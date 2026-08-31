@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
-import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates } from "@/lib/dates"
+  import { dateRange, formatDateRange, formatTime, formatRecurrence, todayISO } from "@/lib/dates"
 import { type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAvailabilityAttendance } from "@/components/event-availability-attendance"
@@ -33,41 +33,50 @@ export default async function EventPage({
 
   if (!event) notFound()
 
-  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate, `/events/${occurrence.id}`]))
+  const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate.slice(0, 10), `/events/${occurrence.id}`]))
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
-  const recurringDates = getRecurringDates(
-    event.recurrenceType,
-    event.startDate,
-    event.recurrenceWeekday,
-    event.recurrenceOrdinal,
-  )
-  const occurrenceDates = occurrences.length > 0 ? occurrences.map((occurrence) => occurrence.startDate) : []
-  const availabilityDates = occurrenceDates.length > 0
-    ? occurrenceDates
-    : recurringDates.length > 0
-      ? recurringDates
-      : dateRange(event.startDate, event.endDate ?? event.startDate)
+  const today = todayISO()
+  // Every visible date is backed by its own occurrence record (getEventOccurrences
+  // provisions upcoming ones), so each date links to a real page and navigates
+  // consistently — no date can "select in place" while its siblings navigate.
+  const occurrenceDates = occurrences.map((occurrence) => occurrence.startDate.slice(0, 10)).filter((date) => date >= today)
+  const availabilityDates = Array.from(new Set(occurrenceDates)).sort()
+  const fallbackDates = availabilityDates.length > 0
+    ? availabilityDates
+    : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)
   const isMultiDay = event.endDate != null && event.endDate !== event.startDate
-  const days = isMultiDay ? [event.startDate] : availabilityDates
-  const displayDate = event.startDate
+  const days = isMultiDay ? [event.startDate] : fallbackDates
+  const normalizedStart = event.startDate.slice(0, 10)
+  // If this event's own date is in the visible list use it, otherwise fall back to the
+  // earliest upcoming date so a past parent record still highlights a valid green date.
+  const selectedEventDate = days.includes(normalizedStart) ? normalizedStart : days[0] ?? normalizedStart
+  const displayDate = selectedEventDate
 
   // Count distinct availability responses for the date currently displayed.
   // RSVP records are separate from availability votes and must not inflate this count.
+  const normalizedVoteDate = (date: string | Date) => String(date).slice(0, 10)
+  // A migration can leave one user/date in more than one occurrence row. Keep
+  // one effective status per user/date, preferring this event's explicit vote.
+  const effectiveVotes = Array.from(
+    votes.reduce((map, vote) => {
+      const key = `${vote.userId}:${normalizedVoteDate(vote.date)}`
+      if (!map.has(key) || vote.eventId === event.id) map.set(key, vote)
+      return map
+    }, new Map<string, (typeof votes)[number]>()).values(),
+  )
   const respondentIds = new Set(
-    votes.filter((vote) => vote.date === displayDate).map((vote) => vote.userId),
+    effectiveVotes.filter((vote) => normalizedVoteDate(vote.date) === displayDate).map((vote) => vote.userId),
   )
   const totalRespondents = respondentIds.size
-  const guests = Array.from(new Set([...votes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
-    const vote = votes.find((item) => item.userId === guestId)
+  const guests = Array.from(new Set([...effectiveVotes.filter((vote) => vote.userId.startsWith("guest:")).map((vote) => vote.userId), ...rsvps.filter((rsvp) => rsvp.userId.startsWith("guest:")).map((rsvp) => rsvp.userId)])).map((guestId) => {
+    const vote = effectiveVotes.find((item) => item.userId === guestId)
     const guestRsvp = rsvps.find((item) => item.userId === guestId)
     return { id: guestId.slice("guest:".length), name: guestRsvp?.userName ?? vote?.userName ?? "Guest", availability: vote?.status ?? "none", rsvp: guestRsvp?.status ?? null }
   })
 
   const tallies: DateTally[] = days.map((date) => {
-    const dayVotes = isMultiDay
-      ? votes.filter((v) => v.date >= event.startDate && v.date <= (event.endDate ?? event.startDate))
-      : votes.filter((v) => v.date === date)
+    const dayVotes = effectiveVotes.filter((v) => normalizedVoteDate(v.date) === date)
     const available = dayVotes.filter((v) => v.status === "available").length
     const guestAvailable = dayVotes.filter((v) => v.status === "available" && v.userId.startsWith("guest:")).length
     const maybe = dayVotes.filter((v) => v.status === "maybe").length
@@ -95,7 +104,7 @@ export default async function EventPage({
   }
 
   const dateAttendance = days.map((date) => {
-    const dayVotes = votes.filter((vote) => vote.date === date)
+    const dayVotes = effectiveVotes.filter((vote) => normalizedVoteDate(vote.date) === date)
     const voted = new Set(dayVotes.map((vote) => vote.userId))
     return {
       date,
@@ -231,8 +240,9 @@ export default async function EventPage({
 
       <EventAvailabilityAttendance
         eventId={event.id}
-        eventEndDate={isMultiDay ? event.endDate : null}
-        tallies={tallies}
+  eventEndDate={isMultiDay ? event.endDate : null}
+  selectedEventDate={selectedEventDate}
+  tallies={tallies}
         totalRespondents={totalRespondents}
 bestDate={bestDate}
   dates={dateAttendance}
