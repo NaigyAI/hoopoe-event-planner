@@ -199,7 +199,7 @@ export default async function EventPage({
             />
             {isAdmin ? (
               <>
-                <RemindAttendeesButton eventId={event.id} eventDate={event.startDate} />
+                <RemindAttendeesButton eventId={event.id} />
                 <EventAdminActions eventId={event.id} isLocked={isLocked} event={event} />
               </>
             ) : null}
