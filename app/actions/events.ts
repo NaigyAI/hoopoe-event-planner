@@ -386,9 +386,11 @@ export async function getMyEventAvailability(eventIds: string[]) {
 
 export async function getEventAvailability(eventId: string) {
   await requireUser()
-  const [eventRow] = await db.select({ startDate: event.startDate, endDate: event.endDate }).from(event).where(eq(event.id, eventId)).limit(1)
-  const votes = await db.select().from(availability).where(eq(availability.eventId, eventId))
-  if (!eventRow) return votes
+  const [eventRow] = await db.select({ id: event.id, startDate: event.startDate, endDate: event.endDate, seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  if (!eventRow) return []
+  const seriesId = eventRow.seriesId ?? eventRow.id
+  const seriesEvents = await db.select({ id: event.id, startDate: event.startDate }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  const votes = await db.select().from(availability).where(inArray(availability.eventId, seriesEvents.map((item) => item.id)))
 
   const personalRows = await db
     .select({ userId: personalAvailability.userId, userName: user.name, date: personalAvailability.date, status: personalAvailability.status })
