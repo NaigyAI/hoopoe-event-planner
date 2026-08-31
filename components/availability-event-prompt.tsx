@@ -67,7 +67,7 @@ export function AvailabilityEventPrompt({ suggestions }: { suggestions: Availabi
               </button>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              {formatDateRange(event.startDate, event.endDate ?? event.startDate)}{event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
+              {formatDateRange(suggestion.matchingDates[0], suggestion.matchingDates.at(-1) ?? suggestion.matchingDates[0])}{event.startTime ? ` · ${formatTime(event.startTime)}` : ""}
               {event.location ? ` · ${event.location}` : ""}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">Your availability matches {suggestion.matchingDates.length === 1 ? "this date" : `${suggestion.matchingDates.length} dates`}.</p>
