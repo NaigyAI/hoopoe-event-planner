@@ -41,7 +41,7 @@ export default async function EventPage({
     event.startDate,
     event.recurrenceWeekday,
     event.recurrenceOrdinal,
-    5,
+    3,
   )
   const today = todayISO()
   const occurrenceDates = occurrences.map((occurrence) => occurrence.startDate.slice(0, 10)).filter((date) => date >= today)
