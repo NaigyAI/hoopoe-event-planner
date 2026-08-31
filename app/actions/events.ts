@@ -491,6 +491,11 @@ export async function setAvailability(input: {
   date: string
   status: AvailabilityStatus
 }) {
+  input = {
+    eventId: eventIdSchema.parse(input.eventId),
+    date: dateSchema.parse(input.date).slice(0, 10),
+    status: input.status,
+  }
   const current = await requireEventParticipant(input.eventId)
 
   const ev = await requireEvent(input.eventId)
@@ -545,6 +550,7 @@ export async function setAvailability(input: {
   }
 
   revalidatePath(`/events/${input.eventId}`)
+  revalidatePath("/dashboard")
   return { ok: true, clearedEvents: competing.map((row) => row.title) }
 }
 
