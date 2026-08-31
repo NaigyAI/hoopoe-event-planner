@@ -69,14 +69,14 @@ export default async function DashboardPage() {
     .flatMap((event) => {
       const openDates = event.recurrenceType !== "none"
         ? getRecurringDates(event.recurrenceType, event.startDate, event.recurrenceWeekday, event.recurrenceOrdinal, 12)
-            .filter((date) => date <= addDaysISO(todayISO(), 21))
-        : dateRange(event.startDate, event.endDate ?? event.startDate)
+            .filter((date) => date >= todayISO() && date <= addDaysISO(todayISO(), 21))
+        : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= todayISO())
       const answeredDates = new Set(
         answeredAvailability
           .filter((answer) => answer.eventId === event.id)
           .map((answer) => answer.date),
       )
-      const matchingDates = openDates.filter((date) => availableDates.includes(date) && !answeredDates.has(date))
+      const matchingDates = openDates.filter((date) => date >= todayISO() && availableDates.includes(date) && !answeredDates.has(date))
       if (matchingDates.length === 0) return []
       if (event.recurrenceType !== "none") {
         return matchingDates.map((date) => ({ event, matchingDates: [date] }))
