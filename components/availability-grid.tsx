@@ -69,9 +69,11 @@ export function AvailabilityGrid({
 }) {
   const router = useRouter()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
+  const [localStatuses, setLocalStatuses] = useState<Record<string, AvailabilityStatus>>({})
   const [isPending, startTransition] = useTransition()
 
   function vote(date: string, status: AvailabilityStatus) {
+    setLocalStatuses((current) => ({ ...current, [date]: status }))
     setPendingDate(date)
     startTransition(async () => {
       try {
@@ -155,7 +157,7 @@ export function AvailabilityGrid({
               <div className={cn("inline-flex rounded-lg border border-border p-0.5", variant === "guest" && "w-full") }>
                   {OPTIONS.filter((opt) => variant !== "guest" || opt.value === "available" || opt.value === "unavailable").map((opt) => {
                     const Icon = opt.icon
-                    const selected = t.myStatus === opt.value
+                    const selected = (localStatuses[t.date] ?? t.myStatus) === opt.value
                     const loading = pendingDate === t.date && isPending
                     return (
                       <button
