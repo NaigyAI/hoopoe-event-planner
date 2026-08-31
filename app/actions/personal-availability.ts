@@ -4,7 +4,7 @@ import { db } from "@/lib/db"
 import { availability, event, personalAvailability, user } from "@/lib/db/schema"
 import { requireApprovedUser, requireUser } from "@/lib/session"
 import { requireTeamMember } from "@/lib/authorization"
-import { and, eq, gte, lte, lt, or } from "drizzle-orm"
+import { and, eq, gte, lte, lt, or, isNull } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { dateSchema, statusSchema } from "@/lib/validation"
@@ -121,7 +121,15 @@ export async function setPersonalAvailability(
   const matchingEvents = await db
     .select({ id: event.id })
     .from(event)
-    .where(or(eq(event.startDate, date), and(lte(event.startDate, date), gte(event.endDate, date))))
+    .where(
+      or(
+        eq(event.startDate, date),
+        and(
+          lte(event.startDate, date),
+          or(isNull(event.endDate), gte(event.endDate, date)),
+        ),
+      ),
+    )
 
   if (matchingEvents.length > 0) {
     const memberName = currentUser.name
