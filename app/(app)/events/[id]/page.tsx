@@ -191,7 +191,12 @@ export default async function EventPage({
               <ClipboardCheck className="size-4" />
               Submit
             </Link>
-            <ShareEventButton token={event.shareToken} />
+            <ShareEventButton
+              token={event.shareToken}
+              title={event.title}
+              location={event.nextOccurrenceLocation ?? event.location}
+              time={event.startTime ? formatTime(event.startTime) : null}
+            />
             {isAdmin ? (
               <>
                 <RemindAttendeesButton eventId={event.id} eventDate={event.startDate} />
