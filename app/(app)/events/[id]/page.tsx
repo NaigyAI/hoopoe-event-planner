@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
 import { listAttendanceMembers } from "@/app/actions/members"
-import { dateRange, formatDateRange, formatTime, formatRecurrence, getRecurringDates, todayISO } from "@/lib/dates"
+  import { dateRange, formatDateRange, formatTime, formatRecurrence, todayISO } from "@/lib/dates"
 import { type DateTally } from "@/components/availability-grid"
 import { AttendancePanel } from "@/components/attendance-panel"
 import { EventAvailabilityAttendance } from "@/components/event-availability-attendance"
@@ -36,17 +36,12 @@ export default async function EventPage({
   const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate.slice(0, 10), `/events/${occurrence.id}`]))
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
-  const seriesEvent = occurrences.find((occurrence) => occurrence.id === event.seriesId) ?? event
-  const recurringDates = getRecurringDates(
-    seriesEvent.recurrenceType,
-    seriesEvent.startDate,
-    seriesEvent.recurrenceWeekday,
-    seriesEvent.recurrenceOrdinal,
-    3,
-  )
   const today = todayISO()
+  // Every visible date is backed by its own occurrence record (getEventOccurrences
+  // provisions upcoming ones), so each date links to a real page and navigates
+  // consistently — no date can "select in place" while its siblings navigate.
   const occurrenceDates = occurrences.map((occurrence) => occurrence.startDate.slice(0, 10)).filter((date) => date >= today)
-  const availabilityDates = Array.from(new Set([...occurrenceDates, ...recurringDates.filter((date) => date >= today)])).sort()
+  const availabilityDates = Array.from(new Set(occurrenceDates)).sort()
   const fallbackDates = availabilityDates.length > 0
     ? availabilityDates
     : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)

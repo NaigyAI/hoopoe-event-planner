@@ -293,11 +293,81 @@ export async function getEvent(eventId: string) {
   return rows[0] ?? null
 }
 
+/**
+ * Make sure a recurring series has a dedicated event record for each of its
+ * upcoming occurrence dates. Without this, some visible dates have their own
+ * page (so a click navigates) while others don't (so a click does nothing),
+ * which reads as a bug. Creating the missing records makes every date behave
+ * identically and carries over matching personal-calendar responses.
+ */
+async function ensureUpcomingOccurrences(seriesId: string) {
+  const [parent] = await db.select().from(event).where(eq(event.id, seriesId)).limit(1)
+  if (!parent || parent.recurrenceType === "none") return
+
+  const upcoming = getRecurringDates(
+    parent.recurrenceType,
+    parent.startDate.slice(0, 10),
+    parent.recurrenceWeekday,
+    parent.recurrenceOrdinal,
+    3,
+  )
+  if (upcoming.length === 0) return
+
+  const existing = await db.select({ startDate: event.startDate }).from(event).where(eq(event.seriesId, seriesId))
+  const existingDates = new Set([parent.startDate.slice(0, 10), ...existing.map((row) => row.startDate.slice(0, 10))])
+  const missing = upcoming.filter((date) => !existingDates.has(date))
+  if (missing.length === 0) return
+
+  const newRecords = missing.map((date) => ({
+    id: randomUUID(),
+    title: parent.title,
+    format: parent.format,
+    description: parent.description,
+    location: parent.location,
+    nextOccurrenceLocation: null,
+    seriesId,
+    eventType: parent.eventType,
+    eventUrl: parent.eventUrl,
+    travelDetails: parent.travelDetails,
+    createdBy: parent.createdBy,
+    createdByName: parent.createdByName,
+    shareToken: randomUUID().replace(/-/g, ""),
+    startDate: date,
+    endDate: date,
+    startTime: parent.startTime,
+    endTime: parent.endTime,
+    status: parent.status,
+    recurrenceType: "none" as const,
+    recurrenceWeekday: null,
+    recurrenceOrdinal: null,
+  }))
+  await db.insert(event).values(newRecords)
+
+  // Carry over any matching personal-calendar responses for the new dates.
+  for (const record of newRecords) {
+    const personalRows = await db
+      .select({ userId: personalAvailability.userId, userName: user.name, status: personalAvailability.status })
+      .from(personalAvailability)
+      .innerJoin(user, eq(user.id, personalAvailability.userId))
+      .where(eq(personalAvailability.date, record.startDate))
+    if (personalRows.length === 0) continue
+    await db.insert(availability).values(personalRows.map((row) => ({
+      id: randomUUID(),
+      eventId: record.id,
+      userId: row.userId,
+      userName: row.userName,
+      date: record.startDate,
+      status: row.status,
+    }))).onConflictDoNothing()
+  }
+}
+
 export async function getEventOccurrences(eventId: string) {
   await requireApprovedUser()
   const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
   const seriesId = current?.seriesId ?? eventId
   if (!current) return []
+  if (current.seriesId) await ensureUpcomingOccurrences(current.seriesId)
   return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken, recurrenceType: event.recurrenceType, recurrenceWeekday: event.recurrenceWeekday, recurrenceOrdinal: event.recurrenceOrdinal })
     .from(event)
     .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
