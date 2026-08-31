@@ -78,17 +78,21 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.createdAt))
 
-  const counts = await db
-    .select({
-      eventId: availability.eventId,
-      responders: sql<number>`count(distinct ${availability.userId})`,
-    })
+  const availabilityRows = await db
+    .select({ eventId: availability.eventId, userId: availability.userId, date: availability.date })
     .from(availability)
-    .innerJoin(event, eq(event.id, availability.eventId))
-    .where(
-      sql`${availability.date} between ${event.startDate} and coalesce(${event.endDate}, ${event.startDate})`,
+  const countMap = new Map<string, number>()
+  for (const currentEvent of events) {
+    const displayedDate = currentEvent.recurrenceType !== "none"
+      ? getRecurringDates(currentEvent.recurrenceType, currentEvent.startDate, currentEvent.recurrenceWeekday, currentEvent.recurrenceOrdinal, 1)[0] ?? currentEvent.startDate
+      : currentEvent.startDate
+    const responders = new Set(
+      availabilityRows
+        .filter((row) => row.eventId === currentEvent.id && row.date === displayedDate)
+        .map((row) => row.userId),
     )
-    .groupBy(availability.eventId)
+    countMap.set(currentEvent.id, responders.size)
+  }
 
   const goingCounts = await db
     .select({
@@ -99,7 +103,6 @@ export async function listEvents() {
     .innerJoin(event, eq(event.id, rsvp.eventId))
     .groupBy(rsvp.eventId)
 
-  const countMap = new Map(counts.map((c) => [c.eventId, Number(c.responders)]))
   const goingMap = new Map(
     goingCounts.map((c) => [c.eventId, Number(c.going)]),
   )

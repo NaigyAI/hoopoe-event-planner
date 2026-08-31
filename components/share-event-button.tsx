@@ -5,13 +5,25 @@ import { Check, Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 
-export function ShareEventButton({ token }: { token: string }) {
+export function ShareEventButton({
+  token,
+  title,
+  location,
+  time,
+}: {
+  token: string
+  title: string
+  location: string | null
+  time: string | null
+}) {
   const [copied, setCopied] = useState(false)
 
   async function copy() {
     const url = `${window.location.origin}/join/${token}`
+    const introduction = `Join us for ${title}${location ? ` @ ${location}` : ""}${time ? ` | ${time}` : ""}:`
+    const shareText = `${introduction}\n${url}`
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(shareText)
       setCopied(true)
       toast.success("Share link copied to clipboard")
       setTimeout(() => setCopied(false), 2000)
