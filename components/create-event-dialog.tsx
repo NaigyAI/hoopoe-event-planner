@@ -295,14 +295,14 @@ export function CreateEventDialog({
               </div>
             ) : null}
           </div>
-          {event?.recurrenceType && event.recurrenceType !== "none" ? (
+          {recurrenceType !== "none" ? (
             <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
               <Label htmlFor="nextOccurrenceLocation" className="text-destructive">Different location next time (optional)</Label>
               <Input
                 id="nextOccurrenceLocation"
                 name="nextOccurrenceLocation"
                 placeholder="Leave blank to use the regular location"
-                defaultValue={event.nextOccurrenceLocation ?? ""}
+                defaultValue={event?.nextOccurrenceLocation ?? ""}
               />
               <p className="text-xs text-destructive">This changes the location for the next occurrence only.</p>
             </div>
