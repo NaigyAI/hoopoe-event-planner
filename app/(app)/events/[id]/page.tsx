@@ -34,6 +34,9 @@ export default async function EventPage({
   if (!event) notFound()
 
   const occurrenceLinks = Object.fromEntries(occurrences.map((occurrence) => [occurrence.startDate.slice(0, 10), `/events/${occurrence.id}`]))
+  // nextOccurrenceLocation is a temporary exception for the current week; it
+  // must not override the normal location on future recurring occurrences.
+  const displayLocation = event.recurrenceType === "none" ? event.location : event.location
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isLocked = event.status === "locked"
   const today = todayISO()
@@ -168,11 +171,8 @@ export default async function EventPage({
             {event.location ? (
               <span className="flex items-center gap-1.5">
                 <MapPin className="size-4" />
-                {event.nextOccurrenceLocation ?? event.location}
+                {displayLocation}
               </span>
-            ) : null}
-            {event.nextOccurrenceLocation ? (
-              <p className="basis-full text-sm font-medium text-destructive">Attention: This week&apos;s {event.title} will be hosted at a different location this week.</p>
             ) : null}
             <span className="flex items-center gap-1.5">
               <Users className="size-4" />
@@ -208,7 +208,7 @@ export default async function EventPage({
             <ShareEventButton
               token={event.shareToken}
               title={event.title}
-              location={event.nextOccurrenceLocation ?? event.location}
+              location={displayLocation}
               time={event.startTime ? formatTime(event.startTime) : null}
             />
             {isAdmin ? (
