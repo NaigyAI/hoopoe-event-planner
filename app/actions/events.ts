@@ -364,10 +364,16 @@ async function ensureUpcomingOccurrences(seriesId: string) {
 
 export async function getEventOccurrences(eventId: string) {
   await requireApprovedUser()
-  const [current] = await db.select({ seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  const [current] = await db
+    .select({ seriesId: event.seriesId, recurrenceType: event.recurrenceType })
+    .from(event)
+    .where(eq(event.id, eventId))
+    .limit(1)
   const seriesId = current?.seriesId ?? eventId
   if (!current) return []
-  if (current.seriesId) await ensureUpcomingOccurrences(current.seriesId)
+  // The recurring parent has no seriesId of its own; use its id as the series
+  // key so opening it provisions and returns the upcoming occurrence dates.
+  if (current.seriesId || current.recurrenceType !== "none") await ensureUpcomingOccurrences(seriesId)
   return db.select({ id: event.id, startDate: event.startDate, location: event.location, shareToken: event.shareToken, recurrenceType: event.recurrenceType, recurrenceWeekday: event.recurrenceWeekday, recurrenceOrdinal: event.recurrenceOrdinal })
     .from(event)
     .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))

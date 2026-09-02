@@ -56,10 +56,10 @@ export function EventCard({ event }: { event: EventSummary }) {
               <Repeat2 className="size-4 shrink-0" aria-label="Recurring event" />
             ) : null}
           </div>
-          {(event.nextOccurrenceLocation ?? event.location) ? (
+          {event.location ? (
             <div className="flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />
-              <span className="truncate">{event.nextOccurrenceLocation ?? event.location}</span>
+              <span className="truncate">{event.location}</span>
             </div>
           ) : null}
           <div className="flex items-center gap-2">
