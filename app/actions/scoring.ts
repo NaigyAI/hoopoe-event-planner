@@ -1,7 +1,7 @@
 "use server"
 
 import { randomUUID } from "crypto"
-import { and, asc, eq, inArray, lt } from "drizzle-orm"
+import { and, asc, eq, inArray, lt, or } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { availability, event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
@@ -95,15 +95,24 @@ export async function setupScoring(eventId: string, playerCount: number, roundCo
   revalidatePath("/scoring")
 }
 
+async function getSeriesEventIds(eventId: string) {
+  const [target] = await db.select({ id: event.id, seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  if (!target) return [eventId]
+  const seriesId = target.seriesId ?? target.id
+  const rows = await db.select({ id: event.id }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  return rows.length ? rows.map((row) => row.id) : [eventId]
+}
+
 async function createRound(sessionId: string, eventId: string, eventDate: string, roundNumber: number) {
+  const eventIds = await getSeriesEventIds(eventId)
   const [rsvpAttendees, availableAttendees] = await Promise.all([
     db.select({ id: rsvp.userId, name: rsvp.userName })
       .from(rsvp)
-      .where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"])))
+      .where(and(inArray(rsvp.eventId, eventIds), inArray(rsvp.status, ["going", "yes"])))
       .orderBy(asc(rsvp.userName)),
     db.select({ id: availability.userId, name: availability.userName })
       .from(availability)
-      .where(and(eq(availability.eventId, eventId), eq(availability.date, eventDate), eq(availability.status, "available")))
+      .where(and(inArray(availability.eventId, eventIds), eq(availability.date, eventDate), eq(availability.status, "available")))
       .orderBy(asc(availability.userName)),
   ])
   const attendees = Array.from(new Map([...rsvpAttendees, ...availableAttendees].map((attendee) => [attendee.id, attendee])).values())
@@ -119,9 +128,10 @@ async function createRound(sessionId: string, eventId: string, eventDate: string
 
 export async function listScoringMembers(eventId: string) {
   await requireApprovedUser()
+  const eventIds = await getSeriesEventIds(eventId)
   const [registered, available] = await Promise.all([
-    db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(eq(rsvp.eventId, eventId), inArray(rsvp.status, ["going", "yes"]))).orderBy(asc(rsvp.userName)),
-    db.select({ id: availability.userId, name: availability.userName }).from(availability).where(and(eq(availability.eventId, eventId), eq(availability.status, "available"))).orderBy(asc(availability.userName)),
+    db.select({ id: rsvp.userId, name: rsvp.userName }).from(rsvp).where(and(inArray(rsvp.eventId, eventIds), inArray(rsvp.status, ["going", "yes"]))).orderBy(asc(rsvp.userName)),
+    db.select({ id: availability.userId, name: availability.userName }).from(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.status, "available"))).orderBy(asc(availability.userName)),
   ])
   return Array.from(new Map([...registered, ...available].map((member) => [member.id, member])).values()).sort((a, b) => a.name.localeCompare(b.name))
 }
@@ -133,7 +143,17 @@ export async function getScoringSession(eventId: string) {
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0]) return { actor, event: target, session: null, round: null, matches: [] }
   const round = await db.select().from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), eq(scoringRound.roundNumber, session[0].currentRound))).limit(1)
-  const matches = round[0] ? await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, round[0].id)).orderBy(asc(scoringMatch.createdAt)) : []
+  let matches = round[0] ? await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, round[0].id)).orderBy(asc(scoringMatch.createdAt)) : []
+  if (round[0]) {
+    const eventIds = await getSeriesEventIds(eventId)
+    const attendees = await db.select({ id: availability.userId, name: availability.userName }).from(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.date, normalizeDate(target.startDate)), eq(availability.status, "available")))
+    const existingIds = new Set(matches.map((match) => match.playerOneId).filter(Boolean))
+    const missing = attendees.filter((attendee) => !existingIds.has(attendee.id))
+    if (missing.length) {
+      await db.insert(scoringMatch).values(missing.map((attendee) => ({ id: randomUUID(), roundId: round[0].id, playerOneId: attendee.id, playerOneName: attendee.name, playerTwoId: null, playerTwoName: "" })))
+      matches = await db.select().from(scoringMatch).where(eq(scoringMatch.roundId, round[0].id)).orderBy(asc(scoringMatch.createdAt))
+    }
+  }
   const priorRounds = await db.select({ roundId: scoringRound.id }).from(scoringRound).where(and(eq(scoringRound.sessionId, session[0].id), lt(scoringRound.roundNumber, session[0].currentRound)))
   const priorMatches = priorRounds.length ? await db.select({ playerOneId: scoringMatch.playerOneId, playerTwoId: scoringMatch.playerTwoId }).from(scoringMatch).where(inArray(scoringMatch.roundId, priorRounds.map((row) => row.roundId))) : []
   const priorOpponents: Record<string, string[]> = {}
