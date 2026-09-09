@@ -16,7 +16,9 @@ function normalizeDate(value: string | Date) {
 function ensureScoringWindow(target: { startDate: string | Date; startTime: string | null }) {
   const today = todayISO()
   const eventDate = normalizeDate(target.startDate)
-  if (eventDate === today && !target.startTime) return
+  // A date-only event, or an imported event with a midnight placeholder time,
+  // remains available throughout its calendar day for scoring.
+  if (eventDate === today && (!target.startTime || target.startTime === "00:00")) return
   const start = new Date(`${eventDate}T${target.startTime || "00:00"}:00`)
   if (Number.isNaN(start.getTime()) || Date.now() < start.getTime() || Date.now() > start.getTime() + 12 * 60 * 60 * 1000) throw new Error("Scoring is available from the event start until 12 hours afterward")
 }
@@ -42,7 +44,7 @@ export async function listScoringEvents() {
   const now = Date.now()
   const events = candidates.filter((item) => {
     const eventDate = normalizeDate(item.startDate)
-    if (eventDate === today && !item.startTime) return true
+    if (eventDate === today && (!item.startTime || item.startTime === "00:00")) return true
     const start = new Date(`${eventDate}T${item.startTime || "00:00"}:00`)
     return now >= start.getTime() && now <= start.getTime() + 12 * 60 * 60 * 1000
   })
