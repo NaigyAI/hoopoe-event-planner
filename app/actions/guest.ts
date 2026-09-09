@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { event, availability, rsvp } from "@/lib/db/schema"
-import { and, eq } from "drizzle-orm"
+import { and, eq, inArray, or } from "drizzle-orm"
 import { requireAdmin } from "@/lib/session"
 import { requireEvent } from "@/lib/authorization"
 import { revalidatePath } from "next/cache"
@@ -203,12 +203,21 @@ export async function setGuestRsvp(input: {
 /** Guest upserts their availability for a single date. */
 export async function removeGuestFromEvent(input: { eventId: string; guestId: string }) {
   await requireAdmin()
-  await requireEvent(input.eventId)
+  const ev = await requireEvent(input.eventId)
   const scopedId = `guest:${input.guestId}`
+  // A recurring guest's rows can live on any occurrence in the series, so remove
+  // them across every linked occurrence — not just the one currently displayed.
+  const seriesId = ev.seriesId ?? ev.id
+  const seriesEvents = await db
+    .select({ id: event.id })
+    .from(event)
+    .where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  const eventIds = seriesEvents.length > 0 ? seriesEvents.map((row) => row.id) : [input.eventId]
   await db.transaction(async (tx) => {
-    await tx.delete(availability).where(and(eq(availability.eventId, input.eventId), eq(availability.userId, scopedId)))
-    await tx.delete(rsvp).where(and(eq(rsvp.eventId, input.eventId), eq(rsvp.userId, scopedId)))
+    await tx.delete(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.userId, scopedId)))
+    await tx.delete(rsvp).where(and(inArray(rsvp.eventId, eventIds), eq(rsvp.userId, scopedId)))
   })
+  revalidatePath(`/events/${input.eventId}`)
   revalidatePath("/members")
   revalidatePath("/dashboard")
   return { ok: true }

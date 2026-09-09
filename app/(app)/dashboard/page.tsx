@@ -32,7 +32,11 @@ export default async function DashboardPage() {
   const isExternalMember = user?.role === "external-member"
 
   const occurrenceIds = new Set(events.filter((candidate) => candidate.seriesId && candidate.seriesId !== candidate.id).map((candidate) => candidate.seriesId))
-  const dashboardEvents = events.filter((candidate) => !(candidate.recurrenceType !== "none" && occurrenceIds.has(candidate.id)))
+  const dashboardEvents = events.filter((candidate) => {
+    if (candidate.recurrenceType !== "none" && occurrenceIds.has(candidate.id)) return false
+    // Keep one-off events visible even when they are linked to a recurring series.
+    return true
+  })
   const summaries: EventSummary[] = dashboardEvents.map((e) => ({
     id: e.id,
     title: e.title,
