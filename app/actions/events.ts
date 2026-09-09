@@ -40,10 +40,16 @@ export async function setAdminAttendance(eventId: string, userId: string, dateVa
 
 export async function resetAdminAttendance(eventId: string, userId: string, dateValue: string) {
   await requireAdmin()
-  // Resetting a member from the attendance roster means they are awaiting
-  // a response for this event again, across all dates.
-  await db.delete(availability).where(and(eq(availability.eventId, eventId), eq(availability.userId, userId)))
+  const [currentEvent] = await db.select({ id: event.id, seriesId: event.seriesId }).from(event).where(eq(event.id, eventId)).limit(1)
+  if (!currentEvent) throw new Error("Event not found")
+
+  // Attendance can be stored on a different occurrence in a recurring series.
+  // Reset the member across the series so the X reliably removes them.
+  const seriesId = currentEvent.seriesId ?? currentEvent.id
+  const seriesEvents = await db.select({ id: event.id }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
+  await db.delete(availability).where(and(inArray(availability.eventId, seriesEvents.map((row) => row.id)), eq(availability.userId, userId)))
   revalidatePath(`/events/${eventId}`)
+  revalidatePath("/dashboard")
 }
 
 export async function remindAwaitingMembers(eventId: string) {
