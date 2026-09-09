@@ -9,10 +9,15 @@ import { requireApprovedUser } from "@/lib/session"
 import { requireEvent } from "@/lib/authorization"
 import { todayISO } from "@/lib/dates"
 
-function ensureScoringWindow(target: { startDate: string; startTime: string | null }) {
+function normalizeDate(value: string | Date) {
+  return String(value).slice(0, 10)
+}
+
+function ensureScoringWindow(target: { startDate: string | Date; startTime: string | null }) {
   const today = todayISO()
-  if (target.startDate === today && !target.startTime) return
-  const start = new Date(`${target.startDate}T${target.startTime || "00:00"}:00`)
+  const eventDate = normalizeDate(target.startDate)
+  if (eventDate === today && !target.startTime) return
+  const start = new Date(`${eventDate}T${target.startTime || "00:00"}:00`)
   if (Number.isNaN(start.getTime()) || Date.now() < start.getTime() || Date.now() > start.getTime() + 12 * 60 * 60 * 1000) throw new Error("Scoring is available from the event start until 12 hours afterward")
 }
 
@@ -36,8 +41,9 @@ export async function listScoringEvents() {
   const candidates = await db.select().from(event).where(inArray(event.startDate, [yesterdayISO, today])).orderBy(asc(event.startDate), asc(event.startTime))
   const now = Date.now()
   const events = candidates.filter((item) => {
-    if (item.startDate === today && !item.startTime) return true
-    const start = new Date(`${item.startDate}T${item.startTime || "00:00"}:00`)
+    const eventDate = normalizeDate(item.startDate)
+    if (eventDate === today && !item.startTime) return true
+    const start = new Date(`${eventDate}T${item.startTime || "00:00"}:00`)
     return now >= start.getTime() && now <= start.getTime() + 12 * 60 * 60 * 1000
   })
   const sessions = events.length ? await db.select().from(scoringSession).where(inArray(scoringSession.eventId, events.map((item) => item.id))) : []
@@ -83,7 +89,7 @@ export async function setupScoring(eventId: string, playerCount: number, roundCo
   const session = await db.select().from(scoringSession).where(eq(scoringSession.eventId, eventId)).limit(1)
   if (!session[0] || session[0].trackerId !== actor.id) throw new Error("Only the current tracker can set up scoring")
   await db.update(scoringSession).set({ playerCount, roundCount, currentRound: 1, status: "active", updatedAt: new Date() }).where(eq(scoringSession.id, session[0].id))
-  await createRound(session[0].id, eventId, target.startDate, 1)
+  await createRound(session[0].id, eventId, normalizeDate(target.startDate), 1)
   revalidatePath("/scoring")
 }
 
