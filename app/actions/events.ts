@@ -123,6 +123,11 @@ export async function listEvents() {
   }))
 }
 
+export async function listEventsForStandings() {
+  await requireUser()
+  return db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
+}
+
 export async function createEvent(input: {
   formats: string[]
   eventType: string

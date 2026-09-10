@@ -1,4 +1,4 @@
-import { listEvents } from "@/app/actions/events"
+import { listEventsForStandings } from "@/app/actions/events"
 import { listStandingData, listStandingMembers } from "@/app/actions/standings"
 import { StandingsReporter } from "@/components/standings-reporter"
 import { todayISO } from "@/lib/dates"
@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react"
 export const dynamic = "force-dynamic"
 
 export default async function ReportStandingsPage({ searchParams }: { searchParams: Promise<{ eventId?: string; saved?: string }> }) {
-  const [{ eventId, saved }, events, members, standings] = await Promise.all([searchParams, listEvents(), listStandingMembers(), listStandingData()])
+  const [{ eventId, saved }, events, members, standings] = await Promise.all([searchParams, listEventsForStandings(), listStandingMembers(), listStandingData()])
   const reportedEventIds = new Set(standings.map((row) => row.standing.eventId))
   const today = todayISO()
   const past = events.filter((event) => String(event.startDate).slice(0, 10) <= today && event.status !== "cancelled" && !reportedEventIds.has(event.id))
