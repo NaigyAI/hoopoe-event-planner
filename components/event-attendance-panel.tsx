@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useTransition } from "react"
 import { Check, X } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { resetAdminAttendance, setAdminAttendance } from "@/app/actions/events"
 
@@ -21,8 +22,8 @@ export function EventAttendancePanel({ eventId, dates, selectedDate, isAdmin = f
   return (
     <section className="flex flex-col gap-3">
       <div key={selected.date} className="grid animate-in gap-3 fade-in slide-in-from-bottom-1 duration-200 sm:grid-cols-3">
-        <Group title="Attending" people={[...selected.attending, ...selected.maybe]} maybeStart={selected.attending.length} variant="default" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onReset={(userId) => startTransition(async () => { await resetAdminAttendance(eventId, userId, selected.date); router.refresh() })} />
-        <Group title="Unavailable" people={selected.unavailable} variant="outline" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onReset={(userId) => startTransition(async () => { await resetAdminAttendance(eventId, userId, selected.date); router.refresh() })} />
+        <Group title="Attending" people={[...selected.attending, ...selected.maybe]} maybeStart={selected.attending.length} variant="default" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onReset={(userId) => startTransition(async () => { try { await resetAdminAttendance(eventId, userId, selected.date); router.refresh(); toast.success("Attendee removed") } catch (error) { toast.error(error instanceof Error ? error.message : "Unable to remove attendee") } })} />
+        <Group title="Unavailable" people={selected.unavailable} variant="outline" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onReset={(userId) => startTransition(async () => { try { await resetAdminAttendance(eventId, userId, selected.date); router.refresh(); toast.success("Attendee removed") } catch (error) { toast.error(error instanceof Error ? error.message : "Unable to remove attendee") } })} />
         <Group title="Awaiting response" people={selected.awaiting} variant="secondary" duplicateNames={duplicateNames(selected)} isAdmin={isAdmin} pending={pending} onSetStatus={(userId, status) => startTransition(async () => { await setAdminAttendance(eventId, userId, selected.date, status); router.refresh() })} />
       </div>
     </section>
