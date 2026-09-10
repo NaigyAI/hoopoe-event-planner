@@ -6,15 +6,17 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
 import { availability, event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
 import { requireApprovedUser } from "@/lib/session"
+import { todayISO } from "@/lib/dates"
 import { requireEvent } from "@/lib/authorization"
 
 function normalizeDate(value: string | Date) {
   return String(value).slice(0, 10)
 }
 
-function ensureScoringWindow(_target: { startDate: string | Date; startTime: string | null }) {
-  // Scoring is intentionally available without a date/time lock. This supports
-  // imported events and events whose stored timezone differs from the browser.
+function ensureScoringWindow(target: { startDate: string | Date; startTime: string | null }) {
+  if (normalizeDate(target.startDate) < todayISO()) {
+    throw new Error("Past events cannot be scored")
+  }
 }
 
 export async function listCompletedScoringMatches(eventId: string) {
@@ -30,9 +32,9 @@ export async function listCompletedScoringMatches(eventId: string) {
 
 export async function listScoringEvents() {
   const actor = await requireApprovedUser()
-  // Do not hide events based on calendar dates or browser/database timezone.
-  // Scoring can be opened for current, imported, and future event records.
-  const events = await db.select().from(event).orderBy(asc(event.startDate), asc(event.startTime))
+  const today = todayISO()
+  const events = (await db.select().from(event).orderBy(asc(event.startDate), asc(event.startTime)))
+    .filter((item) => normalizeDate(item.startDate) >= today)
   const sessions = events.length ? await db.select().from(scoringSession).where(inArray(scoringSession.eventId, events.map((item) => item.id))) : []
   return { actor, events, sessions }
 }
