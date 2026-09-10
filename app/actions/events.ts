@@ -6,7 +6,7 @@ import { and, desc, eq, gte, inArray, lte, ne, or, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
-import { addDaysISO, dateRange, getRecurringDates, todayISO } from "@/lib/dates"
+import { dateRange, getRecurringDates, todayISO } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { enforceRateLimit } from "@/lib/rate-limit"
@@ -84,13 +84,10 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
-  const today = todayISO()
-  const recentCutoff = addDaysISO(today, -2)
+  // Dashboard shows event parents and standalone events only. Generated
+  // recurring occurrences are detail records and must not create duplicate cards.
   const dashboardEvents = events.filter(
-    (candidate) =>
-      !candidate.seriesId ||
-      candidate.seriesId === candidate.id ||
-      (candidate.startDate.slice(0, 10) >= recentCutoff && candidate.startDate.slice(0, 10) <= today),
+    (candidate) => !candidate.seriesId || candidate.seriesId === candidate.id,
   )
 
   const availabilityRows = await db
