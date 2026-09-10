@@ -48,8 +48,10 @@ export async function resetAdminAttendance(eventId: string, userId: string, date
   const seriesId = currentEvent.seriesId ?? currentEvent.id
   const seriesEvents = await db.select({ id: event.id }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
   const eventIds = seriesEvents.map((row) => row.id)
-  const normalizedDate = dateValue.slice(0, 10)
-  await db.delete(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.userId, userId), eq(availability.date, normalizedDate)))
+  // Date-range events use one event-level response. Remove every stale
+  // per-date row so the member returns to Awaiting instead of reappearing
+  // from another date in the range or recurring occurrence.
+  await db.delete(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.userId, userId)))
   await db.delete(rsvp).where(and(inArray(rsvp.eventId, eventIds), eq(rsvp.userId, userId)))
   revalidatePath(`/events/${eventId}`)
   revalidatePath("/dashboard")
