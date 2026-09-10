@@ -61,9 +61,9 @@ export default async function DashboardPage() {
       : e.startDate.slice(0, 10),
   }))
 
-  const recentDashboardCutoff = addDaysISO(todayISO(), -2)
+  const dashboardCutoff = todayISO()
   const active = summaries
-    .filter((e) => e.status !== "cancelled" && e.nextOccurrence >= recentDashboardCutoff)
+    .filter((e) => e.status !== "cancelled" && e.nextOccurrence >= dashboardCutoff)
     .sort((a, b) => {
       const dateComparison = a.nextOccurrence.localeCompare(b.nextOccurrence)
       return dateComparison !== 0 ? dateComparison : a.title.localeCompare(b.title)
