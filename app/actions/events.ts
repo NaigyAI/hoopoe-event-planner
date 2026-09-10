@@ -47,9 +47,14 @@ export async function resetAdminAttendance(eventId: string, userId: string, date
   // Reset the member across the series so the X reliably removes them.
   const seriesId = currentEvent.seriesId ?? currentEvent.id
   const seriesEvents = await db.select({ id: event.id }).from(event).where(or(eq(event.id, seriesId), eq(event.seriesId, seriesId)))
-  await db.delete(availability).where(and(inArray(availability.eventId, seriesEvents.map((row) => row.id)), eq(availability.userId, userId)))
+  const eventIds = seriesEvents.map((row) => row.id)
+  const normalizedDate = dateValue.slice(0, 10)
+  await db.delete(availability).where(and(inArray(availability.eventId, eventIds), eq(availability.userId, userId), eq(availability.date, normalizedDate)))
+  await db.delete(rsvp).where(and(inArray(rsvp.eventId, eventIds), eq(rsvp.userId, userId)))
   revalidatePath(`/events/${eventId}`)
   revalidatePath("/dashboard")
+  revalidatePath("/past-events")
+  return { ok: true }
 }
 
 export async function remindAwaitingMembers(eventId: string) {
