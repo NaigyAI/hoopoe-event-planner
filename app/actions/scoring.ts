@@ -7,20 +7,14 @@ import { db } from "@/lib/db"
 import { availability, event, rsvp, scoringMatch, scoringRound, scoringSession } from "@/lib/db/schema"
 import { requireApprovedUser } from "@/lib/session"
 import { requireEvent } from "@/lib/authorization"
-import { todayISO } from "@/lib/dates"
 
 function normalizeDate(value: string | Date) {
   return String(value).slice(0, 10)
 }
 
-function ensureScoringWindow(target: { startDate: string | Date; startTime: string | null }) {
-  const today = todayISO()
-  const eventDate = normalizeDate(target.startDate)
-  // A date-only event, or an imported event with a midnight placeholder time,
-  // remains available throughout its calendar day for scoring.
-  if (eventDate === today && (!target.startTime || target.startTime === "00:00")) return
-  const start = new Date(`${eventDate}T${target.startTime || "00:00"}:00`)
-  if (Number.isNaN(start.getTime()) || Date.now() < start.getTime() || Date.now() > start.getTime() + 12 * 60 * 60 * 1000) throw new Error("Scoring is available from the event start until 12 hours afterward")
+function ensureScoringWindow(_target: { startDate: string | Date; startTime: string | null }) {
+  // Scoring is intentionally available without a date/time lock. This supports
+  // imported events and events whose stored timezone differs from the browser.
 }
 
 export async function listCompletedScoringMatches(eventId: string) {
@@ -36,18 +30,9 @@ export async function listCompletedScoringMatches(eventId: string) {
 
 export async function listScoringEvents() {
   const actor = await requireApprovedUser()
-  const today = todayISO()
-  const yesterday = new Date(`${today}T12:00:00`)
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayISO = yesterday.toISOString().slice(0, 10)
-  const candidates = await db.select().from(event).where(inArray(event.startDate, [yesterdayISO, today])).orderBy(asc(event.startDate), asc(event.startTime))
-  const now = Date.now()
-  const events = candidates.filter((item) => {
-    const eventDate = normalizeDate(item.startDate)
-    if (eventDate === today && (!item.startTime || item.startTime === "00:00")) return true
-    const start = new Date(`${eventDate}T${item.startTime || "00:00"}:00`)
-    return now >= start.getTime() && now <= start.getTime() + 12 * 60 * 60 * 1000
-  })
+  // Do not hide events based on calendar dates or browser/database timezone.
+  // Scoring can be opened for current, imported, and future event records.
+  const events = await db.select().from(event).orderBy(asc(event.startDate), asc(event.startTime))
   const sessions = events.length ? await db.select().from(scoringSession).where(inArray(scoringSession.eventId, events.map((item) => item.id))) : []
   return { actor, events, sessions }
 }
