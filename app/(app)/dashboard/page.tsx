@@ -31,12 +31,10 @@ export default async function DashboardPage() {
   const isAdmin = user?.role === "admin" || user?.role === "superuser"
   const isExternalMember = user?.role === "external-member"
 
-  const occurrenceIds = new Set(events.filter((candidate) => candidate.seriesId && candidate.seriesId !== candidate.id).map((candidate) => candidate.seriesId))
-  const dashboardEvents = events.filter((candidate) => {
-    if (candidate.recurrenceType !== "none" && occurrenceIds.has(candidate.id)) return false
-    // Keep one-off events visible even when they are linked to a recurring series.
-    return true
-  })
+  // listEvents already returns recurring parents and standalone events, while
+  // excluding generated occurrences. Keep the parent visible so its next date
+  // can be displayed on the dashboard.
+  const dashboardEvents = events
   const summaries: EventSummary[] = dashboardEvents.map((e) => ({
     id: e.id,
     title: e.title,

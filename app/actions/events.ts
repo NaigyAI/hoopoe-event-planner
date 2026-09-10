@@ -6,7 +6,7 @@ import { and, desc, eq, gte, inArray, lte, ne, or, sql } from "drizzle-orm"
 import { requireApprovedUser, requireUser, requireAdmin } from "@/lib/session"
 import { requireEvent, requireEventAdmin, requireEventParticipant } from "@/lib/authorization"
 import { notifyEventCreated, notifyEventResponseReminder, notifyDateLocked } from "@/lib/email"
-import { dateRange, getRecurringDates } from "@/lib/dates"
+import { addDaysISO, dateRange, getRecurringDates, todayISO } from "@/lib/dates"
 import { revalidatePath } from "next/cache"
 import { randomUUID } from "crypto"
 import { enforceRateLimit } from "@/lib/rate-limit"
@@ -84,8 +84,13 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
+  const today = todayISO()
+  const recentCutoff = addDaysISO(today, -2)
   const dashboardEvents = events.filter(
-    (candidate) => !candidate.seriesId || candidate.seriesId === candidate.id,
+    (candidate) =>
+      !candidate.seriesId ||
+      candidate.seriesId === candidate.id ||
+      (candidate.startDate.slice(0, 10) >= recentCutoff && candidate.startDate.slice(0, 10) <= today),
   )
 
   const availabilityRows = await db
