@@ -84,12 +84,10 @@ export async function listEvents() {
   await requireUser()
   const events = await db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 
-  const today = todayISO()
+  // Dashboard shows event parents and standalone events only. Generated
+  // recurring occurrences are detail records and must not create duplicate cards.
   const dashboardEvents = events.filter(
-    (candidate) =>
-      !candidate.seriesId ||
-      candidate.seriesId === candidate.id ||
-      candidate.startDate.slice(0, 10) >= today,
+    (candidate) => !candidate.seriesId || candidate.seriesId === candidate.id,
   )
 
   const availabilityRows = await db
