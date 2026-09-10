@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { listEvents } from "@/app/actions/events"
+import { listEventsForStandings } from "@/app/actions/events"
 import { listStandingData } from "@/app/actions/standings"
 import { listCompletedScoringMatches } from "@/app/actions/scoring"
 import { todayISO } from "@/lib/dates"
@@ -10,7 +10,7 @@ import { PastEventStandings } from "@/components/past-event-standings"
 export const dynamic = "force-dynamic"
 
 export default async function PastEventsPage() {
-  const [events, user] = await Promise.all([listEvents(), getSessionUser()])
+  const [events, user] = await Promise.all([listEventsForStandings(), getSessionUser()])
   const today = todayISO()
   const past = events.filter((event) => String(event.startDate).slice(0, 10) <= today && event.status !== "cancelled").sort((a, b) => String(b.startDate).localeCompare(String(a.startDate)))
   const [standings, scoreRows] = await Promise.all([listStandingData(), Promise.all(past.map((event) => listCompletedScoringMatches(event.id)))])
