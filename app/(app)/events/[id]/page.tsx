@@ -52,8 +52,10 @@ export default async function EventPage({
   const fallbackDates = availabilityDates.length > 0
     ? availabilityDates
     : dateRange(event.startDate, event.endDate ?? event.startDate).filter((date) => date >= today)
-  const isMultiDay = event.endDate != null && event.endDate !== event.startDate
-  const days = isMultiDay ? [event.startDate] : fallbackDates
+  const isMultiDay = event.endDate != null && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10)
+  // Multi-day events use one event-level availability response. Keep the
+  // range in the display, but store and calculate the response on its start date.
+  const days = isMultiDay ? [event.startDate.slice(0, 10)] : fallbackDates
   const normalizedStart = event.startDate.slice(0, 10)
   // If this event's own date is in the visible list use it, otherwise fall back to the
   // earliest upcoming date so a past parent record still highlights a valid green date.
