@@ -1,0 +1,50 @@
+name: Version major updates
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    if: >-
+      !contains(github.event.head_commit.message, '[skip version]') &&
+      (startsWith(github.event.head_commit.message, 'feat:') ||
+      startsWith(github.event.head_commit.message, 'feat(') ||
+      contains(github.event.head_commit.message, 'BREAKING CHANGE'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Bump application version
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ "$COMMIT_MESSAGE" == *"BREAKING CHANGE"* ]]; then
+            pnpm version major --no-git-tag-version
+          else
+            pnpm version minor --no-git-tag-version
+          fi
+
+      - name: Commit version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump application version [skip version]"
+          git push
