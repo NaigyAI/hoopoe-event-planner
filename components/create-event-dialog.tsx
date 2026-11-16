@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
-import { createEvent, updateEvent } from "@/app/actions/events"
+import { createEvent, importWizardsEvent, updateEvent } from "@/app/actions/events"
 
 export type EventEditData = {
   id: string
@@ -64,6 +64,34 @@ export function CreateEventDialog({
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
   const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
   const [recurrenceWeekday, setRecurrenceWeekday] = useState(String(event?.recurrenceWeekday ?? new Date().getDay()))
+  const importUrlRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [importing, setImporting] = useState(false)
+
+  async function onImport() {
+    const url = importUrlRef.current?.value.trim()
+    if (!url || !formRef.current) return toast.error("Enter a Wizards Locator URL")
+    setImporting(true)
+    try {
+      const data = await importWizardsEvent(url)
+      const form = formRef.current
+      ;[...form.elements].forEach((element) => {
+        const input = element as HTMLInputElement
+        if (input.name === "format") input.checked = input.value === data.format
+      })
+      for (const [name, value] of Object.entries({ location: data.location, startDate: data.startDate, eventUrl: data.eventUrl, description: data.description, eventTypeDetail: data.eventTypeDetail })) {
+        const input = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null
+        if (input) input.value = value
+      }
+      setEventType(data.eventType)
+      setMultiDay(false)
+      toast.success("Wizards event imported")
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not import event")
+    } finally {
+      setImporting(false)
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -114,7 +142,15 @@ export function CreateEventDialog({
             Choose a confirmed date for the event.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit} className="min-h-0 min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
+        <form ref={formRef} onSubmit={onSubmit} className="min-h-0 min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
+          {!event ? <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <Label htmlFor="wizardsImportUrl">Import from Wizards Locator</Label>
+            <div className="flex gap-2">
+              <Input ref={importUrlRef} id="wizardsImportUrl" placeholder="https://locator.wizards.com/event/..." type="url" />
+              <Button type="button" variant="secondary" onClick={onImport} disabled={importing}>{importing ? <Loader2 className="size-4 animate-spin" /> : "Import"}</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Imports the format, event type, venue, date, details, and official link.</p>
+          </div> : null}
           <div className="space-y-2">
             <Label htmlFor="format">Format</Label>
             <fieldset className="grid gap-2 sm:grid-cols-2" aria-describedby="format-hint">

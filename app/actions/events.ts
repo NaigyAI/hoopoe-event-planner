@@ -137,6 +137,28 @@ export async function listEventsForStandings() {
   return db.select().from(event).orderBy(desc(event.startDate), desc(event.createdAt))
 }
 
+export async function importWizardsEvent(locatorUrl: string) {
+  await requireAdmin()
+  const url = new URL(locatorUrl)
+  if (url.hostname !== "locator.wizards.com") throw new Error("Enter a locator.wizards.com event URL")
+  const response = await fetch(url, { headers: { "User-Agent": "Hoopoe Event Planner/1.0" }, cache: "no-store" })
+  if (!response.ok) throw new Error("Wizards Locator event could not be loaded")
+  const html = await response.text()
+  const text = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim()
+  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() ?? ""
+  const cleanTitle = title.replace(/ \|.*$/, "").replace(/^Event - /i, "").trim()
+  const dateMatch = text.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)
+  const year = new Date().getFullYear()
+  const date = dateMatch ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${year} 12:00:00`) : null
+  if (!cleanTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
+  const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  const storeMatch = text.match(/Store\\s+(.+?)\\s+\\d{2,5} [A-Za-z]/i)
+  const location = storeMatch?.[1]?.trim() || "Wizards event location"
+  const format = /modern/i.test(cleanTitle) ? "Modern" : /legacy/i.test(cleanTitle) ? "Legacy" : /pioneer/i.test(cleanTitle) ? "Pioneer" : /standard/i.test(cleanTitle) ? "Standard" : ""
+  const eventType = /regional championship qualifier|\\bRCQ\\b/i.test(cleanTitle) ? "rcq" : "other"
+  return { title: cleanTitle, format, eventType, eventTypeDetail: eventType === "other" ? "Wizards event" : "", location, startDate, eventUrl: url.toString(), description: "Imported from Wizards Store & Event Locator." }
+}
+
 export async function createEvent(input: {
   formats: string[]
   eventType: string
