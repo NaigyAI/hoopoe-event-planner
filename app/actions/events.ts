@@ -144,24 +144,29 @@ export async function importWizardsEvent(locatorUrl: string) {
   const response = await fetch(url, { headers: { "User-Agent": "Hoopoe Event Planner/1.0" }, cache: "no-store" })
   if (!response.ok) throw new Error("Wizards Locator event could not be loaded")
   const html = await response.text()
-  const text = html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim()
-  const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim() ?? ""
+  const decode = (value: string) => value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+  const text = decode(html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " "))
+  const title = decode(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "")
   const cleanTitle = title.replace(/ \|.*$/, "").replace(/^Event - /i, "").trim()
-  const dateMatch = text.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)
+  const jsonLd = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i)?.[1]
+  let structured: any = {}
+  try { structured = jsonLd ? JSON.parse(jsonLd.trim()) : {} } catch { structured = {} }
+  const eventName = decode(String(structured.name ?? ""))
+  const importedTitle = eventName || cleanTitle
+  const dateValue = structured.startDate ?? text.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)?.[0]
   const year = new Date().getFullYear()
-  const date = dateMatch ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${year} 12:00:00`) : null
-  if (!cleanTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
+  const date = dateValue && /^\d{4}-\d{2}-\d{2}/.test(String(dateValue)) ? new Date(String(dateValue)) : dateValue ? new Date(`${String(dateValue).replace(/^[^ ]+\s+/, "")}, ${year} 12:00:00`) : null
+  if (!importedTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
   const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-  const format = /modern/i.test(cleanTitle) ? "Modern" : /legacy/i.test(cleanTitle) ? "Legacy" : /pioneer/i.test(cleanTitle) ? "Pioneer" : /standard/i.test(cleanTitle) ? "Standard" : /limited|draft|sealed/i.test(cleanTitle) ? "Limited" : ""
-  const eventType = /regional championship qualifier|\bRCQ\b/i.test(cleanTitle) ? "rcq" : /store championship/i.test(cleanTitle) ? "store-championship" : /weekly/i.test(cleanTitle) ? "weekly" : "other"
-  const addressMatch = text.match(/(?:Address|Location)\s*:?\s*(\d{1,6}[^|]{5,120}?\b(?:[A-Z]{2}|DC)\s+\d{5}(?:-\d{4})?)/i)
-  const storeMatch = text.match(/(?:Store|Venue)\s*:?\s*([^|]{2,80}?)(?=\s+(?:Address|Location)\b|\s+\d{1,6}\s)/i)
-  const storeName = storeMatch?.[1]?.trim()
-  const address = addressMatch?.[1]?.trim()
+  const format = /modern/i.test(importedTitle) ? "Modern" : /legacy/i.test(importedTitle) ? "Legacy" : /pioneer/i.test(importedTitle) ? "Pioneer" : /standard/i.test(importedTitle) ? "Standard" : /limited|draft|sealed/i.test(importedTitle) ? "Limited" : ""
+  const eventType = /regional championship qualifier|\bRCQ\b/i.test(importedTitle) ? "rcq" : /store championship/i.test(importedTitle) ? "store-championship" : /weekly/i.test(importedTitle) ? "weekly" : "other"
+  const place = structured.location ?? {}
+  const storeName = decode(String(place.name ?? structured.organizer?.name ?? html.match(/(?:Store|Venue)[^<:]*:?\s*([^<]+)/i)?.[1] ?? ""))
+  const addressValue = place.address ?? {}
+  const address = decode(typeof addressValue === "string" ? addressValue : [addressValue.streetAddress, addressValue.addressLocality, addressValue.addressRegion, addressValue.postalCode].filter(Boolean).join(", "))
   const location = [storeName, address].filter(Boolean).join(" — ") || "Wizards event location"
-  const aboutMatch = text.match(/(?:About (?:this )?event|Event details|Description)\s*:?\s*(.{40,800}?)(?=\s+(?:Register|Registration|参加|Event schedule)\b|$)/i)
-  const description = aboutMatch?.[1]?.trim() || `Imported from Wizards Store & Event Locator: ${cleanTitle}.`
-  return { title: cleanTitle, format, eventType, eventTypeDetail: eventType === "other" ? cleanTitle : "", location, startDate, eventUrl: url.toString(), description }
+  const description = decode(String(structured.description ?? html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']+)/i)?.[1] ?? ""))
+  return { title: importedTitle, format, eventType, eventTypeDetail: eventType === "other" ? importedTitle : "", location, startDate, eventUrl: url.toString(), description }
 }
 
 export async function createEvent(input: {
