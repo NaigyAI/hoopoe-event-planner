@@ -152,11 +152,16 @@ export async function importWizardsEvent(locatorUrl: string) {
   const date = dateMatch ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${year} 12:00:00`) : null
   if (!cleanTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
   const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
-  const storeMatch = text.match(/Store\\s+(.+?)\\s+\\d{2,5} [A-Za-z]/i)
-  const location = storeMatch?.[1]?.trim() || "Wizards event location"
-  const format = /modern/i.test(cleanTitle) ? "Modern" : /legacy/i.test(cleanTitle) ? "Legacy" : /pioneer/i.test(cleanTitle) ? "Pioneer" : /standard/i.test(cleanTitle) ? "Standard" : ""
-  const eventType = /regional championship qualifier|\\bRCQ\\b/i.test(cleanTitle) ? "rcq" : "other"
-  return { title: cleanTitle, format, eventType, eventTypeDetail: eventType === "other" ? "Wizards event" : "", location, startDate, eventUrl: url.toString(), description: "Imported from Wizards Store & Event Locator." }
+  const format = /modern/i.test(cleanTitle) ? "Modern" : /legacy/i.test(cleanTitle) ? "Legacy" : /pioneer/i.test(cleanTitle) ? "Pioneer" : /standard/i.test(cleanTitle) ? "Standard" : /limited|draft|sealed/i.test(cleanTitle) ? "Limited" : ""
+  const eventType = /regional championship qualifier|\bRCQ\b/i.test(cleanTitle) ? "rcq" : /store championship/i.test(cleanTitle) ? "store-championship" : /weekly/i.test(cleanTitle) ? "weekly" : "other"
+  const addressMatch = text.match(/(?:Address|Location)\s*:?\s*(\d{1,6}[^|]{5,120}?\b(?:[A-Z]{2}|DC)\s+\d{5}(?:-\d{4})?)/i)
+  const storeMatch = text.match(/(?:Store|Venue)\s*:?\s*([^|]{2,80}?)(?=\s+(?:Address|Location)\b|\s+\d{1,6}\s)/i)
+  const storeName = storeMatch?.[1]?.trim()
+  const address = addressMatch?.[1]?.trim()
+  const location = [storeName, address].filter(Boolean).join(" — ") || "Wizards event location"
+  const aboutMatch = text.match(/(?:About (?:this )?event|Event details|Description)\s*:?\s*(.{40,800}?)(?=\s+(?:Register|Registration|参加|Event schedule)\b|$)/i)
+  const description = aboutMatch?.[1]?.trim() || `Imported from Wizards Store & Event Locator: ${cleanTitle}.`
+  return { title: cleanTitle, format, eventType, eventTypeDetail: eventType === "other" ? cleanTitle : "", location, startDate, eventUrl: url.toString(), description }
 }
 
 export async function createEvent(input: {
