@@ -30,6 +30,7 @@ export type EventEditData = {
   location: string | null
   nextOccurrenceLocation?: string | null
   eventUrl: string | null
+  price?: string | null
   travelDetails: string | null
   startDate: string
   endDate: string | null
@@ -79,7 +80,7 @@ export function CreateEventDialog({
         const input = element as HTMLInputElement
         if (input.name === "format") input.checked = input.value === data.format
       })
-      for (const [name, value] of Object.entries({ location: data.location, startDate: data.startDate, eventUrl: data.eventUrl, description: data.description, eventTypeDetail: data.eventTypeDetail })) {
+      for (const [name, value] of Object.entries({ location: data.location, startDate: data.startDate, eventUrl: data.eventUrl, description: data.description, eventTypeDetail: data.eventTypeDetail, price: data.price })) {
         const input = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null
         if (input) input.value = value
       }
@@ -104,6 +105,7 @@ export function CreateEventDialog({
       location: String(form.get("location") ?? ""),
       nextOccurrenceLocation: String(form.get("nextOccurrenceLocation") ?? ""),
       eventUrl: String(form.get("eventUrl") ?? ""),
+      price: String(form.get("price") ?? ""),
       travelDetails: String(form.get("travelDetails") ?? ""),
       startDate: String(form.get("startDate") ?? ""),
       endDate: String(form.get("endDate") ?? ""),
@@ -143,6 +145,7 @@ export function CreateEventDialog({
           </DialogDescription>
         </DialogHeader>
         <form ref={formRef} onSubmit={onSubmit} className="min-h-0 min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
+          <input type="hidden" name="price" defaultValue={event?.price ?? ""} />
           {!event ? <div className="space-y-2 rounded-lg border border-primary/30 bg-primary/5 p-3">
             <Label htmlFor="wizardsImportUrl">Import from Wizards Locator</Label>
             <div className="flex gap-2">

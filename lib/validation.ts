@@ -26,6 +26,7 @@ export const eventInputSchema = z.object({
   location: trimmedText(160),
   nextOccurrenceLocation: z.string().trim().max(160).optional(),
   eventUrl: optionalUrlSchema,
+  price: z.string().trim().regex(/^\d{1,8}(?:\.\d{1,2})?$/).optional().or(z.literal("")),
   travelDetails: z.string().trim().max(2000).optional(),
   startDate: dateSchema,
   endDate: optionalDateSchema,

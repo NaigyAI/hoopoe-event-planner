@@ -5,6 +5,7 @@ import {
   boolean,
   date,
   integer,
+  numeric,
   unique,
 } from "drizzle-orm/pg-core"
 
@@ -89,6 +90,7 @@ export const event = pgTable("event", {
   shareToken: text("shareToken").notNull(),
   eventType: text("eventType").notNull().default("rcq"),
   eventUrl: text("eventUrl"),
+  price: numeric("price", { precision: 10, scale: 2 }),
   travelDetails: text("travelDetails"),
   startDate: date("startDate").notNull(),
   endDate: date("endDate"),

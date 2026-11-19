@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CalendarDays, ClipboardCheck, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
+import { ArrowLeft, CalendarDays, ClipboardCheck, DollarSign, ExternalLink, Lock, MapPin, Repeat2, Users } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { getEvent, getEventAvailability, getEventOccurrences, getEventRsvps } from "@/app/actions/events"
 import { getSessionUser } from "@/lib/session"
@@ -180,6 +180,10 @@ export default async function EventPage({
                 {displayLocation}
               </span>
             ) : null}
+            <span className="flex items-center gap-1.5">
+              <DollarSign className="size-4" />
+              {event.price == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(event.price))}
+            </span>
             <span className="flex items-center gap-1.5">
               <Users className="size-4" />
               {totalRespondents} responded

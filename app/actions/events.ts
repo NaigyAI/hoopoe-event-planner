@@ -144,29 +144,29 @@ export async function importWizardsEvent(locatorUrl: string) {
   const response = await fetch(url, { headers: { "User-Agent": "Hoopoe Event Planner/1.0" }, cache: "no-store" })
   if (!response.ok) throw new Error("Wizards Locator event could not be loaded")
   const html = await response.text()
-  const decode = (value: string) => value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
-  const text = decode(html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " "))
+  const decode = (value: string) => value
+    .replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, " ").replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+    .replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+  const pageText = decode(html.replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " "))
   const title = decode(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "")
   const cleanTitle = title.replace(/ \|.*$/, "").replace(/^Event - /i, "").trim()
-  const jsonLd = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i)?.[1]
-  let structured: any = {}
-  try { structured = jsonLd ? JSON.parse(jsonLd.trim()) : {} } catch { structured = {} }
-  const eventName = decode(String(structured.name ?? ""))
-  const importedTitle = eventName || cleanTitle
-  const dateValue = structured.startDate ?? text.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)?.[0]
+  const eventTitle = decode(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? "")
+  const importedTitle = eventTitle || cleanTitle
+  const dateMatch = pageText.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)
   const year = new Date().getFullYear()
-  const date = dateValue && /^\d{4}-\d{2}-\d{2}/.test(String(dateValue)) ? new Date(String(dateValue)) : dateValue ? new Date(`${String(dateValue).replace(/^[^ ]+\s+/, "")}, ${year} 12:00:00`) : null
+  const date = dateMatch ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${year} 12:00:00`) : null
   if (!importedTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
   const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
   const format = /modern/i.test(importedTitle) ? "Modern" : /legacy/i.test(importedTitle) ? "Legacy" : /pioneer/i.test(importedTitle) ? "Pioneer" : /standard/i.test(importedTitle) ? "Standard" : /limited|draft|sealed/i.test(importedTitle) ? "Limited" : ""
   const eventType = /regional championship qualifier|\bRCQ\b/i.test(importedTitle) ? "rcq" : /store championship/i.test(importedTitle) ? "store-championship" : /weekly/i.test(importedTitle) ? "weekly" : "other"
-  const place = structured.location ?? {}
-  const storeName = decode(String(place.name ?? structured.organizer?.name ?? html.match(/(?:Store|Venue)[^<:]*:?\s*([^<]+)/i)?.[1] ?? ""))
-  const addressValue = place.address ?? {}
-  const address = decode(typeof addressValue === "string" ? addressValue : [addressValue.streetAddress, addressValue.addressLocality, addressValue.addressRegion, addressValue.postalCode].filter(Boolean).join(", "))
+  const storeName = decode(html.match(/<span\b[^>]*class=["'][^"']*font-semibold[^"']*text-text-primary[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] ?? "")
+  const address = decode(html.match(/lucide-map-pin[\s\S]*?<p\b[^>]*class=["'][^"']*text-text-secondary[^"']*["'][^>]*>([\s\S]*?)<\/p>/i)?.[1] ?? "")
   const location = [storeName, address].filter(Boolean).join(" — ") || "Wizards event location"
-  const description = decode(String(structured.description ?? html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']+)/i)?.[1] ?? ""))
-  return { title: importedTitle, format, eventType, eventTypeDetail: eventType === "other" ? importedTitle : "", location, startDate, eventUrl: url.toString(), description }
+  const description = decode(html.match(/<h2\b[^>]*>\s*About this event\s*<\/h2>\s*<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1] ?? "")
+  const priceMatch = html.match(/<p\b[^>]*class=["'][^"']*text-magic-mythic-orange[^"']*["'][^>]*>\s*\$\s*([\d,]+(?:\.\d{1,2})?)/i)
+  const price = priceMatch ? Number(priceMatch[1].replace(/,/g, "")).toFixed(2) : ""
+  return { title: importedTitle, format, eventType, eventTypeDetail: eventType === "other" ? importedTitle : "", location, startDate, eventUrl: url.toString(), description, price }
 }
 
 export async function createEvent(input: {
@@ -177,6 +177,7 @@ export async function createEvent(input: {
   location: string
   nextOccurrenceLocation?: string
   eventUrl?: string
+  price?: string
   travelDetails?: string
   startDate: string
   endDate?: string
@@ -240,8 +241,9 @@ export async function createEvent(input: {
     nextOccurrenceLocation: index === 0 ? input.nextOccurrenceLocation?.trim() || null : null,
     seriesId,
     eventType,
-    eventUrl: input.eventUrl?.trim() || null,
-    travelDetails: input.travelDetails?.trim() || null,
+  eventUrl: input.eventUrl?.trim() || null,
+  price: input.price?.trim() || null,
+  travelDetails: input.travelDetails?.trim() || null,
     createdBy: creator.id,
     createdByName: creator.name,
     shareToken: index === 0 ? shareToken : randomUUID().replace(/-/g, ""),
@@ -290,6 +292,7 @@ export async function updateEvent(eventId: string, input: {
   location: string
   nextOccurrenceLocation?: string
   eventUrl?: string
+  price?: string
   travelDetails?: string
   startDate: string
   endDate?: string
@@ -326,7 +329,7 @@ export async function updateEvent(eventId: string, input: {
     title, format: formats.join("/"), eventType: normalizedEventType,
     description: input.description?.trim() || null, location,
     nextOccurrenceLocation: recurrenceType === "none" ? null : input.nextOccurrenceLocation?.trim() || null,
-    eventUrl: input.eventUrl?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
+    eventUrl: input.eventUrl?.trim() || null, price: input.price?.trim() || null, travelDetails: input.travelDetails?.trim() || null,
     startDate: input.startDate, endDate, startTime: input.startTime?.trim() || null,
     endTime: null,
     recurrenceType,
@@ -379,8 +382,9 @@ async function ensureUpcomingOccurrences(seriesId: string) {
     nextOccurrenceLocation: null,
     seriesId,
     eventType: parent.eventType,
-    eventUrl: parent.eventUrl,
-    travelDetails: parent.travelDetails,
+      eventUrl: parent.eventUrl,
+      price: parent.price,
+      travelDetails: parent.travelDetails,
     createdBy: parent.createdBy,
     createdByName: parent.createdByName,
     shareToken: randomUUID().replace(/-/g, ""),
