@@ -62,6 +62,7 @@ export function CreateEventDialog({
   const [pending, setPending] = useState(false)
   const [multiDay, setMultiDay] = useState(Boolean(event?.endDate && event.endDate !== event.startDate) || Boolean(initialEndDate && initialEndDate !== initialStartDate))
   const [startTime, setStartTime] = useState(event?.startTime ?? "00:00")
+  const [startDate, setStartDate] = useState(event?.startDate ?? initialStartDate ?? "")
   const [eventType, setEventType] = useState(event?.eventType === "training" ? "practice" : event?.eventType ?? "")
   const [recurrenceType, setRecurrenceType] = useState(event?.recurrenceType ?? "none")
   const [recurrenceWeekday, setRecurrenceWeekday] = useState(String(event?.recurrenceWeekday ?? new Date().getDay()))
@@ -80,10 +81,12 @@ export function CreateEventDialog({
         const input = element as HTMLInputElement
         if (input.name === "format") input.checked = input.value === data.format
       })
-      for (const [name, value] of Object.entries({ location: data.location, startDate: data.startDate, eventUrl: data.eventUrl, description: data.description, eventTypeDetail: data.eventTypeDetail, price: data.price })) {
+      for (const [name, value] of Object.entries({ location: data.location, eventUrl: data.eventUrl, description: data.description, eventTypeDetail: data.eventTypeDetail, price: data.price })) {
         const input = form.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | null
         if (input) input.value = value
       }
+      setStartDate(data.startDate)
+      setStartTime(data.startTime)
       setEventType(data.eventType)
       setMultiDay(false)
       toast.success("Wizards event imported")
@@ -242,7 +245,7 @@ export function CreateEventDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start date</Label>
-              <Input id="startDate" name="startDate" type="date" defaultValue={event?.startDate ?? initialStartDate ?? ""} required />
+              <Input id="startDate" name="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="startTime">Start time</Label>

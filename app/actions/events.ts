@@ -153,11 +153,20 @@ export async function importWizardsEvent(locatorUrl: string) {
   const cleanTitle = title.replace(/ \|.*$/, "").replace(/^Event - /i, "").trim()
   const eventTitle = decode(html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1] ?? "")
   const importedTitle = eventTitle || cleanTitle
-  const dateMatch = pageText.match(/(?:Sat|Sun|Mon|Tue|Wed|Thu|Fri),?\s+([A-Z][a-z]{2})\s+(\d{1,2})/)
-  const year = new Date().getFullYear()
-  const date = dateMatch ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${year} 12:00:00`) : null
-  if (!importedTitle || !date || Number.isNaN(date.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
-  const startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  const dateTimeValue = html.match(/<time\b[^>]*datetime=["']([^"']+)["']/i)?.[1]
+    ?? html.match(/(?:startDate|start_date|eventDate)["']?\s*[:=]\s*["']([^"']+)["']/i)?.[1]
+  const dateMatch = pageText.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:day)?,?\s+([A-Z][a-z]+)\s+(\d{1,2})(?:,?\s+(\d{4}))?/)
+    ?? pageText.match(/\b([A-Z][a-z]+)\s+(\d{1,2}),?\s+(\d{4})\b/)
+  const parsedDate = dateTimeValue ? new Date(dateTimeValue) : dateMatch
+    ? new Date(`${dateMatch[1]} ${dateMatch[2]}, ${dateMatch[3] ?? new Date().getFullYear()} 12:00:00`)
+    : null
+  if (!importedTitle || !parsedDate || Number.isNaN(parsedDate.getTime())) throw new Error("Could not read the event details from that Wizards Locator page")
+  const startDate = `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, "0")}-${String(parsedDate.getDate()).padStart(2, "0")}`
+  const timeValue = html.match(/<time\b[^>]*datetime=["']([^"']+)["'][^>]*>/i)?.[1]
+    ?? pageText.match(/\b(\d{1,2}:\d{2}\s*(?:AM|PM))\b/i)?.[1]
+  const isoTime = timeValue?.match(/T(\d{2}:\d{2})/)?.[1]
+  const clockTime = timeValue?.match(/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/i)
+  const startTime = isoTime ?? (clockTime ? `${String((Number(clockTime[1]) % 12) + (clockTime[3].toUpperCase() === "PM" ? 12 : 0)).padStart(2, "0")}:${clockTime[2]}` : "")
   const format = /modern/i.test(importedTitle) ? "Modern" : /legacy/i.test(importedTitle) ? "Legacy" : /pioneer/i.test(importedTitle) ? "Pioneer" : /standard/i.test(importedTitle) ? "Standard" : /limited|draft|sealed/i.test(importedTitle) ? "Limited" : ""
   const eventType = /regional championship qualifier|\bRCQ\b/i.test(importedTitle) ? "rcq" : /store championship/i.test(importedTitle) ? "store-championship" : /weekly/i.test(importedTitle) ? "weekly" : "other"
   const storeName = decode(html.match(/<span\b[^>]*class=["'][^"']*font-semibold[^"']*text-text-primary[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] ?? "")
@@ -166,7 +175,7 @@ export async function importWizardsEvent(locatorUrl: string) {
   const description = decode(html.match(/<h2\b[^>]*>\s*About this event\s*<\/h2>\s*<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1] ?? "")
   const priceMatch = html.match(/<p\b[^>]*class=["'][^"']*text-magic-mythic-orange[^"']*["'][^>]*>\s*\$\s*([\d,]+(?:\.\d{1,2})?)/i)
   const price = priceMatch ? Number(priceMatch[1].replace(/,/g, "")).toFixed(2) : ""
-  return { title: importedTitle, format, eventType, eventTypeDetail: eventType === "other" ? importedTitle : "", location, startDate, eventUrl: url.toString(), description, price }
+  return { title: importedTitle, format, eventType, eventTypeDetail: eventType === "other" ? importedTitle : "", location, startDate, startTime, eventUrl: url.toString(), description, price }
 }
 
 export async function createEvent(input: {
